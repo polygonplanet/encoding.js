@@ -12,8 +12,8 @@ JavaScript で文字コード変換をします
 ```html
 <script src="encoding.js"></script>
 ```
-Encoding というオブジェクトがグローバルに定義されます
-配列に対して変換または判別します
+Encoding というオブジェクトがグローバルに定義されます  
+配列に対して変換または判別します  
 
 * 文字コード変換
 ```javascript
