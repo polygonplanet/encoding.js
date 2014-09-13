@@ -2,6 +2,8 @@
 encoding.js
 ===========
 
+[![Build Status](https://travis-ci.org/polygonplanet/encoding.js.svg?branch=master)](https://travis-ci.org/polygonplanet/encoding.js)
+
 Converts character encoding in JavaScript.  
 JavaScript で文字コード変換をします
 
