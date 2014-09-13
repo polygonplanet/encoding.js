@@ -1,5 +1,5 @@
 {
-  "name": "encoding.js",
+  "name": "encoding-japanese",
   "version": "1.0.7",
   "description": "Converts character encoding.",
   "main": "encoding.js",
