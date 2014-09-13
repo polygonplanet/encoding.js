@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Convert Encoding in JavaScript</title>
+<link rel="shortcut icon" href="http://api.polygonpla.net/img/icon/house.png">
+<script type="text/javascript" async="async" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript" async="async" src="https://github.com/polygonplanet/encoding.js/raw/master/src/encoding.js"></script>
+<script>
+setTimeout(function() {
+  'use strict';
+
+  var done;
+  var ENCODINGS = ['SJIS', 'JIS', 'EUCJP', 'UTF8'];
+
+  void function loadback() {
+    if (typeof $ === 'undefined' ||
+        typeof Encoding === 'undefined') {
+      setTimeout(loadback, 32);
+
+    } else if (!done) {
+      done = true;
+      doit();
+    }
+  }();
+
+
+  function doit() {
+    $('#run').removeAttr('disabled').click(function() {
+      $(this).attr({disabled : 'disabled'});
+      convert();
+    });
+  }
+
+
+  function convert() {
+    var d = $.Deferred();
+
+    var wrap = function(a, b, c) {
+      return a + ' (' + b + ' ' + c + ')';
+    };
+
+    $.each(ENCODINGS, function(k, type) {
+      d.done(function() {
+        var fileName = 'encoding-' + type.toLowerCase() + '.txt';
+
+        return request(fileName).then(function(bytes) {
+          appendText('Open ', '.', fileName);
+          appendText(bytes.toString(), wrap(fileName, type, 'Array'));
+          appendText(Encoding.codeToString(bytes), wrap(fileName, type, 'String'));
+
+          // Convert to Unicode.
+          var unicodes = Encoding.convert(bytes, 'UNICODE');
+
+          var urlEncBytes = Encoding.urlEncode(bytes);
+          appendText(urlEncBytes, wrap(fileName, type, 'URL Encode'));
+
+          var urlDecBytes = Encoding.urlDecode(urlEncBytes);
+          appendText(urlDecBytes, wrap(fileName, type, 'URL Encode => URL Decode'));
+
+          appendText(unicodes, wrap(fileName, type, '=> Unicode Array'));
+          appendText(Encoding.codeToString(unicodes), wrap(fileName, type, '=> Unicode String'));
+        });
+      });
+    });
+    d.resolve();
+  }
+
+
+  function request(url) {
+    var d = $.Deferred();
+
+    $.ajax({
+      url      : url,
+      dataType : 'text',
+      mimeType : 'text/plain; charset=x-user-defined',
+      success  : function(data) {
+        var bytes = [];
+        for (var i = 0, len = data.length; i < len; i++) {
+          var c = data.charCodeAt(i);
+          bytes[bytes.length] = c & 0xFF;
+        }
+        d.resolve(bytes);
+      }
+    });
+    return d;
+  }
+
+
+  function appendText(text, title, url) {
+    var target = $('#container');
+    if (url) {
+      $('<h3/>')
+        .append(text)
+        .append(
+          $('<a/>')
+            .attr({
+              href   : url,
+              target : '_blank'
+            })
+            .text(url)
+        )
+        .append(title)
+        .appendTo(target);
+    } else {
+      $('<div/>').text(title).appendTo(target);
+      $('<textarea/>').val(text).appendTo(target);
+    }
+  }
+
+
+}, 200);
+</script>
+<style>
+* {
+  font-family: verdana, sans-serif;
+}
+
+textarea {
+  width: 98%;
+  height: 2.5em;
+  font-family: consolas, monospace;
+}
+
+#container {
+  margin: 1em;
+}
+
+#run {
+  font-size: 120%;
+  font-weight: bold;
+}
+
+#footer {
+  margin: 0.5em auto;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<h1>Convert Encoding in JavaScript</h1>
+<h2>文字コードを変換します</h2>
+<p>
+ いろいろな文字コードで書かれているテキストを取得して
+ 文字コードを変換して表示します。
+</p>
+
+<div>
+ <button type="button" id="run">Run</button>
+</div>
+
+<div id="container"></div>
+
+<p id="footer">
+ Last modified: 2014-09-13
+ Written by <a href="http://twitter.com/polygon_planet" title="Twitter @polygon_planet" target="_blank">polygon planet</a>
+ <a href="https://github.com/polygonplanet/encoding.js" title="polygonplanet/encoding.js - GitHub">GitHub</a>
+</p>
+
+</body>
+</html>
