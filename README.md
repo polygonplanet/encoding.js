@@ -111,6 +111,21 @@ console.log( Encoding.codeToString(unicodeArray) );
 // output: 'こんにちは、ほげ☆ぴよ'
 ```
 
+### Node.js
+
+`encoding-japanese` というパッケージ名になっています
+
+```bash
+npm install encoding-japanese
+```
+
+```javascript
+var encoding = require('encoding-japanese');
+```
+
+encoding.convert() は Buffer に対しても使えます(配列で返ります)
+
+
 ### Test
 
 [文字コード変換テスト](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
