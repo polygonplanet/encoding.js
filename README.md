@@ -117,7 +117,7 @@ console.log( Encoding.codeToString(unicodeArray) );
 
 ### Node.js
 
-`encoding-japanese` というパッケージ名になっています
+`encoding-japanese` というモジュール名になっています
 
 ```bash
 npm install encoding-japanese
