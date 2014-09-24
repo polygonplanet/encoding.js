@@ -115,6 +115,16 @@ console.log( Encoding.codeToString(unicodeArray) );
 // output: 'こんにちは、ほげ☆ぴよ'
 ```
 
+### Utilities
+
+* _string_ Encoding.**codeToString** ( _array_ data )  
+  文字コード配列を文字列に変換(連結)して返します
+
+* _array_ Encoding.**stringToCode** ( _string_ string )  
+  文字列を文字コード配列に分割して返します
+
+
+
 ### Node.js
 
 `encoding-japanese` というモジュール名になっています
