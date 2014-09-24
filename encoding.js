@@ -1,7 +1,7 @@
 /*!
  * Encoding.js - Converts character encoding.
  *
- * Version 1.0.8, 2014-09-14
+ * Version 1.0.9, 2014-09-25
  * Copyright (c) 2013-2014 polygon planet <polygon.planet.aqua@gmail.com>
  * Dual licensed under the MIT or GPL v2 licenses.
  */
@@ -11,8 +11,8 @@
  * @description    Converts character encoding.
  * @fileoverview   Encoding library
  * @author         polygon planet
- * @version        1.0.8
- * @date           2014-09-14
+ * @version        1.0.9
+ * @date           2014-09-25
  * @link           https://github.com/polygonplanet/encoding.js
  * @copyright      Copyright (c) 2013-2014 polygon planet <polygon.planet.aqua@gmail.com>
  * @license        Dual licensed under the MIT or GPL v2 licenses.
@@ -268,6 +268,25 @@ Encoding = {
       r[r.length] = sc(data[i]);
     }
     return r.join('');
+  },
+  /**
+   * Splits string to an array of character codes.
+   *
+   * @param  {String}  string The input string.
+   * @return {Array}          The character code array.
+   *
+   * @public
+   * @function
+   */
+  stringToCode : function(string) {
+    var r, i, len;
+
+    r = [];
+    len = string && string.length;
+    for (i = 0; i < len; i++) {
+      r[i] = string.charCodeAt(i);
+    }
+    return r;
   },
   /**
    * Binary (exe, images, so, etc.)
