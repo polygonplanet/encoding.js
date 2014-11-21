@@ -19,6 +19,7 @@ Encoding というオブジェクトがグローバルに定義されます
 * 文字コード変換
 
 ```javascript
+// UTF-8のデータをShiftJISに変換
 var utf8Array = new Uint8Array(...) or [...] or Array(...) or Buffer(...);
 var sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
 
@@ -30,7 +31,7 @@ var sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 // 文字コード判別 (戻り値は下の"Available Encodings"のいずれか)
 var encoding = Encoding.detect(utf8Array);
 if (encoding === 'UTF8') {
-  alert('UTF-8です');
+  console.log('UTF-8です');
 }
 ```
 
@@ -59,7 +60,7 @@ if (enc === 'UTF8') {
 // 文字コード指定判別
 var isSJIS = Encoding.detect(sjisArray, 'SJIS');
 if (isSJIS) {
-  alert('SJISです');
+  console.log('SJISです');
 }
 ```
 
