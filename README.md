@@ -54,7 +54,7 @@ if (encoding === 'UTF8') {
 // 自動判別
 var enc = Encoding.detect(utf8Array);
 if (enc === 'UTF8') {
-  alert('UTF-8です');
+  console.log('UTF-8です');
 }
 
 // 文字コード指定判別
