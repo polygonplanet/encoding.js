@@ -1,18 +1,11 @@
-/*!
- * Encoding.js - Converts character encoding.
- *
- * Version 1.0.9, 2014-09-25
- * Copyright (c) 2013-2014 polygon planet <polygon.planet.aqua@gmail.com>
- * Dual licensed under the MIT or GPL v2 licenses.
- */
 /**
  * Encoding.js
  *
  * @description    Converts character encoding.
- * @fileoverview   Encoding library
+ * @fileOverview   Encoding library
  * @author         polygon planet
- * @version        1.0.9
- * @date           2014-09-25
+ * @version        1.0.10
+ * @date           2014-11-22
  * @link           https://github.com/polygonplanet/encoding.js
  * @copyright      Copyright (c) 2013-2014 polygon planet <polygon.planet.aqua@gmail.com>
  * @license        Dual licensed under the MIT or GPL v2 licenses.
@@ -24,8 +17,12 @@
 (function (name, context, factory) {
 
   // Supports UMD. AMD, CommonJS/Node.js and browser context
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = factory();
+  if (typeof exports !== 'undefined') {
+    if (typeof module !== 'undefined' && module.exports) {
+      module.exports = factory();
+    } else {
+      exports[name] = factory();
+    }
   } else if (typeof define === 'function' && define.amd) {
     define(factory);
   } else {
@@ -36,6 +33,9 @@
 'use strict';
 
 var UTF8_UNKNOWN = '?'.charCodeAt(0),
+
+fromCharCode = String.fromCharCode,
+hasOwnProperty = Object.prototype.hasOwnProperty,
 
 /**
  * @ignore
@@ -141,8 +141,9 @@ Encoding = {
         if (!encode) {
           continue;
         }
-        func = Encoding['is' + encode];
-        if (func && func(data)) {
+
+        func = 'is' + encode;
+        if (hasOwnProperty.call(Encoding, func) && Encoding[func](data)) {
           result = encode;
           break;
         }
@@ -179,9 +180,9 @@ Encoding = {
       }
 
       to = Encoding.assign(to);
-      func = Encoding[from + 'To' + to];
-      if (func) {
-        return func(data);
+      func = from + 'To' + to;
+      if (hasOwnProperty.call(Encoding, func)) {
+        return Encoding[func](data);
       }
     }
     return data;
@@ -196,8 +197,7 @@ Encoding = {
    * @function
    */
   urlEncode : function(data) {
-    var p = [], i = 0, len = data.length, b,
-        sc = String.fromCharCode;
+    var p = [], i = 0, len = data.length, b;
 
     for (; i < len; i++) {
       b = data[i];
@@ -214,7 +214,7 @@ Encoding = {
           b === 0x2D /*-*/ || b === 0x2E /*.*/ ||
           b === 0x5F /*_*/ || b === 0x7E /*~*/
       ) {
-        p[p.length] = sc(b);
+        p[p.length] = fromCharCode(b);
       } else {
         p[p.length] = (b < 0x10 ? '%0' : '%') + b.toString(16).toUpperCase();
       }
@@ -254,10 +254,10 @@ Encoding = {
    * @function
    */
   codeToString : function(data) {
-    var sc = String.fromCharCode, r, i, len;
+    var r, i, len;
 
     try {
-      return sc.apply(null, data);
+      return fromCharCode.apply(null, data);
     } catch (e) {
       // ignore RangeError: arguments too large
     }
@@ -265,7 +265,7 @@ Encoding = {
     r = [];
     len = data && data.length;
     for (i = 0; i < len; i++) {
-      r[r.length] = sc(data[i]);
+      r[r.length] = fromCharCode(data[i]);
     }
     return r.join('');
   },
@@ -349,7 +349,7 @@ Encoding = {
    * @ignore
    */
   isLATIN1 : function(data) {
-    var result = true, i = 0, len = data.length;
+    var i = 0, len = data.length;
 
     for (; i < len; i++) {
       if (data[i] > 0xFF) {
@@ -481,8 +481,9 @@ Encoding = {
   isUTF8 : function(data) {
     var i = 0, len = data.length, b;
 
+    //FIXME: UTF-8 BOM
     if (data[0] === 0xEF && data[1] === 0xBB && data[2] === 0xBF) {
-      return true; //XXX: BOM (Should be?)
+      return true;
     }
 
     while (i < len && data[i] > 0x80) {
@@ -496,6 +497,7 @@ Encoding = {
       if (b < 0x80) {
         continue;
       }
+
       if (0xC0 <= b && b <=0xDF) {
         b = data[++i];
         if (b === void 0) {
@@ -512,10 +514,12 @@ Encoding = {
         if (b < 0x80 || 0xBF < b) {
           return false;
         }
+
         b = data[++i];
         if (b === void 0) {
           return false;
         }
+
         if (b < 0x80 || 0xBF < b) {
           return false;
         }
@@ -564,7 +568,7 @@ Encoding = {
         }
       }
       if (pos === null) {
-        return false; // Non ASCII (omit)
+        return false; // Non ASCII
       }
       next = data[pos + 1]; // BE
       prev = data[pos - 1]; // LE
@@ -626,7 +630,7 @@ Encoding = {
         }
       }
       if (pos === null) {
-        return false; // Non ASCII..
+        return false; // Non ASCII
       }
       b = data[pos + 1];
       if (b !== void 0 && b < 0x80) {
@@ -666,7 +670,7 @@ Encoding = {
         }
       }
       if (pos === null) {
-        return false; // There is no ASCII in string
+        return false; // Non ASCII
       }
       b = data[pos - 1];
       if (b !== void 0 && b < 0x80) {
@@ -1391,46 +1395,40 @@ Encoding = {
    * @ignore
    * based: Pot.js (UTF8.js)
    */
-  UNICODEToUTF8 : function() {
-    /**@ignore*/
-    var add = function(b, c) {
-      if (c < 0x80) {
-        b[b.length] = c;
-      } else if (c < 0x800) {
-        b[b.length] = 0xC0 | ((c >>  6) & 0x1F);
-        b[b.length] = 0x80 | ((c >>  0) & 0x3F);
-      } else if (c < 0x10000) {
-        b[b.length] = 0xE0 | ((c >> 12) & 0x0F);
-        b[b.length] = 0x80 | ((c >>  6) & 0x3F);
-        b[b.length] = 0x80 | ((c >>  0) & 0x3F);
-      } else {
-        b[b.length] = 0xF0 | ((c >> 18) & 0x0F);
-        b[b.length] = 0x80 | ((c >> 12) & 0x3F);
-        b[b.length] = 0x80 | ((c >>  6) & 0x3F);
-        b[b.length] = 0x80 | ((c >>  0) & 0x3F);
-      }
-    };
+  UNICODEToUTF8 : function(data) {
+    var r = [], i = 0, len = data.length, c, c2;
 
-    return function(data) {
-      var r = [],  len = data.length, i = 0, j, ch, c2;
-
-      for (; i < len; i++) {
-        ch = data[i];
-        if (0xD800 <= ch && ch <= 0xD8FF) {
-          j = i + 1;
-          if (j < len) {
-            c2 = data[j];
-            if (0xDC00 <= c2 && c2 <= 0xDFFF) {
-              ch = ((ch & 0x3FF) << 10) + (c2 & 0x3FF) + 0x10000;
-              i = j;
-            }
+    for (; i < len; i++) {
+      c = data[i];
+      if (c >= 0xD800 && c <= 0xD8FF) {
+        if (i + 1 < len) {
+          c2 = data[i + 1];
+          if (c2 >= 0xDC00 && c2 <= 0xDFFF) {
+            c = ((c & 0x3FF) << 10) + (c2 & 0x3FF) + 0x10000;
+            i++;
           }
         }
-        add(r, ch);
       }
-      return r;
-    };
-  }(),
+
+      if (c < 0x80) {
+        r[r.length] = c;
+      } else if (c < 0x800) {
+        r[r.length] = 0xC0 | ((c >> 6) & 0x1F);
+        r[r.length] = 0x80 | (c & 0x3F);
+      } else if (c < 0x10000) {
+        r[r.length] = 0xE0 | ((c >> 12) & 0xF);
+        r[r.length] = 0x80 | ((c >> 6) & 0x3F);
+        r[r.length] = 0x80 | (c & 0x3F);
+      } else {
+        r[r.length] = 0xF0 | ((c >> 18) & 0xF);
+        r[r.length] = 0x80 | ((c >> 12) & 0x3F);
+        r[r.length] = 0x80 | ((c >> 6) & 0x3F);
+        r[r.length] = 0x80 | (c & 0x3F);
+      }
+    }
+
+    return r;
+  },
   /**
    * UTF-8 to UTF-16 (JavaScript Unicode array)
    *
@@ -1461,16 +1459,16 @@ Encoding = {
         c3 = data[i++];
         r[r.length] = ((c  & 0x0F) << 12) |
                       ((c2 & 0x3F) <<  6) |
-                      ((c3 & 0x3F) <<  0);
+                       (c3 & 0x3F);
       } else if (i + 2 < len) {
         // 1111 0xxx ...
         c2 = data[i++];
         c3 = data[i++];
         c4 = data[i++];
-        r[r.length] = (((c  & 0x07) << 18) |
-                       ((c2 & 0x3F) << 12) |
-                       ((c3 & 0x3F) <<  6) |
-                       ((c4 & 0x3F) <<  0));
+        r[r.length] = ((c  & 0x7)  << 18) |
+                      ((c2 & 0x3F) << 12) |
+                      ((c3 & 0x3F) <<  6) |
+                       (c4 & 0x3F);
       }
     }
     return r;
