@@ -1,6 +1,6 @@
 {
   "name": "encoding-japanese",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Converts character encoding.",
   "main": "encoding.js",
   "directories": {
