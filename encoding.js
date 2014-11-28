@@ -1249,13 +1249,13 @@ function SJISToUTF8(data) {
       b1 &= 0xFF;
       jis = (b1 << 8) + b2;
 
-      if (JIS_TO_UTF8_TABLE[jis] === void 0) {
+      if (!hasOwnProperty.call(JIS_TO_UTF8_TABLE, jis)) {
         results[results.length] = UTF8_UNKNOWN;
       } else {
         utf8 = JIS_TO_UTF8_TABLE[jis];
 
         // patch
-        if (JIS_TO_UTF8_TABLE_PATCH[utf8] !== void 0) {
+        if (hasOwnProperty.call(JIS_TO_UTF8_TABLE_PATCH, utf8)) {
           utf8 = JIS_TO_UTF8_TABLE_PATCH[utf8];
         }
 
@@ -1303,13 +1303,13 @@ function EUCJPToUTF8(data) {
     } else if (b >= 0x80) {
       jis = ((b - 0x80) << 8) + (data[++i] - 0x80);
 
-      if (JIS_TO_UTF8_TABLE[jis] === void 0) {
+      if (!hasOwnProperty.call(JIS_TO_UTF8_TABLE, jis)) {
         results[results.length] = UTF8_UNKNOWN;
       } else {
         utf8 = JIS_TO_UTF8_TABLE[jis];
 
         // patch
-        if (JIS_TO_UTF8_TABLE_PATCH[utf8] !== void 0) {
+        if (hasOwnProperty.call(JIS_TO_UTF8_TABLE_PATCH, utf8)) {
           utf8 = JIS_TO_UTF8_TABLE_PATCH[utf8];
         }
 
@@ -1364,13 +1364,13 @@ function JISToUTF8(data) {
 
     if (index === 1) {
       jis = (data[i] << 8) + data[++i];
-      if (JIS_TO_UTF8_TABLE[jis] === void 0) {
+      if (!hasOwnProperty.call(JIS_TO_UTF8_TABLE, jis)) {
         results[results.length] = UTF8_UNKNOWN;
       } else {
         utf8 = JIS_TO_UTF8_TABLE[jis];
 
         // patch
-        if (JIS_TO_UTF8_TABLE_PATCH[utf8] !== void 0) {
+        if (hasOwnProperty.call(JIS_TO_UTF8_TABLE_PATCH, utf8)) {
           utf8 = JIS_TO_UTF8_TABLE_PATCH[utf8];
         }
 
@@ -1424,8 +1424,8 @@ function UTF8ToSJIS(data) {
                (data[++i] & 0xFF);
       }
 
-      if (UTF8_TO_JIS_TABLE[utf8] === void 0 &&
-          UTF8_TO_JIS_TABLE_PATCH[utf8] === void 0) {
+      if (!hasOwnProperty.call(UTF8_TO_JIS_TABLE, utf8) &&
+          !hasOwnProperty.call(UTF8_TO_JIS_TABLE_PATCH, utf8)) {
         results[results.length] = UTF8_UNKNOWN;
       } else {
         jis = UTF8_TO_JIS_TABLE[utf8];
@@ -1433,7 +1433,7 @@ function UTF8ToSJIS(data) {
           results[results.length] = jis + 0x80;
         } else {
           // patch
-          if (UTF8_TO_JIS_TABLE_PATCH[utf8] !== void 0 &&
+          if (hasOwnProperty.call(UTF8_TO_JIS_TABLE_PATCH, utf8) &&
               UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]] >= 0xFF) {
             jis = UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]];
           }
@@ -1497,8 +1497,8 @@ function UTF8ToEUCJP(data) {
                (data[i] & 0xFF);
       }
 
-      if (UTF8_TO_JIS_TABLE[utf8] === void 0 &&
-          UTF8_TO_JIS_TABLE_PATCH[utf8] === void 0) {
+      if (!hasOwnProperty.call(UTF8_TO_JIS_TABLE, utf8) &&
+          !hasOwnProperty.call(UTF8_TO_JIS_TABLE_PATCH, utf8)) {
         results[results.length] = UTF8_UNKNOWN;
       } else {
         jis = UTF8_TO_JIS_TABLE[utf8];
@@ -1507,7 +1507,7 @@ function UTF8ToEUCJP(data) {
           results[results.length] = jis - 0x80 & 0xFF;
         } else {
           // patch
-          if (UTF8_TO_JIS_TABLE_PATCH[utf8] !== void 0 &&
+          if (hasOwnProperty.call(UTF8_TO_JIS_TABLE_PATCH, utf8) &&
               UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]] >= 0xFF) {
             jis = UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]];
           }
@@ -1551,8 +1551,8 @@ function UTF8ToJIS(data) {
         utf8 = (data[i] << 16) + (data[++i] << 8) + data[++i];
       }
 
-      if (UTF8_TO_JIS_TABLE[utf8] === void 0 &&
-          UTF8_TO_JIS_TABLE_PATCH[utf8] === void 0) {
+      if (!hasOwnProperty.call(UTF8_TO_JIS_TABLE, utf8) &&
+          !hasOwnProperty.call(UTF8_TO_JIS_TABLE_PATCH, utf8)) {
         if (index !== 0) {
           index = 0;
           results[results.length] = esc[0];
@@ -1572,7 +1572,7 @@ function UTF8ToJIS(data) {
           results[results.length] = jis & 0xFF;
         } else {
           // patch
-          if (UTF8_TO_JIS_TABLE_PATCH[utf8] !== void 0 &&
+          if (hasOwnProperty.call(UTF8_TO_JIS_TABLE_PATCH, utf8) &&
               UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]] >= 0xFF) {
             jis = UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]];
           }
