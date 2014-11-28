@@ -115,9 +115,9 @@ var Encoding = {
       }
 
       method = 'is' + encoding;
-      if (!hasOwnProperty.call(Encoding, method)) {
+      if (!hasOwnProperty.call(EncodingDetect, method)) {
         throw new Error('Undefined encoding: ' + e);
-      } else if (Encoding[method](data)) {
+      } else if (EncodingDetect[method](data)) {
         return encoding;
       }
     }
@@ -159,11 +159,11 @@ var Encoding = {
 
     var encodingTo = assignEncodingName(to);
     var method = encodingFrom + 'To' + encodingTo;
-    if (!hasOwnProperty.call(Encoding, method)) {
+    if (!hasOwnProperty.call(EncodingConvert, method)) {
       throw new Error('Undefined encoding: ' + to + ' or ' + from);
     }
 
-    return Encoding[method](data);
+    return EncodingConvert[method](data);
   },
   /**
    * Encode a character code array to URL string like encodeURIComponent.
@@ -275,1400 +275,1481 @@ var Encoding = {
     }
 
     return code;
-  },
-  /**
-   * Binary (exe, images and so, etc.)
-   *
-   * Note:
-   *   This function is not considered for Unicode
-   *
-   * @private
-   * @ignore
-   */
-  isBINARY: function(data) {
-    var i = 0;
-    var len = data && data.length;
-    var c;
+  }
+};
 
-    for (; i < len; i++) {
-      c = data[i];
-      if (c > 0xFF) {
+
+/**
+ * @private
+ * @ignore
+ */
+var EncodingDetect = {
+  isBINARY: isBINARY,
+  isASCII: isASCII,
+  isJIS: isJIS,
+  isEUCJP: isEUCJP,
+  isSJIS: isSJIS,
+  isUTF8: isUTF8,
+  isUTF16: isUTF16,
+  isUTF16BE: isUTF16BE,
+  isUTF16LE: isUTF16LE,
+  isUTF32: isUTF32,
+  isUNICODE: isUNICODE
+};
+
+/**
+ * @private
+ * @ignore
+ */
+var EncodingConvert = {
+  JISToSJIS: JISToSJIS,
+  JISToEUCJP: JISToEUCJP,
+  SJISToJIS: SJISToJIS,
+  SJISToEUCJP: SJISToEUCJP,
+  EUCJPToJIS: EUCJPToJIS,
+  EUCJPToSJIS: EUCJPToSJIS,
+  SJISToUTF8: SJISToUTF8,
+  EUCJPToUTF8: EUCJPToUTF8,
+  JISToUTF8: JISToUTF8,
+  UTF8ToSJIS: UTF8ToSJIS,
+  UTF8ToEUCJP: UTF8ToEUCJP,
+  UTF8ToJIS: UTF8ToJIS,
+  UNICODEToUTF8: UNICODEToUTF8,
+  UTF8ToUNICODE: UTF8ToUNICODE,
+  UNICODEToJIS: UNICODEToJIS,
+  JISToUNICODE: JISToUNICODE,
+  UNICODEToEUCJP: UNICODEToEUCJP,
+  EUCJPToUNICODE: EUCJPToUNICODE,
+  UNICODEToSJIS: UNICODEToSJIS,
+  SJISToUNICODE: SJISToUNICODE
+};
+
+
+/**
+ * Binary (exe, images and so, etc.)
+ *
+ * Note:
+ *   This function is not considered for Unicode
+ *
+ * @private
+ * @ignore
+ */
+function isBINARY(data) {
+  var i = 0;
+  var len = data && data.length;
+  var c;
+
+  for (; i < len; i++) {
+    c = data[i];
+    if (c > 0xFF) {
+      return false;
+    }
+
+    if ((c >= 0x00 && c <= 0x07) || c === 0xFF) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * ASCII (ISO-646)
+ *
+ * @private
+ * @ignore
+ */
+function isASCII(data) {
+  var i = 0;
+  var len = data && data.length;
+  var b;
+
+  for (; i < len; i++) {
+    b = data[i];
+    if (b > 0xFF ||
+        (b >= 0x80 && b <= 0xFF) ||
+        b === 0x1B) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * ISO-2022-JP (JIS)
+ *
+ * @private
+ * @ignore
+ */
+function isJIS(data) {
+  var i = 0;
+  var len = data && data.length;
+  var b, esc1, esc2;
+
+  for (; i < len; i++) {
+    b = data[i];
+    if (b > 0xFF || (b >= 0x80 && b <= 0xFF)) {
+      return false;
+    }
+
+    if (b === 0x1B) {
+      if (i + 2 >= len) {
         return false;
       }
 
-      if ((c >= 0x00 && c <= 0x07) || c === 0xFF) {
+      esc1 = data[i + 1];
+      esc2 = data[i + 2];
+      if (esc1 === 0x24) {
+        if (esc2 === 0x28 ||  // JIS X 0208-1990
+            esc2 === 0x40 ||  // JIS X 0208-1978
+            esc2 === 0x42) {  // JIS X 0208-1983
+          return true;
+        }
+      } else if (esc1 === 0x26 && // JIS X 0208-1990
+                 esc2 === 0x40) {
         return true;
       }
     }
+  }
 
-    return false;
-  },
-  /**
-   * ASCII (ISO-646)
-   *
-   * @private
-   * @ignore
-   */
-  isASCII: function(data) {
-    var i = 0;
-    var len = data && data.length;
-    var b;
+  return false;
+}
 
-    for (; i < len; i++) {
-      b = data[i];
-      if (b > 0xFF ||
-          (b >= 0x80 && b <= 0xFF) ||
-          b === 0x1B) {
-        return false;
-      }
+/**
+ * EUC-JP
+ *
+ * @private
+ * @ignore
+ */
+function isEUCJP(data) {
+  var i = 0;
+  var len = data && data.length;
+  var b;
+
+  for (; i < len; i++) {
+    b = data[i];
+    if (b < 0x80) {
+      continue;
     }
 
-    return true;
-  },
-  /**
-   * ISO-2022-JP (JIS)
-   *
-   * @private
-   * @ignore
-   */
-  isJIS: function(data) {
-    var i = 0;
-    var len = data && data.length;
-    var b, esc1, esc2;
-
-    for (; i < len; i++) {
-      b = data[i];
-      if (b > 0xFF || (b >= 0x80 && b <= 0xFF)) {
-        return false;
-      }
-
-      if (b === 0x1B) {
-        if (i + 2 >= len) {
-          return false;
-        }
-
-        esc1 = data[i + 1];
-        esc2 = data[i + 2];
-        if (esc1 === 0x24) {
-          if (esc2 === 0x28 ||  // JIS X 0208-1990
-              esc2 === 0x40 ||  // JIS X 0208-1978
-              esc2 === 0x42) {  // JIS X 0208-1983
-            return true;
-          }
-        } else if (esc1 === 0x26 && // JIS X 0208-1990
-                   esc2 === 0x40) {
-          return true;
-        }
-      }
+    if (b > 0xFF || b < 0x8E) {
+      return false;
     }
 
-    return false;
-  },
-  /**
-   * EUC-JP
-   *
-   * @private
-   * @ignore
-   */
-  isEUCJP: function(data) {
-    var i = 0;
-    var len = data && data.length;
-    var b;
-
-    for (; i < len; i++) {
-      b = data[i];
-      if (b < 0x80) {
-        continue;
-      }
-
-      if (b > 0xFF || b < 0x8E) {
-        return false;
-      }
-
-      if (b === 0x8E) {
-        if (i + 1 >= len) {
-          return false;
-        }
-
-        b = data[++i];
-        if (b < 0xA1 || 0xDF < b) {
-          return false;
-        }
-      } else if (0xA1 <= b && b <= 0xFE) {
-        if (i + 1 >= len) {
-          return false;
-        }
-
-        b = data[++i];
-        if (b < 0xA1 || 0xFE < b) {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    }
-
-    return true;
-  },
-  /**
-   * Shift-JIS (SJIS)
-   *
-   * @private
-   * @ignore
-   */
-  isSJIS: function(data) {
-    var i = 0;
-    var len = data && data.length;
-    var b;
-
-    while (i < len && data[i] > 0x80) {
-      if (data[i++] > 0xFF) {
-        return false;
-      }
-    }
-
-    for (; i < len; i++) {
-      b = data[i];
-      if (b <= 0x80 ||
-          (0xA1 <= b && b <= 0xDF)) {
-        continue;
-      }
-
-      if (b === 0xA0 || b > 0xEF || i + 1 >= len) {
+    if (b === 0x8E) {
+      if (i + 1 >= len) {
         return false;
       }
 
       b = data[++i];
-      if (b < 0x40 || b === 0x7F || b > 0xFC) {
+      if (b < 0xA1 || 0xDF < b) {
         return false;
       }
-    }
-
-    return true;
-  },
-  /**
-   * UTF-8
-   *
-   * @private
-   * @ignore
-   */
-  isUTF8: function(data) {
-    var i = 0;
-    var len = data && data.length;
-    var b;
-
-    for (; i < len; i++) {
-      b = data[i];
-      if (b > 0xFF) {
+    } else if (0xA1 <= b && b <= 0xFE) {
+      if (i + 1 >= len) {
         return false;
       }
 
-      if (b === 0x09 || b === 0x0A || b === 0x0D ||
-          (b >= 0x20 && b <= 0x7E)) {
-        continue;
-      }
-
-      if (b >= 0xC2 && b <= 0xDF) {
-        if (i + 1 >= len || data[i + 1] < 0x80 || data[i + 1] > 0xBF) {
-          return false;
-        }
-        i++;
-      } else if (b === 0xE0) {
-        if (i + 2 >= len ||
-            data[i + 1] < 0xA0 || data[i + 1] > 0xBF ||
-            data[i + 2] < 0x80 || data[i + 2] > 0xBF) {
-          return false;
-        }
-        i += 2;
-      } else if ((b >= 0xE1 && b <= 0xEC) ||
-                  b === 0xEE || b === 0xEF) {
-        if (i + 2 >= len ||
-            data[i + 1] < 0x80 || data[i + 1] > 0xBF ||
-            data[i + 2] < 0x80 || data[i + 2] > 0xBF) {
-          return false;
-        }
-        i += 2;
-      } else if (b === 0xED) {
-        if (i + 2 >= len ||
-            data[i + 1] < 0x80 || data[i + 1] > 0x9F ||
-            data[i + 2] < 0x80 || data[i + 2] > 0xBF) {
-          return false;
-        }
-        i += 2;
-      } else if (b === 0xF0) {
-        if (i + 3 >= len ||
-            data[i + 1] < 0x90 || data[i + 1] > 0xBF ||
-            data[i + 2] < 0x80 || data[i + 2] > 0xBF ||
-            data[i + 3] < 0x80 || data[i + 3] > 0xBF) {
-          return false;
-        }
-        i += 3;
-      } else if (b >= 0xF1 && b <= 0xF3) {
-        if (i + 3 >= len ||
-            data[i + 1] < 0x80 || data[i + 1] > 0xBF ||
-            data[i + 2] < 0x80 || data[i + 2] > 0xBF ||
-            data[i + 3] < 0x80 || data[i + 3] > 0xBF) {
-          return false;
-        }
-        i += 3;
-      } else if (b === 0xF4) {
-        if (i + 3 >= len ||
-            data[i + 1] < 0x80 || data[i + 1] > 0x8F ||
-            data[i + 2] < 0x80 || data[i + 2] > 0xBF ||
-            data[i + 3] < 0x80 || data[i + 3] > 0xBF) {
-          return false;
-        }
-        i += 3;
-      } else {
-        return false;
-      }
-    }
-
-    return true;
-  },
-  /**
-   * UTF-16 (LE or BE)
-   *
-   * RFC2781: UTF-16, an encoding of ISO 10646
-   * Must be labelled BOM
-   *
-   * @link http://www.ietf.org/rfc/rfc2781.txt
-   * @private
-   * @ignore
-   */
-  isUTF16: function(data) {
-    var i = 0;
-    var len = data && data.length;
-    var pos = null;
-    var b1, b2, next, prev;
-
-    if (len < 2) {
-      if (data[0] > 0xFF) {
+      b = data[++i];
+      if (b < 0xA1 || 0xFE < b) {
         return false;
       }
     } else {
-      b1 = data[0];
-      b2 = data[1];
-      if (b1 === 0xFF && // BOM (little-endian)
-          b2 === 0xFE) {
-        return true;
-      }
-      if (b1 === 0xFE && // BOM (big-endian)
-          b2 === 0xFF) {
-        return true;
-      }
+      return false;
+    }
+  }
 
-      for (; i < len; i++) {
-        if (data[i] === 0x00) {
-          pos = i;
-          break;
-        } else if (data[i] > 0xFF) {
-          return false;
-        }
-      }
+  return true;
+}
 
-      if (pos === null) {
-        return false; // Non ASCII
-      }
+/**
+ * Shift-JIS (SJIS)
+ *
+ * @private
+ * @ignore
+ */
+function isSJIS(data) {
+  var i = 0;
+  var len = data && data.length;
+  var b;
 
+  while (i < len && data[i] > 0x80) {
+    if (data[i++] > 0xFF) {
+      return false;
+    }
+  }
+
+  for (; i < len; i++) {
+    b = data[i];
+    if (b <= 0x80 ||
+        (0xA1 <= b && b <= 0xDF)) {
+      continue;
+    }
+
+    if (b === 0xA0 || b > 0xEF || i + 1 >= len) {
+      return false;
+    }
+
+    b = data[++i];
+    if (b < 0x40 || b === 0x7F || b > 0xFC) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * UTF-8
+ *
+ * @private
+ * @ignore
+ */
+function isUTF8(data) {
+  var i = 0;
+  var len = data && data.length;
+  var b;
+
+  for (; i < len; i++) {
+    b = data[i];
+    if (b > 0xFF) {
+      return false;
+    }
+
+    if (b === 0x09 || b === 0x0A || b === 0x0D ||
+        (b >= 0x20 && b <= 0x7E)) {
+      continue;
+    }
+
+    if (b >= 0xC2 && b <= 0xDF) {
+      if (i + 1 >= len || data[i + 1] < 0x80 || data[i + 1] > 0xBF) {
+        return false;
+      }
+      i++;
+    } else if (b === 0xE0) {
+      if (i + 2 >= len ||
+          data[i + 1] < 0xA0 || data[i + 1] > 0xBF ||
+          data[i + 2] < 0x80 || data[i + 2] > 0xBF) {
+        return false;
+      }
+      i += 2;
+    } else if ((b >= 0xE1 && b <= 0xEC) ||
+                b === 0xEE || b === 0xEF) {
+      if (i + 2 >= len ||
+          data[i + 1] < 0x80 || data[i + 1] > 0xBF ||
+          data[i + 2] < 0x80 || data[i + 2] > 0xBF) {
+        return false;
+      }
+      i += 2;
+    } else if (b === 0xED) {
+      if (i + 2 >= len ||
+          data[i + 1] < 0x80 || data[i + 1] > 0x9F ||
+          data[i + 2] < 0x80 || data[i + 2] > 0xBF) {
+        return false;
+      }
+      i += 2;
+    } else if (b === 0xF0) {
+      if (i + 3 >= len ||
+          data[i + 1] < 0x90 || data[i + 1] > 0xBF ||
+          data[i + 2] < 0x80 || data[i + 2] > 0xBF ||
+          data[i + 3] < 0x80 || data[i + 3] > 0xBF) {
+        return false;
+      }
+      i += 3;
+    } else if (b >= 0xF1 && b <= 0xF3) {
+      if (i + 3 >= len ||
+          data[i + 1] < 0x80 || data[i + 1] > 0xBF ||
+          data[i + 2] < 0x80 || data[i + 2] > 0xBF ||
+          data[i + 3] < 0x80 || data[i + 3] > 0xBF) {
+        return false;
+      }
+      i += 3;
+    } else if (b === 0xF4) {
+      if (i + 3 >= len ||
+          data[i + 1] < 0x80 || data[i + 1] > 0x8F ||
+          data[i + 2] < 0x80 || data[i + 2] > 0xBF ||
+          data[i + 3] < 0x80 || data[i + 3] > 0xBF) {
+        return false;
+      }
+      i += 3;
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * UTF-16 (LE or BE)
+ *
+ * RFC2781: UTF-16, an encoding of ISO 10646
+ * Must be labelled BOM
+ *
+ * @link http://www.ietf.org/rfc/rfc2781.txt
+ * @private
+ * @ignore
+ */
+function isUTF16(data) {
+  var i = 0;
+  var len = data && data.length;
+  var pos = null;
+  var b1, b2, next, prev;
+
+  if (len < 2) {
+    if (data[0] > 0xFF) {
+      return false;
+    }
+  } else {
+    b1 = data[0];
+    b2 = data[1];
+    if (b1 === 0xFF && // BOM (little-endian)
+        b2 === 0xFE) {
+      return true;
+    }
+    if (b1 === 0xFE && // BOM (big-endian)
+        b2 === 0xFF) {
+      return true;
+    }
+
+    for (; i < len; i++) {
+      if (data[i] === 0x00) {
+        pos = i;
+        break;
+      } else if (data[i] > 0xFF) {
+        return false;
+      }
+    }
+
+    if (pos === null) {
+      return false; // Non ASCII
+    }
+
+    next = data[pos + 1]; // BE
+    prev = data[pos - 1]; // LE
+    if ((next !== void 0 && next > 0x00 && next < 0x80) ||
+        (prev !== void 0 && prev > 0x00 && prev < 0x80)
+    ) {
+      pos = len - 2;
       next = data[pos + 1]; // BE
       prev = data[pos - 1]; // LE
-      if ((next !== void 0 && next > 0x00 && next < 0x80) ||
-          (prev !== void 0 && prev > 0x00 && prev < 0x80)
-      ) {
-        pos = len - 2;
-        next = data[pos + 1]; // BE
-        prev = data[pos - 1]; // LE
 
-        if (next !== void 0) {
-          if (next > 0x00 && next < 0x80) {
-            return true;
-          } else {
-            return false;
-          }
-        } else if (prev !== void 0) {
-          if (prev > 0x00 && prev < 0x80) {
-            return true;
-          } else {
-            return false;
-          }
+      if (next !== void 0) {
+        if (next > 0x00 && next < 0x80) {
+          return true;
+        } else {
+          return false;
         }
-      }
-    }
-
-    return false;
-  },
-  /**
-   * UTF-16BE (big-endian)
-   *
-   * RFC 2781 4.3 Interpreting text labelled as UTF-16
-   * Text labelled "UTF-16BE" can always be interpreted as being big-endian
-   *  when BOM does not founds (SHOULD)
-   *
-   * @link http://www.ietf.org/rfc/rfc2781.txt
-   * @private
-   * @ignore
-   */
-  isUTF16BE: function(data) {
-    var i = 0;
-    var len = data && data.length;
-    var pos = null;
-    var b1, b2, b;
-
-    if (len < 2) {
-      if (data[0] > 0xFF) {
-        return false;
-      }
-    } else {
-      b1 = data[0];
-      b2 = data[1];
-      if (b1 === 0xFE && // BOM
-          b2 === 0xFF) {
-        return true;
-      }
-
-      for (; i < len; i++) {
-        if (data[i] === 0x00) {
-          pos = i;
-          break;
-        } else if (data[i] > 0xFF) {
+      } else if (prev !== void 0) {
+        if (prev > 0x00 && prev < 0x80) {
+          return true;
+        } else {
           return false;
         }
       }
-
-      if (pos === null) {
-        return false; // Non ASCII
-      }
-
-      b = data[pos + 1];
-      if (b !== void 0 && b < 0x80) {
-        return true;
-      }
     }
+  }
 
-    return false;
-  },
-  /**
-   * UTF-16LE (little-endian)
-   *
-   * @see isUTF16BE
-   * @private
-   * @ignore
-   */
-  isUTF16LE: function(data) {
-    var i = 0;
-    var len = data && data.length;
-    var pos = null;
-    var b1, b2, b;
+  return false;
+}
 
-    if (len < 2) {
-      if (data[0] > 0xFF) {
-        return false;
-      }
-    } else {
-      b1 = data[0];
-      b2 = data[1];
-      if (b1 === 0xFF && // BOM
-          b2 === 0xFE) {
-        return true;
-      }
+/**
+ * UTF-16BE (big-endian)
+ *
+ * RFC 2781 4.3 Interpreting text labelled as UTF-16
+ * Text labelled "UTF-16BE" can always be interpreted as being big-endian
+ *  when BOM does not founds (SHOULD)
+ *
+ * @link http://www.ietf.org/rfc/rfc2781.txt
+ * @private
+ * @ignore
+ */
+function isUTF16BE(data) {
+  var i = 0;
+  var len = data && data.length;
+  var pos = null;
+  var b1, b2, b;
 
-      for (; i < len; i++) {
-        if (data[i] === 0x00) {
-          pos = i;
-          break;
-        } else if (data[i] > 0xFF) {
-          return false;
-        }
-      }
-
-      if (pos === null) {
-        return false; // Non ASCII
-      }
-
-      b = data[pos - 1];
-      if (b !== void 0 && b < 0x80) {
-        return true;
-      }
+  if (len < 2) {
+    if (data[0] > 0xFF) {
+      return false;
     }
-
-    return false;
-  },
-  /**
-   * UTF-32
-   *
-   * Unicode 3.2.0: Unicode Standard Annex #19
-   *
-   * @link http://www.iana.org/assignments/charset-reg/UTF-32
-   * @link http://www.unicode.org/reports/tr19/tr19-9.html
-   * @private
-   * @ignore
-   */
-  isUTF32: function(data) {
-    var i = 0;
-    var len = data && data.length;
-    var pos = null;
-    var b1, b2, b3, b4, next;
-
-    if (len < 4) {
-      for (; i < len; i++) {
-        if (data[i] > 0xFF) {
-          return false;
-        }
-      }
-    } else {
-      b1 = data[0];
-      b2 = data[1];
-      b3 = data[2];
-      b4 = data[3];
-      if (b1 === 0x00 && b2 === 0x00 && // BOM (big-endian)
-          b3 === 0xFE && b4 === 0xFF) {
-        return true;
-      }
-
-      if (b1 === 0xFF && b2 === 0xFE && // BOM (little-endian)
-          b3 === 0x00 && b4 === 0x00) {
-        return true;
-      }
-
-      for (; i < len; i++) {
-        if (data[i] === 0x00) {
-          pos = i;
-          break;
-        } else if (data[i] > 0xFF) {
-          return false;
-        }
-      }
-
-      if (pos === null) {
-        return false; // Non ASCII (omit)
-      }
-
-      // Must be (BE)
-      next = [
-        data[pos + 0], data[pos + 1],
-        data[pos + 2], data[pos + 3]
-      ];
-      if (next[0] !== void 0 && next[1] !== void 0 &&
-          next[2] !== void 0 && next[3] !== void 0
-      ) {
-        if (next[0] === 0x00 && next[1] === 0x00) {
-          if (next[2] === 0x00) {
-            return (next[3] >= 0x09 && next[3] <= 0x7F);
-          }
-          if (next[2] > 0x00 && next[2] < 0xFF) {
-            return (next[3] > 0x00 && next[3] <= 0xFF);
-          }
-        }
-      }
+  } else {
+    b1 = data[0];
+    b2 = data[1];
+    if (b1 === 0xFE && // BOM
+        b2 === 0xFF) {
+      return true;
     }
-
-    return false;
-  },
-  /**
-   * JavaScript Unicode array
-   *
-   * @private
-   * @ignore
-   */
-  isUNICODE: function(data) {
-    var i = 0;
-    var len = data && data.length;
-    var c;
 
     for (; i < len; i++) {
-      c = data[i];
-      if (c < 0 || c > 0x10FFFF) {
+      if (data[i] === 0x00) {
+        pos = i;
+        break;
+      } else if (data[i] > 0xFF) {
         return false;
       }
     }
 
-    return true;
-  },
-  /**
-   * JIS to SJIS
-   *
-   * @private
-   * @ignore
-   */
-  JISToSJIS: function(data) {
-    var results = [];
-    var index = 0;
-    var len = data && data.length;
-    var b1, b2;
+    if (pos === null) {
+      return false; // Non ASCII
+    }
+
+    b = data[pos + 1];
+    if (b !== void 0 && b < 0x80) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * UTF-16LE (little-endian)
+ *
+ * @see isUTF16BE
+ * @private
+ * @ignore
+ */
+function isUTF16LE(data) {
+  var i = 0;
+  var len = data && data.length;
+  var pos = null;
+  var b1, b2, b;
+
+  if (len < 2) {
+    if (data[0] > 0xFF) {
+      return false;
+    }
+  } else {
+    b1 = data[0];
+    b2 = data[1];
+    if (b1 === 0xFF && // BOM
+        b2 === 0xFE) {
+      return true;
+    }
 
     for (; i < len; i++) {
-      // escape sequence
-      while (data[i] === 0x1B) {
-        if ((data[i + 1] === 0x24 && data[i + 2] === 0x42) ||
-            (data[i + 1] === 0x24 && data[i + 2] === 0x40)) {
-          index = 1;
-        } else if ((data[i + 1] === 0x28 && data[i + 2] === 0x49)) {
-          index = 2;
-        } else {
-          index = 0;
-        }
-
-        i += 3;
-        if (data[i] === void 0) {
-          return results;
-        }
-      }
-
-      if (index === 1) {
-        b1 = data[i];
-        b2 = data[++i];
-        if (b1 & 0x01) {
-          b1 >>= 1;
-          if (b1 < 0x2F) {
-            b1 += 0x71;
-          } else {
-            b1 -= 0x4F;
-          }
-          if (b2 > 0x5F) {
-            b2 += 0x20;
-          } else {
-            b2 += 0x1F;
-          }
-        } else {
-          b1 >>= 1;
-          if (b1 <= 0x2F) {
-            b1 += 0x70;
-          } else {
-            b1 -= 0x50;
-          }
-          b2 += 0x7E;
-        }
-        results[results.length] = b1 & 0xFF;
-        results[results.length] = b2 & 0xFF;
-      } else if (index === 2) {
-        results[results.length] = data[i] + 0x80 & 0xFF;
-      } else {
-        results[results.length] = data[i] & 0xFF;
+      if (data[i] === 0x00) {
+        pos = i;
+        break;
+      } else if (data[i] > 0xFF) {
+        return false;
       }
     }
 
-    return results;
-  },
-  /**
-   * JIS to EUCJP
-   *
-   * @private
-   * @ignore
-   */
-  JISToEUCJP: function(data) {
-    var results = [];
-    var index = 0;
-    var len = data && data.length;
-    var i = 0;
+    if (pos === null) {
+      return false; // Non ASCII
+    }
+
+    b = data[pos - 1];
+    if (b !== void 0 && b < 0x80) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * UTF-32
+ *
+ * Unicode 3.2.0: Unicode Standard Annex #19
+ *
+ * @link http://www.iana.org/assignments/charset-reg/UTF-32
+ * @link http://www.unicode.org/reports/tr19/tr19-9.html
+ * @private
+ * @ignore
+ */
+function isUTF32(data) {
+  var i = 0;
+  var len = data && data.length;
+  var pos = null;
+  var b1, b2, b3, b4, next;
+
+  if (len < 4) {
+    for (; i < len; i++) {
+      if (data[i] > 0xFF) {
+        return false;
+      }
+    }
+  } else {
+    b1 = data[0];
+    b2 = data[1];
+    b3 = data[2];
+    b4 = data[3];
+    if (b1 === 0x00 && b2 === 0x00 && // BOM (big-endian)
+        b3 === 0xFE && b4 === 0xFF) {
+      return true;
+    }
+
+    if (b1 === 0xFF && b2 === 0xFE && // BOM (little-endian)
+        b3 === 0x00 && b4 === 0x00) {
+      return true;
+    }
 
     for (; i < len; i++) {
-
-      // escape sequence
-      while (data[i] === 0x1B) {
-        if ((data[i + 1] === 0x24 && data[i + 2] === 0x42) ||
-            (data[i + 1] === 0x24 && data[i + 2] === 0x40)) {
-          index = 1;
-        } else if ((data[i + 1] === 0x28 && data[i + 2] === 0x49)) {
-          index = 2;
-        } else {
-          index = 0;
-        }
-
-        i += 3;
-        if (data[i] === void 0) {
-          return results;
-        }
-      }
-
-      if (index === 1) {
-        results[results.length] = data[i] + 0x80 & 0xFF;
-        results[results.length] = data[++i] + 0x80 & 0xFF;
-      } else if (index === 2) {
-        results[results.length] = 0x8E;
-        results[results.length] = data[i] + 0x80 & 0xFF;
-      } else {
-        results[results.length] = data[i] & 0xFF;
+      if (data[i] === 0x00) {
+        pos = i;
+        break;
+      } else if (data[i] > 0xFF) {
+        return false;
       }
     }
 
-    return results;
-  },
-  /**
-   * SJIS to JIS
-   *
-   * @private
-   * @ignore
-   */
-  SJISToJIS: function(data) {
-    var results = [];
-    var index = 0;
-    var len = data && data.length;
-    var i = 0;
-    var b1, b2;
+    if (pos === null) {
+      return false; // Non ASCII (omit)
+    }
 
-    var esc = [
-      0x1B, 0x28, 0x42,
-      0x1B, 0x24, 0x42,
-      0x1B, 0x28, 0x49
+    // Must be (BE)
+    next = [
+      data[pos + 0], data[pos + 1],
+      data[pos + 2], data[pos + 3]
     ];
+    if (next[0] !== void 0 && next[1] !== void 0 &&
+        next[2] !== void 0 && next[3] !== void 0
+    ) {
+      if (next[0] === 0x00 && next[1] === 0x00) {
+        if (next[2] === 0x00) {
+          return (next[3] >= 0x09 && next[3] <= 0x7F);
+        }
+        if (next[2] > 0x00 && next[2] < 0xFF) {
+          return (next[3] > 0x00 && next[3] <= 0xFF);
+        }
+      }
+    }
+  }
 
-    for (; i < len; i++) {
-      b1 = data[i];
-      if (b1 >= 0xA1 && b1 <= 0xDF) {
-        if (index !== 2) {
-          index = 2;
-          results[results.length] = esc[6];
-          results[results.length] = esc[7];
-          results[results.length] = esc[8];
-        }
-        results[results.length] = b1 - 0x80 & 0xFF;
-      } else if (b1 >= 0x80) {
-        if (index !== 1) {
-          index = 1;
-          results[results.length] = esc[3];
-          results[results.length] = esc[4];
-          results[results.length] = esc[5];
-        }
+  return false;
+}
 
-        b1 <<= 1;
-        b2 = data[++i];
-        if (b2 < 0x9F) {
-          if (b1 < 0x13F) {
-            b1 -= 0xE1;
-          } else {
-            b1 -= 0x61;
-          }
-          if (b2 > 0x7E) {
-            b2 -= 0x20;
-          } else {
-            b2 -= 0x1F;
-          }
-        } else {
-          if (b1 < 0x13F) {
-            b1 -= 0xE0;
-          } else {
-            b1 -= 0x60;
-          }
-          b2 -= 0x7E;
-        }
-        results[results.length] = b1 & 0xFF;
-        results[results.length] = b2 & 0xFF;
+/**
+ * JavaScript Unicode array
+ *
+ * @private
+ * @ignore
+ */
+function isUNICODE(data) {
+  var i = 0;
+  var len = data && data.length;
+  var c;
+
+  for (; i < len; i++) {
+    c = data[i];
+    if (c < 0 || c > 0x10FFFF) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
+/**
+ * JIS to SJIS
+ *
+ * @private
+ * @ignore
+ */
+function JISToSJIS(data) {
+  var results = [];
+  var index = 0;
+  var i = 0;
+  var len = data && data.length;
+  var b1, b2;
+
+  for (; i < len; i++) {
+    // escape sequence
+    while (data[i] === 0x1B) {
+      if ((data[i + 1] === 0x24 && data[i + 2] === 0x42) ||
+          (data[i + 1] === 0x24 && data[i + 2] === 0x40)) {
+        index = 1;
+      } else if ((data[i + 1] === 0x28 && data[i + 2] === 0x49)) {
+        index = 2;
       } else {
-        if (index !== 0) {
-          index = 0;
-          results[results.length] = esc[0];
-          results[results.length] = esc[1];
-          results[results.length] = esc[2];
-        }
-        results[results.length] = b1 & 0xFF;
+        index = 0;
+      }
+
+      i += 3;
+      if (data[i] === void 0) {
+        return results;
       }
     }
 
-    if (index !== 0) {
-      results[results.length] = esc[0];
-      results[results.length] = esc[1];
-      results[results.length] = esc[2];
-    }
-
-    return results;
-  },
-  /**
-   * SJIS to EUCJP
-   *
-   * @private
-   * @ignore
-   */
-  SJISToEUCJP: function(data) {
-    var results = [];
-    var len = data && data.length;
-    var i = 0;
-    var b1, b2;
-
-    for (; i < len; i++) {
+    if (index === 1) {
       b1 = data[i];
-      if (b1 >= 0xA1 && b1 <= 0xDF) {
-        results[results.length] = 0x8E;
-        results[results.length] = b1;
-      } else if (b1 >= 0x81) {
-        b2 = data[++i];
-        b1 <<= 1;
-        if (b2 < 0x9F) {
-          if (b1 < 0x13F) {
-            b1 -= 0x61;
-          } else {
-            b1 -= 0xE1;
-          }
-
-          if (b2 > 0x7E) {
-            b2 += 0x60;
-          } else {
-            b2 += 0x61;
-          }
+      b2 = data[++i];
+      if (b1 & 0x01) {
+        b1 >>= 1;
+        if (b1 < 0x2F) {
+          b1 += 0x71;
         } else {
-          if (b1 < 0x13F) {
-            b1 -= 0x60;
-          } else {
-            b1 -= 0xE0;
-          }
-          b2 += 0x02;
+          b1 -= 0x4F;
         }
-        results[results.length] = b1 & 0xFF;
-        results[results.length] = b2 & 0xFF;
+        if (b2 > 0x5F) {
+          b2 += 0x20;
+        } else {
+          b2 += 0x1F;
+        }
       } else {
-        results[results.length] = b1 & 0xFF;
+        b1 >>= 1;
+        if (b1 <= 0x2F) {
+          b1 += 0x70;
+        } else {
+          b1 -= 0x50;
+        }
+        b2 += 0x7E;
       }
+      results[results.length] = b1 & 0xFF;
+      results[results.length] = b2 & 0xFF;
+    } else if (index === 2) {
+      results[results.length] = data[i] + 0x80 & 0xFF;
+    } else {
+      results[results.length] = data[i] & 0xFF;
     }
+  }
 
-    return results;
-  },
-  /**
-   * EUCJP to JIS
-   *
-   * @private
-   * @ignore
-   */
-  EUCJPToJIS: function(data) {
-    var results = [];
-    var index = 0;
-    var len = data && data.length;
-    var i = 0;
-    var b1, b2;
+  return results;
+}
+
+/**
+ * JIS to EUCJP
+ *
+ * @private
+ * @ignore
+ */
+function JISToEUCJP(data) {
+  var results = [];
+  var index = 0;
+  var len = data && data.length;
+  var i = 0;
+
+  for (; i < len; i++) {
 
     // escape sequence
-    var esc = [
-      0x1B, 0x28, 0x42,
-      0x1B, 0x24, 0x42,
-      0x1B, 0x28, 0x49
-    ];
-
-    for (; i < len; i++) {
-      b1 = data[i];
-      if (b1 === 0x8E) {
-        if (index !== 2) {
-          index = 2;
-          results[results.length] = esc[6];
-          results[results.length] = esc[7];
-          results[results.length] = esc[8];
-        }
-        results[results.length] = data[++i] - 0x80 & 0xFF;
-      } else if (b1 > 0x8E) {
-        if (index !== 1) {
-          index = 1;
-          results[results.length] = esc[3];
-          results[results.length] = esc[4];
-          results[results.length] = esc[5]
-        }
-        results[results.length] = b1 - 0x80 & 0xFF;
-        results[results.length] = data[++i] - 0x80 & 0xFF;
+    while (data[i] === 0x1B) {
+      if ((data[i + 1] === 0x24 && data[i + 2] === 0x42) ||
+          (data[i + 1] === 0x24 && data[i + 2] === 0x40)) {
+        index = 1;
+      } else if ((data[i + 1] === 0x28 && data[i + 2] === 0x49)) {
+        index = 2;
       } else {
-        if (index !== 0) {
-          index = 0;
-          results[results.length] = esc[0];
-          results[results.length] = esc[1];
-          results[results.length] = esc[2];
-        }
-        results[results.length] = b1 & 0xFF;
+        index = 0;
+      }
+
+      i += 3;
+      if (data[i] === void 0) {
+        return results;
       }
     }
 
-    if (index !== 0) {
-      results[results.length] = esc[0];
-      results[results.length] = esc[1];
-      results[results.length] = esc[2];
+    if (index === 1) {
+      results[results.length] = data[i] + 0x80 & 0xFF;
+      results[results.length] = data[++i] + 0x80 & 0xFF;
+    } else if (index === 2) {
+      results[results.length] = 0x8E;
+      results[results.length] = data[i] + 0x80 & 0xFF;
+    } else {
+      results[results.length] = data[i] & 0xFF;
     }
-
-    return results;
-  },
-  /**
-   * EUCJP to SJIS
-   *
-   * @private
-   * @ignore
-   */
-  EUCJPToSJIS: function(data) {
-    var results = [];
-    var len = data && data.length;
-    var i = 0;
-    var b1, b2;
-
-    for (; i < len; i++) {
-      b1 = data[i];
-      if (b1 > 0x8E) {
-        b2 = data[++i];
-        if (b1 & 0x01) {
-          b1 >>= 1;
-          if (b1 < 0x6F) {
-            b1 += 0x31;
-          } else {
-            b1 += 0x71;
-          }
-
-          if (b2 > 0xDF) {
-            b2 -= 0x60;
-          } else {
-            b2 -= 0x61;
-          }
-        } else {
-          b1 >>= 1;
-          if (b1 <= 0x6F) {
-            b1 += 0x30;
-          } else {
-            b1 += 0x70;
-          }
-          b2 -= 0x02;
-        }
-        results[results.length] = b1 & 0xFF;
-        results[results.length] = b2 & 0xFF;
-      } else if (b1 === 0x8E) {
-        results[results.length] = data[++i] & 0xFF;
-      } else {
-        results[results.length] = b1 & 0xFF;
-      }
-    }
-
-    return results;
-  },
-  /**
-   * SJIS To UTF8
-   *
-   * @private
-   * @ignore
-   */
-  SJISToUTF8: function(data) {
-    init_JIS_TO_UTF8_TABLE();
-
-    var results = [];
-    var i = 0;
-    var len = data && data.length;
-    var b, b1, b2, u2, u3, jis, utf8;
-
-    for (; i < len; i++) {
-      b = data[i];
-      if (b >= 0xA1 && b <= 0xDF) {
-        b2 = b - 0x40;
-        u2 = 0xBC | ((b2 >> 6) & 0x03);
-        u3 = 0x80 | (b2 & 0x3F);
-
-        results[results.length] = 0xEF;
-        results[results.length] = u2 & 0xFF;
-        results[results.length] = u3 & 0xFF;
-      } else if (b >= 0x80) {
-        b1 = b << 1;
-        b2 = data[++i];
-
-        if (b2 < 0x9F) {
-          if (b1 < 0x13F) {
-            b1 -= 0xE1;
-          } else {
-            b1 -= 0x61;
-          }
-
-          if (b2 > 0x7E) {
-            b2 -= 0x20;
-          } else {
-            b2 -= 0x1F;
-          }
-        } else {
-          if (b1 < 0x13F) {
-            b1 -= 0xE0;
-          } else {
-            b1 -= 0x60;
-          }
-          b2 -= 0x7E;
-        }
-
-        b1 &= 0xFF;
-        jis = (b1 << 8) + b2;
-
-        if (JIS_TO_UTF8_TABLE[jis] === void 0) {
-          results[results.length] = UTF8_UNKNOWN;
-        } else {
-          utf8 = JIS_TO_UTF8_TABLE[jis];
-
-          // patch
-          if (JIS_TO_UTF8_TABLE_PATCH[utf8] !== void 0) {
-            utf8 = JIS_TO_UTF8_TABLE_PATCH[utf8];
-          }
-
-          if (utf8 < 0xFFFF) {
-            results[results.length] = utf8 >> 8 & 0xFF;
-            results[results.length] = utf8 & 0xFF;
-          } else {
-            results[results.length] = utf8 >> 16 & 0xFF;
-            results[results.length] = utf8 >> 8 & 0xFF;
-            results[results.length] = utf8 & 0xFF;
-          }
-        }
-      } else {
-        results[results.length] = data[i] & 0xFF;
-      }
-    }
-
-    return results;
-  },
-  /**
-   * EUCJP to UTF8
-   *
-   * @private
-   * @ignore
-   */
-  EUCJPToUTF8: function(data) {
-    init_JIS_TO_UTF8_TABLE();
-
-    var results = [];
-    var i = 0;
-    var len = data && data.length;
-    var b, b2, u2, u3, jis, utf8;
-
-    for (; i < len; i++) {
-      b = data[i];
-      if (b === 0x8E) {
-        b2 = data[++i] - 0x40;
-        u2 = 0xBC | ((b2 >> 6) & 0x03);
-        u3 = 0x80 | (b2 & 0x3F);
-
-        results[results.length] = 0xEF;
-        results[results.length] = u2 & 0xFF;
-        results[results.length] = u3 & 0xFF;
-      } else if (b >= 0x80) {
-        jis = ((b - 0x80) << 8) + (data[++i] - 0x80);
-
-        if (JIS_TO_UTF8_TABLE[jis] === void 0) {
-          results[results.length] = UTF8_UNKNOWN;
-        } else {
-          utf8 = JIS_TO_UTF8_TABLE[jis];
-
-          // patch
-          if (JIS_TO_UTF8_TABLE_PATCH[utf8] !== void 0) {
-            utf8 = JIS_TO_UTF8_TABLE_PATCH[utf8];
-          }
-
-          if (utf8 < 0xFFFF) {
-            results[results.length] = utf8 >> 8 & 0xFF;
-            results[results.length] = utf8 & 0xFF;
-          } else {
-            results[results.length] = utf8 >> 16 & 0xFF;
-            results[results.length] = utf8 >>  8 & 0xFF;
-            results[results.length] = utf8 & 0xFF;
-          }
-        }
-      } else {
-        results[results.length] = data[i] & 0xFF;
-      }
-    }
-
-    return results;
-  },
-  /**
-   * JIS to UTF8
-   *
-   * @private
-   * @ignore
-   */
-  JISToUTF8: function(data) {
-    init_JIS_TO_UTF8_TABLE();
-
-    var results = [];
-    var index = 0;
-    var i = 0;
-    var len = data && data.length;
-    var b2, u2, u3, jis, utf8;
-
-    for (; i < len; i++) {
-      while (data[i] === 0x1B) {
-        if ((data[i + 1] === 0x24 && data[i + 2] === 0x42) ||
-            (data[i + 1] === 0x24 && data[i + 2] === 0x40)) {
-          index = 1;
-        } else if (data[i + 1] === 0x28 && data[i + 2] === 0x49) {
-          index = 2;
-        } else {
-          index = 0;
-        }
-
-        i += 3;
-        if (data[i] === void 0) {
-          return results;
-        }
-      }
-
-      if (index === 1) {
-        jis = (data[i] << 8) + data[++i];
-        if (JIS_TO_UTF8_TABLE[jis] === void 0) {
-          results[results.length] = UTF8_UNKNOWN;
-        } else {
-          utf8 = JIS_TO_UTF8_TABLE[jis];
-
-          // patch
-          if (JIS_TO_UTF8_TABLE_PATCH[utf8] !== void 0) {
-            utf8 = JIS_TO_UTF8_TABLE_PATCH[utf8];
-          }
-
-          if (utf8 < 0xFFFF) {
-            results[results.length] = utf8 >> 8 & 0xFF;
-            results[results.length] = utf8 & 0xFF;
-          } else {
-            results[results.length] = utf8 >> 16 & 0xFF;
-            results[results.length] = utf8 >>  8 & 0xFF;
-            results[results.length] = utf8 & 0xFF;
-          }
-        }
-      } else if (index === 2) {
-        b2 = data[i] + 0x40;
-        u2 = 0xBC | ((b2 >> 6) & 0x03);
-        u3 = 0x80 | (b2 & 0x3F);
-
-        results[results.length] = 0xEF;
-        results[results.length] = u2 & 0xFF;
-        results[results.length] = u3 & 0xFF;
-      } else {
-        results[results.length] = data[i] & 0xFF;
-      }
-    }
-
-    return results;
-  },
-  /**
-   * UTF8 to SJIS
-   *
-   * @private
-   * @ignore
-   */
-  UTF8ToSJIS: function(data) {
-    var results = [];
-    var i = 0;
-    var len = data && data.length;
-    var b, b1, b2, utf8, jis;
-
-    for (; i < len; i++) {
-      b = data[i];
-      if (b >= 0x80) {
-        if (b <= 0xDF) {
-          // 2 bytes.
-          utf8 = (b << 8) + data[++i];
-        } else {
-          // 3 bytes.
-          utf8 = (b << 16) +
-                 (data[++i] << 8) +
-                 (data[++i] & 0xFF);
-        }
-
-        if (UTF8_TO_JIS_TABLE[utf8] === void 0 &&
-            UTF8_TO_JIS_TABLE_PATCH[utf8] === void 0) {
-          results[results.length] = UTF8_UNKNOWN;
-        } else {
-          jis = UTF8_TO_JIS_TABLE[utf8];
-          if (jis < 0xFF) {
-            results[results.length] = jis + 0x80;
-          } else {
-            // patch
-            if (UTF8_TO_JIS_TABLE_PATCH[utf8] !== void 0 &&
-                UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]] >= 0xFF) {
-              jis = UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]];
-            }
-
-            b1 = jis >> 8;
-            b2 = jis & 0xFF;
-            if (b1 & 0x01) {
-              b1 >>= 1;
-              if (b1 < 0x2F) {
-                b1 += 0x71;
-              } else {
-                b1 -= 0x4F;
-              }
-
-              if (b2 > 0x5F) {
-                b2 += 0x20;
-              } else {
-                b2 += 0x1F;
-              }
-            } else {
-              b1 >>= 1;
-              if (b1 <= 0x2F) {
-                b1 += 0x70;
-              } else {
-                b1 -= 0x50;
-              }
-              b2 += 0x7E;
-            }
-            results[results.length] = b1 & 0xFF;
-            results[results.length] = b2 & 0xFF;
-          }
-        }
-      } else {
-        results[results.length] = data[i] & 0xFF;
-      }
-    }
-
-    return results;
-  },
-  /**
-   * UTF8 to EUCJP
-   *
-   * @private
-   * @ignore
-   */
-  UTF8ToEUCJP: function(data) {
-    var results = [];
-    var i = 0;
-    var len = data && data.length;
-    var b, utf8, jis;
-
-    for (; i < len; i++) {
-      b = data[i];
-      if (b >= 0x80) {
-        if (b <= 0xDF) {
-          utf8 = (data[i++] << 8) + data[i];
-        } else {
-          utf8 = (data[i++] << 16) +
-                 (data[i++] << 8) +
-                 (data[i] & 0xFF);
-        }
-
-        if (UTF8_TO_JIS_TABLE[utf8] === void 0 &&
-            UTF8_TO_JIS_TABLE_PATCH[utf8] === void 0) {
-          results[results.length] = UTF8_UNKNOWN;
-        } else {
-          jis = UTF8_TO_JIS_TABLE[utf8];
-          if (jis < 0xFF) {
-            results[results.length] = 0x8E;
-            results[results.length] = jis - 0x80 & 0xFF;
-          } else {
-            // patch
-            if (UTF8_TO_JIS_TABLE_PATCH[utf8] !== void 0 &&
-                UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]] >= 0xFF) {
-              jis = UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]];
-            }
-
-            results[results.length] = (jis >> 8) - 0x80 & 0xFF;
-            results[results.length] = (jis & 0xFF) - 0x80 & 0xFF;
-          }
-        }
-      } else {
-        results[results.length] = data[i] & 0xFF;
-      }
-    }
-
-    return results;
-  },
-  /**
-   * UTF8 to JIS
-   *
-   * @private
-   * @ignore
-   */
-  UTF8ToJIS: function(data) {
-    var results = [];
-    var index = 0;
-    var len = data && data.length;
-    var i = 0;
-    var b, utf8, jis;
-    var esc = [
-      0x1B, 0x28, 0x42,
-      0x1B, 0x24, 0x42,
-      0x1B, 0x28, 0x49
-    ];
-
-    for (; i < len; i++) {
-      b = data[i];
-      if (b >= 0x80) {
-        if (b <= 0xDF) {
-          utf8 = (data[i] << 8) + data[++i];
-        } else {
-          utf8 = (data[i] << 16) + (data[++i] << 8) + data[++i];
-        }
-
-        if (UTF8_TO_JIS_TABLE[utf8] === void 0 &&
-            UTF8_TO_JIS_TABLE_PATCH[utf8] === void 0) {
-          if (index !== 0) {
-            index = 0;
-            results[results.length] = esc[0];
-            results[results.length] = esc[1];
-            results[results.length] = esc[2];
-          }
-          results[results.length] = UTF8_UNKNOWN;
-        } else {
-          jis = UTF8_TO_JIS_TABLE[utf8];
-          if (jis < 0xFF) {
-            if (index !== 2) {
-              index = 2;
-              results[results.length] = esc[6];
-              results[results.length] = esc[7];
-              results[results.length] = esc[8];
-            }
-            results[results.length] = jis & 0xFF;
-          } else {
-            // patch
-            if (UTF8_TO_JIS_TABLE_PATCH[utf8] !== void 0 &&
-                UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]] >= 0xFF) {
-              jis = UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]];
-            }
-
-            if (index !== 1) {
-              index = 1;
-              results[results.length] = esc[3];
-              results[results.length] = esc[4];
-              results[results.length] = esc[5];
-            }
-            results[results.length] = jis >> 8 & 0xFF;
-            results[results.length] = jis & 0xFF;
-          }
-        }
-      } else {
-        if (index !== 0) {
-          index = 0;
-          results[results.length] = esc[0];
-          results[results.length] = esc[1];
-          results[results.length] = esc[2];
-        }
-        results[results.length] = data[i] & 0xFF;
-      }
-    }
-
-    if (index !== 0) {
-      results[results.length] = esc[0];
-      results[results.length] = esc[1];
-      results[results.length] = esc[2];
-    }
-
-    return results;
-  },
-  /**
-   * UTF-16 (JavaScript Unicode array) to UTF-8
-   *
-   * @private
-   * @ignore
-   * based: Pot.js (UTF8.js)
-   */
-  UNICODEToUTF8: function(data) {
-    var results = [];
-    var i = 0;
-    var len = data && data.length;
-    var c, c2;
-
-    for (; i < len; i++) {
-      c = data[i];
-      if (c < 0x80) {
-        results[results.length] = c;
-      } else if (c < 0x800) {
-        results[results.length] = 0xC0 | ((c >> 6) & 0x1F);
-        results[results.length] = 0x80 | (c & 0x3F);
-      } else if (c < 0x10000) {
-        results[results.length] = 0xE0 | ((c >> 12) & 0xF);
-        results[results.length] = 0x80 | ((c >> 6) & 0x3F);
-        results[results.length] = 0x80 | (c & 0x3F);
-      } else {
-        results[results.length] = 0xF0 | ((c >> 18) & 0xF);
-        results[results.length] = 0x80 | ((c >> 12) & 0x3F);
-        results[results.length] = 0x80 | ((c >> 6) & 0x3F);
-        results[results.length] = 0x80 | (c & 0x3F);
-      }
-    }
-
-    return results;
-  },
-  /**
-   * UTF-8 to UTF-16 (JavaScript Unicode array)
-   *
-   * @private
-   * @ignore
-   * based: Pot.js (UTF8.js)
-   */
-  UTF8ToUNICODE: function(data) {
-    var results = [];
-    var i = 0;
-    var len = data && data.length;
-    var n, c, c2, c3, c4;
-
-    while (i < len) {
-      c = data[i++];
-      n = c >> 4;
-      if (n >= 0 && n <= 7) {
-        // 0xxx xxxx
-        results[results.length] = c;
-      } else if (n === 12 || n === 13) {
-        // 110x xxxx
-        // 10xx xxxx
-        c2 = data[i++];
-        results[results.length] = ((c & 0x1F) << 6) | (c2 & 0x3F);
-      } else if (n === 14) {
-        // 1110 xxxx
-        // 10xx xxxx
-        // 10xx xxxx
-        c2 = data[i++];
-        c3 = data[i++];
-        results[results.length] = ((c & 0x0F) << 12) |
-                                  ((c2 & 0x3F) << 6) |
-                                   (c3 & 0x3F);
-      } else if (i + 2 < len) {
-        // 1111 0xxx ...
-        c2 = data[i++];
-        c3 = data[i++];
-        c4 = data[i++];
-        results[results.length] = ((c & 0x7) << 18)   |
-                                  ((c2 & 0x3F) << 12) |
-                                  ((c3 & 0x3F) << 6)  |
-                                   (c4 & 0x3F);
-      }
-    }
-
-    return results;
-  },
-  /**
-   * UTF-16 (JavaScript Unicode array) to JIS
-   *
-   * @private
-   * @ignore
-   */
-  UNICODEToJIS: function(data) {
-    return Encoding.UTF8ToJIS(Encoding.UNICODEToUTF8(data));
-  },
-  /**
-   * JIS to UTF-16 (JavaScript Unicode array)
-   *
-   * @private
-   * @ignore
-   */
-  JISToUNICODE: function(data) {
-    return Encoding.UTF8ToUNICODE(Encoding.JISToUTF8(data));
-  },
-  /**
-   * UTF-16 (JavaScript Unicode array) to EUCJP
-   *
-   * @private
-   * @ignore
-   */
-  UNICODEToEUCJP: function(data) {
-    return Encoding.UTF8ToEUCJP(Encoding.UNICODEToUTF8(data));
-  },
-  /**
-   * EUCJP to UTF-16 (JavaScript Unicode array)
-   *
-   * @private
-   * @ignore
-   */
-  EUCJPToUNICODE: function(data) {
-    return Encoding.UTF8ToUNICODE(Encoding.EUCJPToUTF8(data));
-  },
-  /**
-   * UTF-16 (JavaScript Unicode array) to SJIS
-   *
-   * @private
-   * @ignore
-   */
-  UNICODEToSJIS: function(data) {
-    return Encoding.UTF8ToSJIS(Encoding.UNICODEToUTF8(data));
-  },
-  /**
-   * SJIS to UTF-16 (JavaScript Unicode array)
-   *
-   * @private
-   * @ignore
-   */
-  SJISToUNICODE: function(data) {
-    return Encoding.UTF8ToUNICODE(Encoding.SJISToUTF8(data));
   }
-};
+
+  return results;
+}
+
+/**
+ * SJIS to JIS
+ *
+ * @private
+ * @ignore
+ */
+function SJISToJIS(data) {
+  var results = [];
+  var index = 0;
+  var len = data && data.length;
+  var i = 0;
+  var b1, b2;
+
+  var esc = [
+    0x1B, 0x28, 0x42,
+    0x1B, 0x24, 0x42,
+    0x1B, 0x28, 0x49
+  ];
+
+  for (; i < len; i++) {
+    b1 = data[i];
+    if (b1 >= 0xA1 && b1 <= 0xDF) {
+      if (index !== 2) {
+        index = 2;
+        results[results.length] = esc[6];
+        results[results.length] = esc[7];
+        results[results.length] = esc[8];
+      }
+      results[results.length] = b1 - 0x80 & 0xFF;
+    } else if (b1 >= 0x80) {
+      if (index !== 1) {
+        index = 1;
+        results[results.length] = esc[3];
+        results[results.length] = esc[4];
+        results[results.length] = esc[5];
+      }
+
+      b1 <<= 1;
+      b2 = data[++i];
+      if (b2 < 0x9F) {
+        if (b1 < 0x13F) {
+          b1 -= 0xE1;
+        } else {
+          b1 -= 0x61;
+        }
+        if (b2 > 0x7E) {
+          b2 -= 0x20;
+        } else {
+          b2 -= 0x1F;
+        }
+      } else {
+        if (b1 < 0x13F) {
+          b1 -= 0xE0;
+        } else {
+          b1 -= 0x60;
+        }
+        b2 -= 0x7E;
+      }
+      results[results.length] = b1 & 0xFF;
+      results[results.length] = b2 & 0xFF;
+    } else {
+      if (index !== 0) {
+        index = 0;
+        results[results.length] = esc[0];
+        results[results.length] = esc[1];
+        results[results.length] = esc[2];
+      }
+      results[results.length] = b1 & 0xFF;
+    }
+  }
+
+  if (index !== 0) {
+    results[results.length] = esc[0];
+    results[results.length] = esc[1];
+    results[results.length] = esc[2];
+  }
+
+  return results;
+}
+
+/**
+ * SJIS to EUCJP
+ *
+ * @private
+ * @ignore
+ */
+function SJISToEUCJP(data) {
+  var results = [];
+  var len = data && data.length;
+  var i = 0;
+  var b1, b2;
+
+  for (; i < len; i++) {
+    b1 = data[i];
+    if (b1 >= 0xA1 && b1 <= 0xDF) {
+      results[results.length] = 0x8E;
+      results[results.length] = b1;
+    } else if (b1 >= 0x81) {
+      b2 = data[++i];
+      b1 <<= 1;
+      if (b2 < 0x9F) {
+        if (b1 < 0x13F) {
+          b1 -= 0x61;
+        } else {
+          b1 -= 0xE1;
+        }
+
+        if (b2 > 0x7E) {
+          b2 += 0x60;
+        } else {
+          b2 += 0x61;
+        }
+      } else {
+        if (b1 < 0x13F) {
+          b1 -= 0x60;
+        } else {
+          b1 -= 0xE0;
+        }
+        b2 += 0x02;
+      }
+      results[results.length] = b1 & 0xFF;
+      results[results.length] = b2 & 0xFF;
+    } else {
+      results[results.length] = b1 & 0xFF;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * EUCJP to JIS
+ *
+ * @private
+ * @ignore
+ */
+function EUCJPToJIS(data) {
+  var results = [];
+  var index = 0;
+  var len = data && data.length;
+  var i = 0;
+  var b1, b2;
+
+  // escape sequence
+  var esc = [
+    0x1B, 0x28, 0x42,
+    0x1B, 0x24, 0x42,
+    0x1B, 0x28, 0x49
+  ];
+
+  for (; i < len; i++) {
+    b1 = data[i];
+    if (b1 === 0x8E) {
+      if (index !== 2) {
+        index = 2;
+        results[results.length] = esc[6];
+        results[results.length] = esc[7];
+        results[results.length] = esc[8];
+      }
+      results[results.length] = data[++i] - 0x80 & 0xFF;
+    } else if (b1 > 0x8E) {
+      if (index !== 1) {
+        index = 1;
+        results[results.length] = esc[3];
+        results[results.length] = esc[4];
+        results[results.length] = esc[5]
+      }
+      results[results.length] = b1 - 0x80 & 0xFF;
+      results[results.length] = data[++i] - 0x80 & 0xFF;
+    } else {
+      if (index !== 0) {
+        index = 0;
+        results[results.length] = esc[0];
+        results[results.length] = esc[1];
+        results[results.length] = esc[2];
+      }
+      results[results.length] = b1 & 0xFF;
+    }
+  }
+
+  if (index !== 0) {
+    results[results.length] = esc[0];
+    results[results.length] = esc[1];
+    results[results.length] = esc[2];
+  }
+
+  return results;
+}
+
+/**
+ * EUCJP to SJIS
+ *
+ * @private
+ * @ignore
+ */
+function EUCJPToSJIS(data) {
+  var results = [];
+  var len = data && data.length;
+  var i = 0;
+  var b1, b2;
+
+  for (; i < len; i++) {
+    b1 = data[i];
+    if (b1 > 0x8E) {
+      b2 = data[++i];
+      if (b1 & 0x01) {
+        b1 >>= 1;
+        if (b1 < 0x6F) {
+          b1 += 0x31;
+        } else {
+          b1 += 0x71;
+        }
+
+        if (b2 > 0xDF) {
+          b2 -= 0x60;
+        } else {
+          b2 -= 0x61;
+        }
+      } else {
+        b1 >>= 1;
+        if (b1 <= 0x6F) {
+          b1 += 0x30;
+        } else {
+          b1 += 0x70;
+        }
+        b2 -= 0x02;
+      }
+      results[results.length] = b1 & 0xFF;
+      results[results.length] = b2 & 0xFF;
+    } else if (b1 === 0x8E) {
+      results[results.length] = data[++i] & 0xFF;
+    } else {
+      results[results.length] = b1 & 0xFF;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * SJIS To UTF-8
+ *
+ * @private
+ * @ignore
+ */
+function SJISToUTF8(data) {
+  init_JIS_TO_UTF8_TABLE();
+
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var b, b1, b2, u2, u3, jis, utf8;
+
+  for (; i < len; i++) {
+    b = data[i];
+    if (b >= 0xA1 && b <= 0xDF) {
+      b2 = b - 0x40;
+      u2 = 0xBC | ((b2 >> 6) & 0x03);
+      u3 = 0x80 | (b2 & 0x3F);
+
+      results[results.length] = 0xEF;
+      results[results.length] = u2 & 0xFF;
+      results[results.length] = u3 & 0xFF;
+    } else if (b >= 0x80) {
+      b1 = b << 1;
+      b2 = data[++i];
+
+      if (b2 < 0x9F) {
+        if (b1 < 0x13F) {
+          b1 -= 0xE1;
+        } else {
+          b1 -= 0x61;
+        }
+
+        if (b2 > 0x7E) {
+          b2 -= 0x20;
+        } else {
+          b2 -= 0x1F;
+        }
+      } else {
+        if (b1 < 0x13F) {
+          b1 -= 0xE0;
+        } else {
+          b1 -= 0x60;
+        }
+        b2 -= 0x7E;
+      }
+
+      b1 &= 0xFF;
+      jis = (b1 << 8) + b2;
+
+      if (JIS_TO_UTF8_TABLE[jis] === void 0) {
+        results[results.length] = UTF8_UNKNOWN;
+      } else {
+        utf8 = JIS_TO_UTF8_TABLE[jis];
+
+        // patch
+        if (JIS_TO_UTF8_TABLE_PATCH[utf8] !== void 0) {
+          utf8 = JIS_TO_UTF8_TABLE_PATCH[utf8];
+        }
+
+        if (utf8 < 0xFFFF) {
+          results[results.length] = utf8 >> 8 & 0xFF;
+          results[results.length] = utf8 & 0xFF;
+        } else {
+          results[results.length] = utf8 >> 16 & 0xFF;
+          results[results.length] = utf8 >> 8 & 0xFF;
+          results[results.length] = utf8 & 0xFF;
+        }
+      }
+    } else {
+      results[results.length] = data[i] & 0xFF;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * EUC-JP to UTF-8
+ *
+ * @private
+ * @ignore
+ */
+function EUCJPToUTF8(data) {
+  init_JIS_TO_UTF8_TABLE();
+
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var b, b2, u2, u3, jis, utf8;
+
+  for (; i < len; i++) {
+    b = data[i];
+    if (b === 0x8E) {
+      b2 = data[++i] - 0x40;
+      u2 = 0xBC | ((b2 >> 6) & 0x03);
+      u3 = 0x80 | (b2 & 0x3F);
+
+      results[results.length] = 0xEF;
+      results[results.length] = u2 & 0xFF;
+      results[results.length] = u3 & 0xFF;
+    } else if (b >= 0x80) {
+      jis = ((b - 0x80) << 8) + (data[++i] - 0x80);
+
+      if (JIS_TO_UTF8_TABLE[jis] === void 0) {
+        results[results.length] = UTF8_UNKNOWN;
+      } else {
+        utf8 = JIS_TO_UTF8_TABLE[jis];
+
+        // patch
+        if (JIS_TO_UTF8_TABLE_PATCH[utf8] !== void 0) {
+          utf8 = JIS_TO_UTF8_TABLE_PATCH[utf8];
+        }
+
+        if (utf8 < 0xFFFF) {
+          results[results.length] = utf8 >> 8 & 0xFF;
+          results[results.length] = utf8 & 0xFF;
+        } else {
+          results[results.length] = utf8 >> 16 & 0xFF;
+          results[results.length] = utf8 >>  8 & 0xFF;
+          results[results.length] = utf8 & 0xFF;
+        }
+      }
+    } else {
+      results[results.length] = data[i] & 0xFF;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * JIS to UTF-8
+ *
+ * @private
+ * @ignore
+ */
+function JISToUTF8(data) {
+  init_JIS_TO_UTF8_TABLE();
+
+  var results = [];
+  var index = 0;
+  var i = 0;
+  var len = data && data.length;
+  var b2, u2, u3, jis, utf8;
+
+  for (; i < len; i++) {
+    while (data[i] === 0x1B) {
+      if ((data[i + 1] === 0x24 && data[i + 2] === 0x42) ||
+          (data[i + 1] === 0x24 && data[i + 2] === 0x40)) {
+        index = 1;
+      } else if (data[i + 1] === 0x28 && data[i + 2] === 0x49) {
+        index = 2;
+      } else {
+        index = 0;
+      }
+
+      i += 3;
+      if (data[i] === void 0) {
+        return results;
+      }
+    }
+
+    if (index === 1) {
+      jis = (data[i] << 8) + data[++i];
+      if (JIS_TO_UTF8_TABLE[jis] === void 0) {
+        results[results.length] = UTF8_UNKNOWN;
+      } else {
+        utf8 = JIS_TO_UTF8_TABLE[jis];
+
+        // patch
+        if (JIS_TO_UTF8_TABLE_PATCH[utf8] !== void 0) {
+          utf8 = JIS_TO_UTF8_TABLE_PATCH[utf8];
+        }
+
+        if (utf8 < 0xFFFF) {
+          results[results.length] = utf8 >> 8 & 0xFF;
+          results[results.length] = utf8 & 0xFF;
+        } else {
+          results[results.length] = utf8 >> 16 & 0xFF;
+          results[results.length] = utf8 >>  8 & 0xFF;
+          results[results.length] = utf8 & 0xFF;
+        }
+      }
+    } else if (index === 2) {
+      b2 = data[i] + 0x40;
+      u2 = 0xBC | ((b2 >> 6) & 0x03);
+      u3 = 0x80 | (b2 & 0x3F);
+
+      results[results.length] = 0xEF;
+      results[results.length] = u2 & 0xFF;
+      results[results.length] = u3 & 0xFF;
+    } else {
+      results[results.length] = data[i] & 0xFF;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-8 to SJIS
+ *
+ * @private
+ * @ignore
+ */
+function UTF8ToSJIS(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var b, b1, b2, utf8, jis;
+
+  for (; i < len; i++) {
+    b = data[i];
+    if (b >= 0x80) {
+      if (b <= 0xDF) {
+        // 2 bytes.
+        utf8 = (b << 8) + data[++i];
+      } else {
+        // 3 bytes.
+        utf8 = (b << 16) +
+               (data[++i] << 8) +
+               (data[++i] & 0xFF);
+      }
+
+      if (UTF8_TO_JIS_TABLE[utf8] === void 0 &&
+          UTF8_TO_JIS_TABLE_PATCH[utf8] === void 0) {
+        results[results.length] = UTF8_UNKNOWN;
+      } else {
+        jis = UTF8_TO_JIS_TABLE[utf8];
+        if (jis < 0xFF) {
+          results[results.length] = jis + 0x80;
+        } else {
+          // patch
+          if (UTF8_TO_JIS_TABLE_PATCH[utf8] !== void 0 &&
+              UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]] >= 0xFF) {
+            jis = UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]];
+          }
+
+          b1 = jis >> 8;
+          b2 = jis & 0xFF;
+          if (b1 & 0x01) {
+            b1 >>= 1;
+            if (b1 < 0x2F) {
+              b1 += 0x71;
+            } else {
+              b1 -= 0x4F;
+            }
+
+            if (b2 > 0x5F) {
+              b2 += 0x20;
+            } else {
+              b2 += 0x1F;
+            }
+          } else {
+            b1 >>= 1;
+            if (b1 <= 0x2F) {
+              b1 += 0x70;
+            } else {
+              b1 -= 0x50;
+            }
+            b2 += 0x7E;
+          }
+          results[results.length] = b1 & 0xFF;
+          results[results.length] = b2 & 0xFF;
+        }
+      }
+    } else {
+      results[results.length] = data[i] & 0xFF;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-8 to EUC-JP
+ *
+ * @private
+ * @ignore
+ */
+function UTF8ToEUCJP(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var b, utf8, jis;
+
+  for (; i < len; i++) {
+    b = data[i];
+    if (b >= 0x80) {
+      if (b <= 0xDF) {
+        utf8 = (data[i++] << 8) + data[i];
+      } else {
+        utf8 = (data[i++] << 16) +
+               (data[i++] << 8) +
+               (data[i] & 0xFF);
+      }
+
+      if (UTF8_TO_JIS_TABLE[utf8] === void 0 &&
+          UTF8_TO_JIS_TABLE_PATCH[utf8] === void 0) {
+        results[results.length] = UTF8_UNKNOWN;
+      } else {
+        jis = UTF8_TO_JIS_TABLE[utf8];
+        if (jis < 0xFF) {
+          results[results.length] = 0x8E;
+          results[results.length] = jis - 0x80 & 0xFF;
+        } else {
+          // patch
+          if (UTF8_TO_JIS_TABLE_PATCH[utf8] !== void 0 &&
+              UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]] >= 0xFF) {
+            jis = UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]];
+          }
+
+          results[results.length] = (jis >> 8) - 0x80 & 0xFF;
+          results[results.length] = (jis & 0xFF) - 0x80 & 0xFF;
+        }
+      }
+    } else {
+      results[results.length] = data[i] & 0xFF;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-8 to JIS
+ *
+ * @private
+ * @ignore
+ */
+function UTF8ToJIS(data) {
+  var results = [];
+  var index = 0;
+  var len = data && data.length;
+  var i = 0;
+  var b, utf8, jis;
+  var esc = [
+    0x1B, 0x28, 0x42,
+    0x1B, 0x24, 0x42,
+    0x1B, 0x28, 0x49
+  ];
+
+  for (; i < len; i++) {
+    b = data[i];
+    if (b >= 0x80) {
+      if (b <= 0xDF) {
+        utf8 = (data[i] << 8) + data[++i];
+      } else {
+        utf8 = (data[i] << 16) + (data[++i] << 8) + data[++i];
+      }
+
+      if (UTF8_TO_JIS_TABLE[utf8] === void 0 &&
+          UTF8_TO_JIS_TABLE_PATCH[utf8] === void 0) {
+        if (index !== 0) {
+          index = 0;
+          results[results.length] = esc[0];
+          results[results.length] = esc[1];
+          results[results.length] = esc[2];
+        }
+        results[results.length] = UTF8_UNKNOWN;
+      } else {
+        jis = UTF8_TO_JIS_TABLE[utf8];
+        if (jis < 0xFF) {
+          if (index !== 2) {
+            index = 2;
+            results[results.length] = esc[6];
+            results[results.length] = esc[7];
+            results[results.length] = esc[8];
+          }
+          results[results.length] = jis & 0xFF;
+        } else {
+          // patch
+          if (UTF8_TO_JIS_TABLE_PATCH[utf8] !== void 0 &&
+              UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]] >= 0xFF) {
+            jis = UTF8_TO_JIS_TABLE[UTF8_TO_JIS_TABLE_PATCH[utf8]];
+          }
+
+          if (index !== 1) {
+            index = 1;
+            results[results.length] = esc[3];
+            results[results.length] = esc[4];
+            results[results.length] = esc[5];
+          }
+          results[results.length] = jis >> 8 & 0xFF;
+          results[results.length] = jis & 0xFF;
+        }
+      }
+    } else {
+      if (index !== 0) {
+        index = 0;
+        results[results.length] = esc[0];
+        results[results.length] = esc[1];
+        results[results.length] = esc[2];
+      }
+      results[results.length] = data[i] & 0xFF;
+    }
+  }
+
+  if (index !== 0) {
+    results[results.length] = esc[0];
+    results[results.length] = esc[1];
+    results[results.length] = esc[2];
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16 (JavaScript Unicode array) to UTF-8
+ *
+ * @private
+ * @ignore
+ * based: Pot.js (UTF8.js)
+ */
+function UNICODEToUTF8(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var c, c2;
+
+  for (; i < len; i++) {
+    c = data[i];
+    if (c < 0x80) {
+      results[results.length] = c;
+    } else if (c < 0x800) {
+      results[results.length] = 0xC0 | ((c >> 6) & 0x1F);
+      results[results.length] = 0x80 | (c & 0x3F);
+    } else if (c < 0x10000) {
+      results[results.length] = 0xE0 | ((c >> 12) & 0xF);
+      results[results.length] = 0x80 | ((c >> 6) & 0x3F);
+      results[results.length] = 0x80 | (c & 0x3F);
+    } else {
+      results[results.length] = 0xF0 | ((c >> 18) & 0xF);
+      results[results.length] = 0x80 | ((c >> 12) & 0x3F);
+      results[results.length] = 0x80 | ((c >> 6) & 0x3F);
+      results[results.length] = 0x80 | (c & 0x3F);
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-8 to UTF-16 (JavaScript Unicode array)
+ *
+ * @private
+ * @ignore
+ * based: Pot.js (UTF8.js)
+ */
+function UTF8ToUNICODE(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var n, c, c2, c3, c4;
+
+  while (i < len) {
+    c = data[i++];
+    n = c >> 4;
+    if (n >= 0 && n <= 7) {
+      // 0xxx xxxx
+      results[results.length] = c;
+    } else if (n === 12 || n === 13) {
+      // 110x xxxx
+      // 10xx xxxx
+      c2 = data[i++];
+      results[results.length] = ((c & 0x1F) << 6) | (c2 & 0x3F);
+    } else if (n === 14) {
+      // 1110 xxxx
+      // 10xx xxxx
+      // 10xx xxxx
+      c2 = data[i++];
+      c3 = data[i++];
+      results[results.length] = ((c & 0x0F) << 12) |
+                                ((c2 & 0x3F) << 6) |
+                                 (c3 & 0x3F);
+    } else if (i + 2 < len) {
+      // 1111 0xxx ...
+      c2 = data[i++];
+      c3 = data[i++];
+      c4 = data[i++];
+      results[results.length] = ((c & 0x7) << 18)   |
+                                ((c2 & 0x3F) << 12) |
+                                ((c3 & 0x3F) << 6)  |
+                                 (c4 & 0x3F);
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16 (JavaScript Unicode array) to JIS
+ *
+ * @private
+ * @ignore
+ */
+function UNICODEToJIS(data) {
+  return UTF8ToJIS(UNICODEToUTF8(data));
+}
+
+/**
+ * JIS to UTF-16 (JavaScript Unicode array)
+ *
+ * @private
+ * @ignore
+ */
+function JISToUNICODE(data) {
+  return UTF8ToUNICODE(JISToUTF8(data));
+}
+
+/**
+ * UTF-16 (JavaScript Unicode array) to EUCJP
+ *
+ * @private
+ * @ignore
+ */
+function UNICODEToEUCJP(data) {
+  return UTF8ToEUCJP(UNICODEToUTF8(data));
+}
+
+/**
+ * EUCJP to UTF-16 (JavaScript Unicode array)
+ *
+ * @private
+ * @ignore
+ */
+function EUCJPToUNICODE(data) {
+  return UTF8ToUNICODE(EUCJPToUTF8(data));
+}
+
+/**
+ * UTF-16 (JavaScript Unicode array) to SJIS
+ *
+ * @private
+ * @ignore
+ */
+function UNICODEToSJIS(data) {
+  return UTF8ToSJIS(UNICODEToUTF8(data));
+}
+
+/**
+ * SJIS to UTF-16 (JavaScript Unicode array)
+ *
+ * @private
+ * @ignore
+ */
+function SJISToUNICODE(data) {
+  return UTF8ToUNICODE(SJISToUTF8(data));
+}
+
 
 
 /**
