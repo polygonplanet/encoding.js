@@ -1,6 +1,9 @@
+'use strict';
+
 var assert = require('assert');
-var encoding = require('../encoding');
 var fs = require('fs');
+var encoding = require('../encoding');
+
 
 describe('Encoding', function() {
   var encodings = ['SJIS', 'UTF-8', 'JIS', 'EUC-JP'];
@@ -16,7 +19,8 @@ describe('Encoding', function() {
   };
 
   var getExpectedText = function(name) {
-    return 'このテキストは ' + name + ' で書かれています。';
+    return '\u3053\u306e\u30c6\u30ad\u30b9\u30c8\u306f ' + name +
+      ' \u3067\u66f8\u304b\u308c\u3066\u3044\u307e\u3059\u3002';
   };
 
   var getFileName = function(name) {
@@ -32,19 +36,25 @@ describe('Encoding', function() {
   };
 
   var buffers = {};
+  var tests = {};
 
-  before(function (done) {
+  before(function() {
+    tests.unicode = [];
+    for (var i = 0; i <= 0xffff; i++) {
+      tests.unicode.push(i);
+    }
+
+    tests.surrogatePairs = [0xD844, 0xDE7B];
+    tests.jisx0208 = fs.readFileSync(__dirname + '/jis-x-0208-utf8.txt');
+    tests.jisx0208Array = [];
+    var len = tests.jisx0208.length;
+    for (i = 0; i < len; i++) {
+      tests.jisx0208Array.push(tests.jisx0208[i]);
+    }
+
     encodings.forEach(function(encodingName) {
-      fs.readFile(getFileName(encodingName), function(err, data) {
-        if (err) {
-          throw err;
-        }
-
-        buffers[encodingName] = data;
-        if (Object.keys(buffers).length === encodings.length) {
-          done();
-        }
-      });
+      var data = fs.readFileSync(getFileName(encodingName));
+      buffers[encodingName] = data;
     });
   });
 
@@ -65,6 +75,200 @@ describe('Encoding', function() {
         assert.equal(res, getExpectedText(encodingName));
       });
     });
+
+    it('Unicode/UTF-8', function() {
+      assert(tests.unicode.length === 65536);
+      var utf8 = encoding.convert(tests.unicode, 'utf-8', 'unicode');
+      assert(utf8.length > 0);
+      assert.notDeepEqual(utf8, tests.unicode);
+      var unicode = encoding.convert(utf8, 'unicode', 'utf-8');
+      assert(unicode.length === 65536);
+      assert.deepEqual(unicode, tests.unicode);
+    });
+
+    it('Object arguments', function() {
+      var text = getExpectedText(getExpectedName('UTF-8'));
+      var data = encoding.stringToCode(text);
+      assert(data.length > 0);
+      assert(encoding.detect(data, 'UNICODE'));
+
+      var utf8 = encoding.convert(data, {
+        to: 'utf-8',
+        from: 'unicode'
+      });
+      assert(utf8.length > 0);
+      assert.notDeepEqual(utf8, data);
+      assert(encoding.detect(utf8, 'utf-8'));
+
+      var unicode = encoding.convert(utf8, {
+        to: 'unicode',
+        from: 'utf-8'
+      });
+      assert(unicode.length > 0);
+      assert.deepEqual(unicode, data);
+      assert(encoding.detect(utf8, 'unicode'));
+    });
+
+    it('Surrogate pairs', function() {
+      assert(tests.surrogatePairs.length >= 2);
+      var utf8 = encoding.convert(tests.surrogatePairs, 'utf-8', 'unicode');
+      assert(utf8.length > 0);
+      assert.notDeepEqual(utf8, tests.surrogatePairs);
+      var unicode = encoding.convert(utf8, 'unicode', 'utf-8');
+      assert(unicode.length >= 2);
+      assert.deepEqual(unicode, tests.surrogatePairs);
+    });
+  });
+
+  describe('convert JIS-X-0208', function() {
+    var encodingNames = ['SJIS', 'EUCJP', 'JIS', 'UNICODE'];
+    encodingNames.forEach(function(encodingName) {
+      it('UTF8 to ' + encodingName, function() {
+        assert(tests.jisx0208.length > 0);
+        assert(encoding.detect(tests.jisx0208, 'utf-8'));
+        assert(encoding.detect(tests.jisx0208) === 'UTF8');
+        var encoded = encoding.convert(tests.jisx0208, {
+          to: encodingName,
+          from: 'utf-8'
+        });
+        assert(encoded.length > 0);
+        assert(encoding.detect(encoded, encodingName));
+        assert(encoding.detect(encoded) === encodingName);
+        var decoded = encoding.convert(encoded, {
+          to: 'utf-8',
+          from: encodingName
+        });
+        assert.deepEqual(decoded, tests.jisx0208Array);
+      });
+    });
+
+    it('UTF-8 to Unicode', function() {
+      var encoded = encoding.convert(tests.jisx0208, {
+        to: 'unicode',
+        from: 'utf-8'
+      });
+      assert(encoded.length > 0);
+      assert(encoding.detect(encoded, 'unicode'));
+      assert(encoding.detect(encoded) === 'UNICODE');
+      tests.jisx0208_unicode = encoded;
+    });
+
+    encodingNames = ['SJIS', 'EUCJP', 'JIS', 'UTF8'];
+    encodingNames.forEach(function(encodingName) {
+      it('UNICODE to ' + encodingName, function() {
+        assert(tests.jisx0208_unicode.length > 0);
+        assert(encoding.detect(tests.jisx0208_unicode, 'unicode'));
+        assert(encoding.detect(tests.jisx0208_unicode) === 'UNICODE');
+        var encoded = encoding.convert(tests.jisx0208_unicode, {
+          to: encodingName,
+          from: 'unicode'
+        });
+        assert(encoded.length > 0);
+        assert(encoding.detect(encoded, encodingName));
+        assert(encoding.detect(encoded) === encodingName);
+        var decoded = encoding.convert(encoded, {
+          to: 'unicode',
+          from: encodingName
+        });
+        assert.deepEqual(decoded, tests.jisx0208_unicode);
+      });
+    });
+
+    it('Unicode to Shift_JIS', function() {
+      var encoded = encoding.convert(tests.jisx0208, {
+        to: 'sjis',
+        from: 'utf-8'
+      });
+      assert(encoded.length > 0);
+      assert(encoding.detect(encoded, 'sjis'));
+      assert(encoding.detect(encoded) === 'SJIS');
+      tests.jisx0208_sjis = encoded;
+    });
+
+    encodingNames = ['UNICODE', 'EUCJP', 'JIS', 'UTF8'];
+    encodingNames.forEach(function(encodingName) {
+      it('SJIS to ' + encodingName, function() {
+        assert(tests.jisx0208_sjis.length > 0);
+        assert(encoding.detect(tests.jisx0208_sjis, 'sjis'));
+        assert(encoding.detect(tests.jisx0208_sjis) === 'SJIS');
+        var encoded = encoding.convert(tests.jisx0208_sjis, {
+          to: encodingName,
+          from: 'sjis'
+        });
+        assert(encoded.length > 0);
+        assert(encoding.detect(encoded, encodingName));
+        assert(encoding.detect(encoded) === encodingName);
+        var decoded = encoding.convert(encoded, {
+          to: 'sjis',
+          from: encodingName
+        });
+        assert.deepEqual(decoded, tests.jisx0208_sjis);
+      });
+    });
+
+    it('Shift_JIS to EUC-JP', function() {
+      var encoded = encoding.convert(tests.jisx0208, {
+        to: 'eucjp',
+        from: 'utf-8'
+      });
+      assert(encoded.length > 0);
+      assert(encoding.detect(encoded, 'eucjp'));
+      assert(encoding.detect(encoded) === 'EUCJP');
+      tests.jisx0208_eucjp = encoded;
+    });
+
+    encodingNames = ['UNICODE', 'SJIS', 'JIS', 'UTF8'];
+    encodingNames.forEach(function(encodingName) {
+      it('EUCJP to ' + encodingName, function() {
+        assert(tests.jisx0208_eucjp.length > 0);
+        assert(encoding.detect(tests.jisx0208_eucjp, 'eucjp'));
+        assert(encoding.detect(tests.jisx0208_eucjp) === 'EUCJP');
+        var encoded = encoding.convert(tests.jisx0208_eucjp, {
+          to: encodingName,
+          from: 'eucjp'
+        });
+        assert(encoded.length > 0);
+        assert(encoding.detect(encoded, encodingName));
+        assert(encoding.detect(encoded) === encodingName);
+        var decoded = encoding.convert(encoded, {
+          to: 'eucjp',
+          from: encodingName
+        });
+        assert.deepEqual(decoded, tests.jisx0208_eucjp);
+      });
+    });
+
+    it('EUC-JP to JIS', function() {
+      var encoded = encoding.convert(tests.jisx0208, {
+        to: 'jis',
+        from: 'utf-8'
+      });
+      assert(encoded.length > 0);
+      assert(encoding.detect(encoded, 'jis'));
+      assert(encoding.detect(encoded) === 'JIS');
+      tests.jisx0208_jis = encoded;
+    });
+
+    encodingNames = ['UNICODE', 'SJIS', 'EUCJP', 'UTF8'];
+    encodingNames.forEach(function(encodingName) {
+      it('JIS to ' + encodingName, function() {
+        assert(tests.jisx0208_jis.length > 0);
+        assert(encoding.detect(tests.jisx0208_jis, 'jis'));
+        assert(encoding.detect(tests.jisx0208_jis) === 'JIS');
+        var encoded = encoding.convert(tests.jisx0208_jis, {
+          to: encodingName,
+          from: 'jis'
+        });
+        assert(encoded.length > 0);
+        assert(encoding.detect(encoded, encodingName));
+        assert(encoding.detect(encoded) === encodingName);
+        var decoded = encoding.convert(encoded, {
+          to: 'jis',
+          from: encodingName
+        });
+        assert.deepEqual(decoded, tests.jisx0208_jis);
+      });
+    });
   });
 
   describe('urlEncode/urlDecode', function() {
@@ -73,7 +277,55 @@ describe('Encoding', function() {
         var data = buffers[encodingName];
         var res = encoding.urlEncode(data);
         assert.equal(res, urlEncoded[getExpectedName(encodingName)]);
-        assert.equal(getCode(data).join(','), encoding.urlDecode(res).join(','));
+        assert.deepEqual(getCode(data), encoding.urlDecode(res));
+      });
+    });
+  });
+
+  describe('Assign/Expect encoding names', function() {
+    var unknownNames = {
+      'Shift_JIS': 'SJIS',
+      'x-sjis': 'SJIS',
+      'SJIS-open': 'SJIS',
+      'SJIS-win': 'SJIS',
+      'SHIFT-JIS': 'SJIS',
+      'SHIFT_JISX0213': 'SJIS',
+      'EUC-JP-MS': 'EUCJP',
+      'eucJP-MS': 'EUCJP',
+      'eucJP-open': 'EUCJP',
+      'eucJP-win': 'EUCJP',
+      'EUC-JPX0213': 'EUCJP',
+      'EUC-JP': 'EUCJP',
+      'eucJP': 'EUCJP'
+    };
+
+    var text = getExpectedText(getExpectedName('UTF-8'));
+    var data = encoding.stringToCode(text);
+    assert(data.length > 0);
+    assert(encoding.detect(data, 'UNICODE'));
+
+    var sjis = encoding.convert(data, 'sjis');
+    assert(sjis.length > 0);
+    assert(encoding.detect(sjis, 'SJIS'));
+
+    var eucjp = encoding.convert(data, 'EUCJP');
+    assert(eucjp.length > 0);
+    assert(encoding.detect(eucjp, 'EUCJP'));
+
+    var codes = {
+      'SJIS': sjis,
+      'EUCJP': eucjp
+    };
+
+    Object.keys(unknownNames).forEach(function(name) {
+      it(name + ' is ' + unknownNames[name], function() {
+        var encoded = encoding.convert(data, name);
+        assert(encoded.length > 0);
+        var encodingName = unknownNames[name];
+        var code = codes[encodingName];
+        assert(code.length > 0);
+        assert.equal(encoding.detect(code), encodingName);
+        assert.deepEqual(encoded, code);
       });
     });
   });
