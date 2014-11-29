@@ -4,7 +4,7 @@
  * @description    Converts character encoding.
  * @fileOverview   Encoding library
  * @author         polygon planet
- * @version        1.0.11
+ * @version        1.0.12
  * @date           2014-11-29
  * @link           https://github.com/polygonplanet/encoding.js
  * @copyright      Copyright (c) 2013-2014 polygon planet <polygon.planet.aqua@gmail.com>
@@ -159,11 +159,11 @@ var Encoding = {
 
     var encodingTo = assignEncodingName(to);
     var method = encodingFrom + 'To' + encodingTo;
-    if (!hasOwnProperty.call(EncodingConvert, method)) {
-      throw new Error('Undefined encoding: ' + to + ' or ' + from);
+    if (hasOwnProperty.call(EncodingConvert, method)) {
+      return EncodingConvert[method](data);
     }
 
-    return EncodingConvert[method](data);
+    return data;
   },
   /**
    * Encode a character code array to URL string like encodeURIComponent.

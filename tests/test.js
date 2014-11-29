@@ -51,6 +51,7 @@ describe('Encoding', function() {
     for (i = 0; i < len; i++) {
       tests.jisx0208Array.push(tests.jisx0208[i]);
     }
+    tests.ascii = 'Hello World.';
 
     encodings.forEach(function(encodingName) {
       var data = fs.readFileSync(getFileName(encodingName));
@@ -74,6 +75,15 @@ describe('Encoding', function() {
           encoding.convert(buffers[encodingName], 'unicode', encodingName));
         assert.equal(res, getExpectedText(encodingName));
       });
+    });
+
+    it('ASCII', function() {
+      assert(tests.ascii.length > 0);
+      var encoded = encoding.convert(tests.ascii, 'sjis', 'auto');
+      assert(encoded.length > 0);
+      var decoded = encoding.convert(encoded, 'unicode', 'auto');
+      assert(decoded.length > 0);
+      assert.deepEqual(decoded, tests.ascii);
     });
 
     it('Unicode/UTF-8', function() {
@@ -106,7 +116,7 @@ describe('Encoding', function() {
       });
       assert(unicode.length > 0);
       assert.deepEqual(unicode, data);
-      assert(encoding.detect(utf8, 'unicode'));
+      assert(encoding.detect(unicode, 'unicode'));
     });
 
     it('Surrogate pairs', function() {
