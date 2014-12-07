@@ -1,6 +1,6 @@
 {
   "name": "encoding-japanese",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Converts character encoding.",
   "main": "encoding.js",
   "directories": {
@@ -20,7 +20,7 @@
   "keywords": [
     "encoding", "charset", "unicode", "utf", "utf-8", "utf-16",
     "utf-32", "sjis", "shift_jis", "eucjp", "euc-jp", "jis",
-    "iso-2022-jp", "convert", "detect"
+    "iso-2022-jp", "convert", "detect", "urlencode", "urldecode"
   ],
   "author": "polygon planet",
   "license": "MIT or GPL v2",
