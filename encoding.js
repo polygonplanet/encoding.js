@@ -4,8 +4,8 @@
  * @description    Converts character encoding.
  * @fileOverview   Encoding library
  * @author         polygon planet
- * @version        1.0.12
- * @date           2014-11-29
+ * @version        1.0.13
+ * @date           2014-12-07
  * @link           https://github.com/polygonplanet/encoding.js
  * @copyright      Copyright (c) 2013-2014 polygon planet <polygon.planet.aqua@gmail.com>
  * @license        Dual licensed under the MIT or GPL v2 licenses.
@@ -13,21 +13,22 @@
  * Based:
  *   - mbstring library
  *   - posql charset library
+ *   - libxml2
  */
 (function (name, context, factory) {
 
-  // Supports UMD. AMD, CommonJS/Node.js and browser context
-  if (typeof exports !== 'undefined') {
-    if (typeof module !== 'undefined' && module.exports) {
-      module.exports = factory();
-    } else {
-      exports[name] = factory();
-    }
-  } else if (typeof define === 'function' && define.amd) {
-    define(factory);
+// Supports UMD. AMD, CommonJS/Node.js and browser context
+if (typeof exports !== 'undefined') {
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = factory();
   } else {
-    context[name] = factory();
+    exports[name] = factory();
   }
+} else if (typeof define === 'function' && define.amd) {
+  define(factory);
+} else {
+  context[name] = factory();
+}
 
 })('Encoding', this, function () {
 'use strict';
@@ -35,8 +36,100 @@
 var UTF8_UNKNOWN = '?'.charCodeAt(0);
 
 var fromCharCode = String.fromCharCode;
+var slice = Array.prototype.slice;
 var toString = Object.prototype.toString;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+/**
+ * Encoding names.
+ *
+ * @ignore
+ */
+var EncodingNames = {
+  UTF32: {
+    order: 0
+  },
+  UTF32BE: {
+    alias: ['UCS4']
+  },
+  UTF32LE: null,
+  UTF16: {
+    order: 1
+  },
+  UTF16BE: {
+    alias: ['UCS2']
+  },
+  UTF16LE: null,
+  BINARY: {
+    order: 2
+  },
+  ASCII: {
+    order: 3,
+    alias: ['ISO646', 'CP367']
+  },
+  JIS: {
+    order: 4,
+    alias: ['ISO2022JP']
+  },
+  UTF8: {
+    order: 5
+  },
+  EUCJP: {
+    order: 6
+  },
+  SJIS: {
+    order: 7,
+    alias: ['CP932', 'MSKANJI', 'WINDOWS31J']
+  },
+  UNICODE: {
+    order: 8
+  }
+};
+
+/**
+ * Encoding alias names.
+ *
+ * @ignore
+ */
+var EncodingAliases = {};
+
+/**
+ * Encoding orders.
+ *
+ * @ignore
+ */
+var EncodingOrders = (function() {
+  var aliases = EncodingAliases;
+
+  var names = getKeys(EncodingNames);
+  var orders = [];
+  var name, encoding, j, l;
+
+  for (var i = 0, len = names.length; i < len; i++) {
+    name = names[i];
+    aliases[name] = name;
+
+    encoding = EncodingNames[name];
+    if (encoding != null) {
+      if (typeof encoding.order !== 'undefined') {
+        orders[orders.length] = name;
+      }
+
+      if (encoding.alias) {
+        // Create the encoding aliases.
+        for (j = 0, l = encoding.alias.length; j < l; j++) {
+          aliases[encoding.alias[j]] = name;
+        }
+      }
+    }
+  }
+
+  orders.sort(function(a, b) {
+    return EncodingNames[a].order - EncodingNames[b].order;
+  });
+
+  return orders;
+}());
 
 
 /**
@@ -56,17 +149,7 @@ var Encoding = {
    *
    * @ignore
    */
-  orders: [
-    'UTF32',
-    'UTF16',
-    'BINARY',
-    'ASCII',
-    'JIS',
-    'UTF8',
-    'EUCJP',
-    'SJIS',
-    'UNICODE'
-  ],
+  orders: EncodingOrders,
   /**
    * Detects character encoding.
    *
@@ -117,7 +200,9 @@ var Encoding = {
       method = 'is' + encoding;
       if (!hasOwnProperty.call(EncodingDetect, method)) {
         throw new Error('Undefined encoding: ' + e);
-      } else if (EncodingDetect[method](data)) {
+      }
+
+      if (EncodingDetect[method](data)) {
         return encoding;
       }
     }
@@ -144,9 +229,11 @@ var Encoding = {
       return data;
     }
 
+    var options = {};
     if (isObject(to)) {
-      from = to.from;
-      to = to.to;
+      options = to;
+      from = options.from;
+      to = options.to;
     }
 
     var encodingFrom;
@@ -160,9 +247,10 @@ var Encoding = {
     var encodingTo = assignEncodingName(to);
     var method = encodingFrom + 'To' + encodingTo;
     if (hasOwnProperty.call(EncodingConvert, method)) {
-      return EncodingConvert[method](data);
+      return EncodingConvert[method](data, options);
     }
 
+    // Returns the raw data if the method is undefined.
     return data;
   },
   /**
@@ -183,7 +271,7 @@ var Encoding = {
     for (; i < len; i++) {
       b = data[i];
 
-      //FIXME: UTF-16 encoding
+      //FIXME: JavaScript UTF-16 encoding
       if (b > 0xFF) {
         return encodeURIComponent(Encoding.codeToString(data));
       }
@@ -302,18 +390,23 @@ var EncodingDetect = {
  * @ignore
  */
 var EncodingConvert = {
-  JISToSJIS: JISToSJIS,
+  // JIS, EUCJP, SJIS
   JISToEUCJP: JISToEUCJP,
-  SJISToJIS: SJISToJIS,
-  SJISToEUCJP: SJISToEUCJP,
   EUCJPToJIS: EUCJPToJIS,
+  JISToSJIS: JISToSJIS,
+  SJISToJIS: SJISToJIS,
   EUCJPToSJIS: EUCJPToSJIS,
-  SJISToUTF8: SJISToUTF8,
-  EUCJPToUTF8: EUCJPToUTF8,
+  SJISToEUCJP: SJISToEUCJP,
+
+  // UTF8
   JISToUTF8: JISToUTF8,
-  UTF8ToSJIS: UTF8ToSJIS,
-  UTF8ToEUCJP: UTF8ToEUCJP,
   UTF8ToJIS: UTF8ToJIS,
+  EUCJPToUTF8: EUCJPToUTF8,
+  UTF8ToEUCJP: UTF8ToEUCJP,
+  SJISToUTF8: SJISToUTF8,
+  UTF8ToSJIS: UTF8ToSJIS,
+
+  // UNICODE
   UNICODEToUTF8: UNICODEToUTF8,
   UTF8ToUNICODE: UTF8ToUNICODE,
   UNICODEToJIS: UNICODEToJIS,
@@ -321,7 +414,53 @@ var EncodingConvert = {
   UNICODEToEUCJP: UNICODEToEUCJP,
   EUCJPToUNICODE: EUCJPToUNICODE,
   UNICODEToSJIS: UNICODEToSJIS,
-  SJISToUNICODE: SJISToUNICODE
+  SJISToUNICODE: SJISToUNICODE,
+
+  // UTF16
+  UNICODEToUTF16: UNICODEToUTF16,
+  UTF16ToUNICODE: UTF16ToUNICODE,
+  UNICODEToUTF16BE: UNICODEToUTF16BE,
+  UTF16BEToUNICODE: UTF16BEToUNICODE,
+  UNICODEToUTF16LE: UNICODEToUTF16LE,
+  UTF16LEToUNICODE: UTF16LEToUNICODE,
+
+  // UTF16, UTF16BE, UTF16LE
+  UTF8ToUTF16: UTF8ToUTF16,
+  UTF16ToUTF8: UTF16ToUTF8,
+  UTF8ToUTF16BE: UTF8ToUTF16BE,
+  UTF16BEToUTF8: UTF16BEToUTF8,
+  UTF8ToUTF16LE: UTF8ToUTF16LE,
+  UTF16LEToUTF8: UTF16LEToUTF8,
+  UTF16ToUTF16BE: UTF16ToUTF16BE,
+  UTF16BEToUTF16: UTF16BEToUTF16,
+  UTF16ToUTF16LE: UTF16ToUTF16LE,
+  UTF16LEToUTF16: UTF16LEToUTF16,
+  UTF16BEToUTF16LE: UTF16BEToUTF16LE,
+  UTF16LEToUTF16BE: UTF16LEToUTF16BE,
+
+  // UTF16, JIS
+  JISToUTF16: JISToUTF16,
+  UTF16ToJIS: UTF16ToJIS,
+  JISToUTF16BE: JISToUTF16BE,
+  UTF16BEToJIS: UTF16BEToJIS,
+  JISToUTF16LE: JISToUTF16LE,
+  UTF16LEToJIS: UTF16LEToJIS,
+
+  // UTF16, EUCJP
+  EUCJPToUTF16: EUCJPToUTF16,
+  UTF16ToEUCJP: UTF16ToEUCJP,
+  EUCJPToUTF16BE: EUCJPToUTF16BE,
+  UTF16BEToEUCJP: UTF16BEToEUCJP,
+  EUCJPToUTF16LE: EUCJPToUTF16LE,
+  UTF16LEToEUCJP: UTF16LEToEUCJP,
+
+  // UTF16, SJIS
+  SJISToUTF16: SJISToUTF16,
+  UTF16ToSJIS: UTF16ToSJIS,
+  SJISToUTF16BE: SJISToUTF16BE,
+  UTF16BEToSJIS: UTF16BEToSJIS,
+  SJISToUTF16LE: SJISToUTF16LE,
+  UTF16LEToSJIS: UTF16LEToSJIS
 };
 
 
@@ -585,7 +724,6 @@ function isUTF8(data) {
  * UTF-16 (LE or BE)
  *
  * RFC2781: UTF-16, an encoding of ISO 10646
- * Must be labelled BOM
  *
  * @link http://www.ietf.org/rfc/rfc2781.txt
  * @private
@@ -627,27 +765,13 @@ function isUTF16(data) {
     }
 
     next = data[pos + 1]; // BE
-    prev = data[pos - 1]; // LE
-    if ((next !== void 0 && next > 0x00 && next < 0x80) ||
-        (prev !== void 0 && prev > 0x00 && prev < 0x80)
-    ) {
-      pos = len - 2;
-      next = data[pos + 1]; // BE
-      prev = data[pos - 1]; // LE
+    if (next !== void 0 && next > 0x00 && next < 0x80) {
+      return true;
+    }
 
-      if (next !== void 0) {
-        if (next > 0x00 && next < 0x80) {
-          return true;
-        } else {
-          return false;
-        }
-      } else if (prev !== void 0) {
-        if (prev > 0x00 && prev < 0x80) {
-          return true;
-        } else {
-          return false;
-        }
-      }
+    prev = data[pos - 1]; // LE
+    if (prev !== void 0 && prev > 0x00 && prev < 0x80) {
+      return true;
     }
   }
 
@@ -696,8 +820,7 @@ function isUTF16BE(data) {
       return false; // Non ASCII
     }
 
-    b = data[pos + 1];
-    if (b !== void 0 && b < 0x80) {
+    if (pos % 2 === 0) {
       return true;
     }
   }
@@ -743,8 +866,7 @@ function isUTF16LE(data) {
       return false; // Non ASCII
     }
 
-    b = data[pos - 1];
-    if (b !== void 0 && b < 0x80) {
+    if (pos % 2 !== 0) {
       return true;
     }
   }
@@ -766,7 +888,8 @@ function isUTF32(data) {
   var i = 0;
   var len = data && data.length;
   var pos = null;
-  var b1, b2, b3, b4, next;
+  var b1, b2, b3, b4;
+  var next, prev;
 
   if (len < 4) {
     for (; i < len; i++) {
@@ -790,7 +913,7 @@ function isUTF32(data) {
     }
 
     for (; i < len; i++) {
-      if (data[i] === 0x00) {
+      if (data[i] === 0x00 && data[i + 1] === 0x00 && data[i + 2] === 0x00) {
         pos = i;
         break;
       } else if (data[i] > 0xFF) {
@@ -799,25 +922,20 @@ function isUTF32(data) {
     }
 
     if (pos === null) {
-      return false; // Non ASCII (omit)
+      return false;
     }
 
-    // Must be (BE)
-    next = [
-      data[pos + 0], data[pos + 1],
-      data[pos + 2], data[pos + 3]
-    ];
-    if (next[0] !== void 0 && next[1] !== void 0 &&
-        next[2] !== void 0 && next[3] !== void 0
-    ) {
-      if (next[0] === 0x00 && next[1] === 0x00) {
-        if (next[2] === 0x00) {
-          return (next[3] >= 0x09 && next[3] <= 0x7F);
-        }
-        if (next[2] > 0x00 && next[2] < 0xFF) {
-          return (next[3] > 0x00 && next[3] <= 0xFF);
-        }
-      }
+    // The byte order should be the big-endian when BOM is not detected.
+    next = data[pos + 3];
+    if (next !== void 0 && next > 0x00 && next <= 0x7F) {
+      // big-endian
+      return data[pos + 2] === 0x00 && data[pos + 1] === 0x00;
+    }
+
+    prev = data[pos - 1];
+    if (prev !== void 0 && prev > 0x00 && prev <= 0x7F) {
+      // little-endian
+      return data[pos + 1] === 0x00 && data[pos + 2] === 0x00;
     }
   }
 
@@ -1123,7 +1241,7 @@ function EUCJPToJIS(data) {
         index = 1;
         results[results.length] = esc[3];
         results[results.length] = esc[4];
-        results[results.length] = esc[5]
+        results[results.length] = esc[5];
       }
       results[results.length] = b1 - 0x80 & 0xFF;
       results[results.length] = data[++i] - 0x80 & 0xFF;
@@ -1612,7 +1730,6 @@ function UTF8ToJIS(data) {
  *
  * @private
  * @ignore
- * based: Pot.js (UTF8.js)
  */
 function UNICODEToUTF8(data) {
   var results = [];
@@ -1647,7 +1764,6 @@ function UNICODEToUTF8(data) {
  *
  * @private
  * @ignore
- * based: Pot.js (UTF8.js)
  */
 function UTF8ToUNICODE(data) {
   var results = [];
@@ -1676,7 +1792,10 @@ function UTF8ToUNICODE(data) {
                                 ((c2 & 0x3F) << 6) |
                                  (c3 & 0x3F);
     } else if (i + 2 < len) {
-      // 1111 0xxx ...
+      // 1111 0xxx
+      // 10xx xxxx
+      // 10xx xxxx
+      // 10xx xxxx
       c2 = data[i++];
       c3 = data[i++];
       c4 = data[i++];
@@ -1689,6 +1808,549 @@ function UTF8ToUNICODE(data) {
 
   return results;
 }
+
+/**
+ * UTF-16 (JavaScript Unicode array) to Unicode Code Points
+ *
+ * @private
+ * @ignore
+ */
+function UNICODEToUNICODECP(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var c, second;
+
+  while (i < len) {
+    c = data[i++];
+
+    // high surrogate
+    if (c >= 0xD800 && c <= 0xDBFF && i + 1 < len) {
+      second = data[i + 1];
+      // low surrogate
+      if (second >= 0xDC00 && second <= 0xDFFF) {
+        results[results.length] = (c - 0xD800) * 0x400 +
+                                  second - 0xDC00 + 0x10000;
+        i++;
+        continue;
+      }
+    }
+
+    results[results.length] = c;
+  }
+
+  return results;
+}
+
+/**
+ * Unicode Code Points to UTF-16 (JavaScript Unicode array)
+ *
+ * @private
+ * @ignore
+ */
+function UNICODECPToUNICODE(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var c;
+
+  while (i < len) {
+    c = data[i++];
+    if (c < 0 || c > 0x10FFFF) {
+      continue;
+    }
+
+    if (c <= 0xFFFF) {
+      results[results.length] = c;
+    } else {
+      // Split in surrogate halves
+      c -= 0x10000;
+      results[results.length] = (c >> 10) + 0xD800; // High surrogate
+      results[results.length] = (c % 0x400) + 0xDC00; // Low surrogate
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16 (JavaScript Unicode array) to UTF-16
+ *
+ * UTF-16BE (big-endian)
+ * Note: this function does not prepend the BOM by default.
+ *
+ * RFC 2781 4.3 Interpreting text labelled as UTF-16
+ *   If the first two octets of the text is not 0xFE followed by
+ *   0xFF, and is not 0xFF followed by 0xFE, then the text SHOULD be
+ *   interpreted as being big-endian.
+ *
+ * @link https://www.ietf.org/rfc/rfc2781.txt
+ * UTF-16, an encoding of ISO 10646
+ *
+ * @private
+ * @ignore
+ */
+function UNICODEToUTF16(data, options) {
+  var results;
+
+  if (options && options.bom) {
+    var optBom = options.bom;
+    if (!isString(optBom)) {
+      optBom = 'BE';
+    }
+
+    var bom, utf16;
+    if (optBom.toUpperCase() === 'BE') {
+      // Big-endian
+      bom = [0xFE, 0xFF];
+      utf16 = UNICODEToUTF16BE(data);
+    } else {
+      // Little-endian
+      bom = [0xFF, 0xFE];
+      utf16 = UNICODEToUTF16LE(data);
+    }
+
+    results = [];
+    results[0] = bom[0];
+    results[1] = bom[1];
+
+    for (var i = 0, len = utf16.length; i < len; i++) {
+      results[results.length] = utf16[i];
+    }
+  } else {
+    // Without BOM: Convert as BE (SHOULD).
+    results = UNICODEToUTF16BE(data);
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16 (JavaScript Unicode array) to UTF-16BE
+ *
+ * @link https://www.ietf.org/rfc/rfc2781.txt
+ * UTF-16, an encoding of ISO 10646
+ *
+ * @private
+ * @ignore
+ */
+function UNICODEToUTF16BE(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var c, c2;
+
+  while (i < len) {
+    c = data[i++];
+    if (c <= 0xFF) {
+      results[results.length] = 0;
+      results[results.length] = c;
+    } else if (c <= 0xFFFF) {
+      results[results.length] = c >> 8 & 0xFF;
+      results[results.length] = c & 0xFF;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16 (JavaScript Unicode array) to UTF-16LE
+ *
+ * @link https://www.ietf.org/rfc/rfc2781.txt
+ * UTF-16, an encoding of ISO 10646
+ *
+ * @private
+ * @ignore
+ */
+function UNICODEToUTF16LE(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var c, c2;
+
+  while (i < len) {
+    c = data[i++];
+    if (c <= 0xFF) {
+      results[results.length] = c;
+      results[results.length] = 0;
+    } else if (c <= 0xFFFF) {
+      results[results.length] = c & 0xFF;
+      results[results.length] = c >> 8 & 0xFF;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16BE to UTF-16 (JavaScript Unicode array)
+ *
+ * @link https://www.ietf.org/rfc/rfc2781.txt
+ * UTF-16, an encoding of ISO 10646
+ *
+ * @private
+ * @ignore
+ */
+function UTF16BEToUNICODE(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var c1, c2;
+
+  if (len >= 2 &&
+      ((data[0] === 0xFE && data[1] === 0xFF) ||
+       (data[0] === 0xFF && data[1] === 0xFE))
+  ) {
+    i = 2;
+  }
+
+  while (i < len) {
+    c1 = data[i++];
+    c2 = data[i++];
+    if (c1 === 0) {
+      results[results.length] = c2;
+    } else {
+      results[results.length] = ((c1 & 0xff) << 8) | (c2 & 0xff);
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16LE to UTF-16 (JavaScript Unicode array)
+ *
+ * @link https://www.ietf.org/rfc/rfc2781.txt
+ * UTF-16, an encoding of ISO 10646
+ *
+ * @private
+ * @ignore
+ */
+function UTF16LEToUNICODE(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var c1, c2;
+
+  if (len >= 2 &&
+      ((data[0] === 0xFE && data[1] === 0xFF) ||
+       (data[0] === 0xFF && data[1] === 0xFE))
+  ) {
+    i = 2;
+  }
+
+  while (i < len) {
+    c1 = data[i++];
+    c2 = data[i++];
+    if (c2 === 0) {
+      results[results.length] = c1;
+    } else {
+      results[results.length] = ((c2 & 0xff) << 8) | (c1 & 0xff);
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16 to UTF-16 (JavaScript Unicode array)
+ *
+ * @link https://www.ietf.org/rfc/rfc2781.txt
+ * UTF-16, an encoding of ISO 10646
+ *
+ * @private
+ * @ignore
+ */
+function UTF16ToUNICODE(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var isLE = false;
+  var first = true;
+  var c1, c2;
+
+  while (i < len) {
+    c1 = data[i++];
+    c2 = data[i++];
+
+    if (first && i === 2) {
+      first = false;
+      if (c1 === 0xFE && c2 === 0xFF) {
+        isLE = false;
+      } else if (c1 === 0xFF && c2 === 0xFE) {
+        // Little-endian
+        isLE = true;
+      } else {
+        isLE = isUTF16LE(data);
+        i = 0;
+      }
+      continue;
+    }
+
+    if (isLE) {
+      if (c2 === 0) {
+        results[results.length] = c1;
+      } else {
+        results[results.length] = ((c2 & 0xff) << 8) | (c1 & 0xff);
+      }
+    } else {
+      if (c1 === 0) {
+        results[results.length] = c2;
+      } else {
+        results[results.length] = ((c1 & 0xff) << 8) | (c2 & 0xff);
+      }
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16 to UTF-16BE
+ *
+ * @private
+ * @ignore
+ */
+function UTF16ToUTF16BE(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var isLE = false;
+  var first = true;
+  var c1, c2;
+
+  while (i < len) {
+    c1 = data[i++];
+    c2 = data[i++];
+
+    if (first && i === 2) {
+      first = false;
+      if (c1 === 0xFE && c2 === 0xFF) {
+        isLE = false;
+      } else if (c1 === 0xFF && c2 === 0xFE) {
+        // Little-endian
+        isLE = true;
+      } else {
+        isLE = isUTF16LE(data);
+        i = 0;
+      }
+      continue;
+    }
+
+    if (isLE) {
+      results[results.length] = c2;
+      results[results.length] = c1;
+    } else {
+      results[results.length] = c1;
+      results[results.length] = c2;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16BE to UTF-16
+ *
+ * @private
+ * @ignore
+ */
+function UTF16BEToUTF16(data, options) {
+  var isLE = false;
+  var bom;
+
+  if (options && options.bom) {
+    var optBom = options.bom;
+    if (!isString(optBom)) {
+      optBom = 'BE';
+    }
+
+    if (optBom.toUpperCase() === 'BE') {
+      // Big-endian
+      bom = [0xFE, 0xFF];
+    } else {
+      // Little-endian
+      bom = [0xFF, 0xFE];
+      isLE = true;
+    }
+  }
+
+  var results = [];
+  var len = data && data.length;
+  var i = 0;
+
+  if (len >= 2 &&
+      ((data[0] === 0xFE && data[1] === 0xFF) ||
+       (data[0] === 0xFF && data[1] === 0xFE))
+  ) {
+    i = 2;
+  }
+
+  if (bom) {
+    results[0] = bom[0];
+    results[1] = bom[1];
+  }
+
+  var c1, c2;
+  while (i < len) {
+    c1 = data[i++];
+    c2 = data[i++];
+
+    if (isLE) {
+      results[results.length] = c2;
+      results[results.length] = c1;
+    } else {
+      results[results.length] = c1;
+      results[results.length] = c2;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16 to UTF-16LE
+ *
+ * @private
+ * @ignore
+ */
+function UTF16ToUTF16LE(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var isLE = false;
+  var first = true;
+  var c1, c2;
+
+  while (i < len) {
+    c1 = data[i++];
+    c2 = data[i++];
+
+    if (first && i === 2) {
+      first = false;
+      if (c1 === 0xFE && c2 === 0xFF) {
+        isLE = false;
+      } else if (c1 === 0xFF && c2 === 0xFE) {
+        // Little-endian
+        isLE = true;
+      } else {
+        isLE = isUTF16LE(data);
+        i = 0;
+      }
+      continue;
+    }
+
+    if (isLE) {
+      results[results.length] = c1;
+      results[results.length] = c2;
+    } else {
+      results[results.length] = c2;
+      results[results.length] = c1;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16LE to UTF-16
+ *
+ * @private
+ * @ignore
+ */
+function UTF16LEToUTF16(data, options) {
+  var isLE = false;
+  var bom;
+
+  if (options && options.bom) {
+    var optBom = options.bom;
+    if (!isString(optBom)) {
+      optBom = 'BE';
+    }
+
+    if (optBom.toUpperCase() === 'BE') {
+      // Big-endian
+      bom = [0xFE, 0xFF];
+    } else {
+      // Little-endian
+      bom = [0xFF, 0xFE];
+      isLE = true;
+    }
+  }
+
+  var results = [];
+  var len = data && data.length;
+  var i = 0;
+
+  if (len >= 2 &&
+      ((data[0] === 0xFE && data[1] === 0xFF) ||
+       (data[0] === 0xFF && data[1] === 0xFE))
+  ) {
+    i = 2;
+  }
+
+  if (bom) {
+    results[0] = bom[0];
+    results[1] = bom[1];
+  }
+
+  var c1, c2;
+  while (i < len) {
+    c1 = data[i++];
+    c2 = data[i++];
+
+    if (isLE) {
+      results[results.length] = c1;
+      results[results.length] = c2;
+    } else {
+      results[results.length] = c2;
+      results[results.length] = c1;
+    }
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16BE to UTF-16LE
+ *
+ * @private
+ * @ignore
+ */
+function UTF16BEToUTF16LE(data) {
+  var results = [];
+  var i = 0;
+  var len = data && data.length;
+  var c1, c2;
+
+  if (len >= 2 &&
+      ((data[0] === 0xFE && data[1] === 0xFF) ||
+       (data[0] === 0xFF && data[1] === 0xFE))
+  ) {
+    i = 2;
+  }
+
+  while (i < len) {
+    c1 = data[i++];
+    c2 = data[i++];
+    results[results.length] = c2;
+    results[results.length] = c1;
+  }
+
+  return results;
+}
+
+/**
+ * UTF-16LE to UTF-16BE
+ *
+ * @private
+ * @ignore
+ */
+function UTF16LEToUTF16BE(data) {
+  return UTF16BEToUTF16LE(data);
+}
+
 
 /**
  * UTF-16 (JavaScript Unicode array) to JIS
@@ -1750,6 +2412,245 @@ function SJISToUNICODE(data) {
   return UTF8ToUNICODE(SJISToUTF8(data));
 }
 
+/**
+ * UTF-8 to UTF-16
+ *
+ * @private
+ * @ignore
+ */
+function UTF8ToUTF16(data, options) {
+  return UNICODEToUTF16(UNICODECPToUNICODE(UTF8ToUNICODE(data)), options);
+}
+
+/**
+ * UTF-16 to UTF-8
+ *
+ * @private
+ * @ignore
+ */
+function UTF16ToUTF8(data) {
+  return UNICODEToUTF8(UNICODEToUNICODECP(UTF16ToUNICODE(data)));
+}
+
+/**
+ * UTF-8 to UTF-16BE
+ *
+ * @private
+ * @ignore
+ */
+function UTF8ToUTF16BE(data) {
+  return UNICODEToUTF16BE(UNICODECPToUNICODE(UTF8ToUNICODE(data)));
+}
+
+/**
+ * UTF-16BE to UTF-8
+ *
+ * @private
+ * @ignore
+ */
+function UTF16BEToUTF8(data) {
+  return UNICODEToUTF8(UNICODEToUNICODECP(UTF16BEToUNICODE(data)));
+}
+
+/**
+ * UTF-8 to UTF-16LE
+ *
+ * @private
+ * @ignore
+ */
+function UTF8ToUTF16LE(data) {
+  return UNICODEToUTF16LE(UNICODECPToUNICODE(UTF8ToUNICODE(data)));
+}
+
+/**
+ * UTF-16LE to UTF-8
+ *
+ * @private
+ * @ignore
+ */
+function UTF16LEToUTF8(data) {
+  return UNICODEToUTF8(UNICODEToUNICODECP(UTF16LEToUNICODE(data)));
+}
+
+/**
+ * JIS to UTF-16
+ *
+ * @private
+ * @ignore
+ */
+function JISToUTF16(data, options) {
+  return UTF8ToUTF16(JISToUTF8(data), options);
+}
+
+/**
+ * UTF-16 to JIS
+ *
+ * @private
+ * @ignore
+ */
+function UTF16ToJIS(data) {
+  return UTF8ToJIS(UTF16ToUTF8(data));
+}
+
+/**
+ * JIS to UTF-16BE
+ *
+ * @private
+ * @ignore
+ */
+function JISToUTF16BE(data) {
+  return UTF8ToUTF16BE(JISToUTF8(data));
+}
+
+/**
+ * UTF-16BE to JIS
+ *
+ * @private
+ * @ignore
+ */
+function UTF16BEToJIS(data) {
+  return UTF8ToJIS(UTF16BEToUTF8(data));
+}
+
+/**
+ * JIS to UTF-16LE
+ *
+ * @private
+ * @ignore
+ */
+function JISToUTF16LE(data) {
+  return UTF8ToUTF16LE(JISToUTF8(data));
+}
+
+/**
+ * UTF-16LE to JIS
+ *
+ * @private
+ * @ignore
+ */
+function UTF16LEToJIS(data) {
+  return UTF8ToJIS(UTF16LEToUTF8(data));
+}
+
+/**
+ * EUC-JP to UTF-16
+ *
+ * @private
+ * @ignore
+ */
+function EUCJPToUTF16(data, options) {
+  return UTF8ToUTF16(EUCJPToUTF8(data), options);
+}
+
+/**
+ * UTF-16 to EUC-JP
+ *
+ * @private
+ * @ignore
+ */
+function UTF16ToEUCJP(data) {
+  return UTF8ToEUCJP(UTF16ToUTF8(data));
+}
+
+/**
+ * EUC-JP to UTF-16BE
+ *
+ * @private
+ * @ignore
+ */
+function EUCJPToUTF16BE(data) {
+  return UTF8ToUTF16BE(EUCJPToUTF8(data));
+}
+
+/**
+ * UTF-16BE to EUC-JP
+ *
+ * @private
+ * @ignore
+ */
+function UTF16BEToEUCJP(data) {
+  return UTF8ToEUCJP(UTF16BEToUTF8(data));
+}
+
+/**
+ * EUC-JP to UTF-16LE
+ *
+ * @private
+ * @ignore
+ */
+function EUCJPToUTF16LE(data) {
+  return UTF8ToUTF16LE(EUCJPToUTF8(data));
+}
+
+/**
+ * UTF-16LE to EUC-JP
+ *
+ * @private
+ * @ignore
+ */
+function UTF16LEToEUCJP(data) {
+  return UTF8ToEUCJP(UTF16LEToUTF8(data));
+}
+
+/**
+ * SJIS to UTF-16
+ *
+ * @private
+ * @ignore
+ */
+function SJISToUTF16(data, options) {
+  return UTF8ToUTF16(SJISToUTF8(data), options);
+}
+
+/**
+ * UTF-16 to SJIS
+ *
+ * @private
+ * @ignore
+ */
+function UTF16ToSJIS(data) {
+  return UTF8ToSJIS(UTF16ToUTF8(data));
+}
+
+/**
+ * SJIS to UTF-16BE
+ *
+ * @private
+ * @ignore
+ */
+function SJISToUTF16BE(data) {
+  return UTF8ToUTF16BE(SJISToUTF8(data));
+}
+
+/**
+ * UTF-16BE to SJIS
+ *
+ * @private
+ * @ignore
+ */
+function UTF16BEToSJIS(data) {
+  return UTF8ToSJIS(UTF16BEToUTF8(data));
+}
+
+/**
+ * SJIS to UTF-16LE
+ *
+ * @private
+ * @ignore
+ */
+function SJISToUTF16LE(data) {
+  return UTF8ToUTF16LE(SJISToUTF8(data));
+}
+
+/**
+ * UTF-16LE to SJIS
+ *
+ * @private
+ * @ignore
+ */
+function UTF16LEToSJIS(data) {
+  return UTF8ToSJIS(UTF16LEToUTF8(data));
+}
 
 
 /**
@@ -1758,33 +2659,36 @@ function SJISToUNICODE(data) {
  * @private
  * @ignore
  */
-function assignEncodingName(name) {
-  var result = '';
-
-  var expect = ('' + name).toUpperCase().replace(/[^A-Za-z0-9]+/g, '');
-  var orders = Encoding.orders;
+function assignEncodingName(target) {
+  var name = '';
+  var expect = ('' + target).toUpperCase().replace(/[^A-Z0-9]+/g, '');
+  var aliasNames = getKeys(EncodingAliases);
+  var len = aliasNames.length;
   var hit = 0;
-  var len = orders.length;
-
   var encoding, encodingLen, j;
 
   for (var i = 0; i < len; i++) {
-    encoding = orders[i];
+    encoding = aliasNames[i];
     if (encoding === expect) {
-      return encoding;
+      name = encoding;
+      break;
     }
 
     encodingLen = encoding.length;
     for (j = hit; j < encodingLen; j++) {
       if (encoding.slice(0, j) === expect.slice(0, j) ||
           encoding.slice(-j) === expect.slice(-j)) {
-        result = encoding;
+        name = encoding;
         hit = j;
       }
     }
   }
 
-  return result;
+  if (hasOwnProperty.call(EncodingAliases, name)) {
+    return EncodingAliases[name];
+  }
+
+  return name;
 }
 
 
