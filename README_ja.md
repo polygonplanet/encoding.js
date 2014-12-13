@@ -4,8 +4,7 @@ encoding.js
 [![Build Status](https://travis-ci.org/polygonplanet/encoding.js.svg?branch=master)](https://travis-ci.org/polygonplanet/encoding.js)
 
 Converts character encoding in JavaScript.  
-
-**[README(Japanese)](https://github.com/polygonplanet/encoding.js/blob/master/README_ja.md)**
+JavaScript で文字コード変換をします
 
 ### Installation
 
@@ -21,13 +20,14 @@ or
 <script src="encoding.min.js"></script>
 ```
 
-Object **Encoding** will defined in the global scope.
+**Encoding** というオブジェクトがグローバルに定義されます  
 
-Conversion and detection for the Array (like Array object).  
+配列に対して変換または判別します  
+
 
 #### In Node.js:
 
-encoding.js is published by module name of `encoding-japanese` in npm.
+`encoding-japanese` というモジュール名になっています
 
 ```bash
 npm install encoding-japanese
@@ -37,30 +37,29 @@ npm install encoding-japanese
 var encoding = require('encoding-japanese');
 ```
 
-Each methods are also available for the *Buffer* in Node.js.
+encoding.js の各メソッドは Node.js の Buffer に対しても使えます
 
-#### Convert character encoding (convert):
+#### 文字コード変換 (convert):
 
 * {_Array.<number>_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
-  Converts character encoding.  
-  @param {_Array.<number>_|_TypedArray_|_Buffer_} _data_ Target data.  
-  @param {_(string|Object)_} _to\_encoding_ The encoding name of conversion destination.  
-  @param {_(string|Array.<string>)=_} [_from\_encoding_] The encoding name of source or 'AUTO'.  
-  @return {_Array_}  Return the converted array.
+  文字コードを変換します  
+  @param {_Array.<number>_|_TypedArray_|_Buffer_} _data_ 対象のデータ  
+  @param {_(string|Object)_} _to\_encoding_ 変換先の文字コード  
+  @param {_(string|Array.<string>)=_} [_from\_encoding_] 変換元の文字コード or 'AUTO'  
+  @return {_Array_}  変換した配列が返ります
 
 
 ```javascript
-// Convert character encoding to Shift_JIS from UTF-8.
+// UTF-8のデータをShift_JISに変換
 var utf8Array = new Uint8Array(...) or [...] or Array(...) or Buffer(...);
 var sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
 
-// Convert character encoding by automatic detection (AUTO detect).
+// 自動判別で変換 (AUTO detect)
 var sjisArray = Encoding.convert(utf8Array, 'SJIS');
 // or  
 var sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 
-// Detect the character encoding.
-// The return value be one of the "Available Encodings" below.
+// 文字コード判別 (戻り値は下の"Available Encodings"のいずれか)
 var detected = Encoding.detect(utf8Array);
 if (detected === 'UTF8') {
   console.log('Encoding is UTF-8');
@@ -81,11 +80,11 @@ if (detected === 'UTF8') {
 * '**SJIS**'
 * '**UNICODE**' (JavaScript Unicode Array)
 
-Note: UNICODE is an array that has a value of String.charCodeAt() in JavaScript.
-　　(Each value in the array possibly has a number of more than 256.)
+※ UNICODE は JavaScript の String.charCodeAt() の値を持つ配列です  
+　　(配列の各値は 256 を超える数値になり得ます)
 
 
-##### Specify the Object argument
+##### 引数に Object を指定する
 
 ```javascript
 var sjisArray = Encoding.convert(utf8Array, {
@@ -94,33 +93,33 @@ var sjisArray = Encoding.convert(utf8Array, {
 });
 ```
 
-Readability goes up by passing an object to the second argument.
+第二引数にオブジェクトで渡すことで可読性が上がります
 
-##### Specify BOM in UTF-16
+##### UTF16 に BOM をつける
 
-It's can add the UTF16 BOM with specify the bom option on convert.
+UTF16 に変換する際に bom オプションを指定すると BOM が付加できます
 
 ```javascript
 var utf16Array = Encoding.convert(utf8Array, {
   to: 'UTF16', // to_encoding
   from: 'UTF8', // from_encoding
-  bom: true // With BOM
+  bom: true // BOMをつける
 });
 ```
 
-The byte order of UTF16 is big-endian by default.
+UTF16 のバイトオーダーはデフォルトで big-endian になります
 
-Specify the 'LE' in bom options if you want to convert as little-endian.  
+little-endian として変換したい場合は bom オプションに 'LE' を指定します  
 
 ```javascript
 var utf16leArray = Encoding.convert(utf8Array, {
   to: 'UTF16', // to_encoding
   from: 'UTF8', // from_encoding
-  bom: 'LE' // With BOM (little-endian)
+  bom: 'LE' // BOM (little-endian) をつける
 });
 ```
 
-Convert with specifying the UTF16LE or UTF16BE if BOM is not required.
+BOM が不要な場合は UTF16LE または UTF16BE を使用します
 
 ```javascript
 var utf16beArray = Encoding.convert(utf8Array, {
@@ -129,25 +128,24 @@ var utf16beArray = Encoding.convert(utf8Array, {
 });
 ```
 
-Note: UTF16, UTF16BE and UTF16LE is not JavaScript internal encoding, that is an byte array.
+※ UTF16, UTF16BE, UTF16LE は、JavaScript の内部コードではなく各バイトを持つ配列です
 
-#### Detect character encoding (detect):
+#### 文字コード検出 (detect):
 
 * {_Array_} Encoding.**detect** ( data [, encodings ] )  
-  Detect character encoding.  
-  @param {_Array.<number>_|_TypedArray_} _data_ Target data  
-  @param {_(string|Array.<string>)_} [_encodings_] The encoding name that to specify the detection.  
-  @return {_string|boolean_} Return the detected character encoding, or false.
-
+  文字コードを検出します  
+  @param {_Array.<number>_|_TypedArray_} _data_ 対象のデータ  
+  @param {_(string|Array.<string>)_} [_encodings_] 検出を絞り込む際の文字コード  
+  @return {_string|boolean_}  検出された文字コード、または false が返ります
 
 ```javascript
-// Detect character encoding by automatic. (AUTO detect).
+// 自動判別 (AUTO detect)
 var detected = Encoding.detect(utf8Array);
 if (detected === 'UTF8') {
   console.log('Encoding is UTF-8');
 }
 
-// Detect character encoding by specific encoding name.
+// 文字コード指定判別
 var isSJIS = Encoding.detect(sjisArray, 'SJIS');
 if (isSJIS) {
   console.log('Encoding is SJIS');
@@ -158,17 +156,17 @@ if (isSJIS) {
 ##### URL Encode/Decode:
 
 * {_Array_} Encoding.**urlEncode** ( data )  
-  URL(percent) encode.  
-  @param {_Array.<number>_|_TypedArray_} _data_ Target data.  
-  @return {_string_}  Return the encoded string.
+  URL(percent) エンコードします  
+  @param {_Array.<number>_|_TypedArray_} _data_ 対象のデータ  
+  @return {_string_}  エンコードされた文字列が返ります
 
 * {_Array_} Encoding.**urlDecode** ( string )  
-  URL(percent) decode.  
-  @param {_string_} _string_ Target data.  
-  @return {_Array.<number>_} Return the decoded array.
+  URL(percent) デコードします  
+  @param {_string_} _string_ 対象の文字列  
+  @return {_Array.<number>_}  デコードされた文字コード配列が返ります
 
 ```javascript
-// URL encode to an array that has character code.
+// 文字コードの配列をURLエンコード/デコード
 var sjisArray = [
   130, 177, 130, 241, 130, 201, 130, 191, 130, 205, 129,
   65, 130, 217, 130, 176, 129, 153, 130, 210, 130, 230
@@ -189,10 +187,9 @@ console.log(decoded);
 
 #### Example:
 
-##### Example using the XMLHttpRequest and Typed arrays (Uint8Array):
+##### XMLHttpRequest と Typed arrays (Uint8Array) を使用した例:
 
-In this sample, reads the text file written in Shift_JIS as binary data.  
-And displays string that is converted to Unicode by Encoding.convert.
+このサンプルでは Shift_JIS で書かれたテキストファイルをバイナリデータとして読み込み、Encoding.convert によって Unicode に変換して表示します
 
 ```javascript
 var req = new XMLHttpRequest();
@@ -220,7 +217,7 @@ req.onload = function (event) {
 req.send(null);
 ```
 
-##### Example of the character encoding conversion:
+##### 文字コード変換例:
 
 ```javascript
 var eucjpArray = [
@@ -242,7 +239,7 @@ console.log( utf8Array );
 //   => 'こんにちは、ほげ☆ぴよ'
 ```
 
-##### Example of convert a character code by automatic detection (Auto detect):
+##### 文字コード自動検出での変換例 (Auto detect):
 
 ```javascript
 var sjisArray = [
@@ -253,7 +250,7 @@ var unicodeArray = Encoding.convert(sjisArray, {
   to: 'UNICODE',
   from: 'AUTO'
 });
-// codeToString is a utility method that Joins a character code array to string.
+// codeToStringは文字コード配列を文字列に変換(連結)して返します
 console.log( Encoding.codeToString(unicodeArray) );
 // output: 'こんにちは、ほげ☆ぴよ'
 ```
@@ -261,18 +258,19 @@ console.log( Encoding.codeToString(unicodeArray) );
 ### Utilities
 
 * {_string_} Encoding.**codeToString** ( {_Array.<number>_|_TypedArray_} data )  
-  Joins a character code array to string.
+  文字コード配列を文字列に変換(連結)して返します
 
 * {_Array.<number>_} Encoding.**stringToCode** ( {_string_} string )  
-  Splits string to an array of character codes.
+  文字列を文字コード配列に分割して返します
 
 
 ### Demo
 
-[Test for character encoding conversion (Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+[文字コード変換テスト(Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
 
 ### License
 
 MIT
+
 
 
