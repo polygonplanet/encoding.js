@@ -102,7 +102,7 @@ UTF16 に変換する際に bom オプションを指定すると BOM が付加�
 ```javascript
 var utf16Array = Encoding.convert(utf8Array, {
   to: 'UTF16', // to_encoding
-  from: 'UTF8' // from_encoding
+  from: 'UTF8', // from_encoding
   bom: true // BOMをつける
 });
 ```
@@ -114,7 +114,7 @@ little-endian として変換したい場合は bom オプションに 'LE' を�
 ```javascript
 var utf16leArray = Encoding.convert(utf8Array, {
   to: 'UTF16', // to_encoding
-  from: 'UTF8' // from_encoding
+  from: 'UTF8', // from_encoding
   bom: 'LE' // BOM (little-endian) をつける
 });
 ```
@@ -270,7 +270,7 @@ console.log( Encoding.codeToString(unicodeArray) );
 
 ### License
 
-Dual licensed under the MIT or GPL v2 licenses.
+MIT
 
 
 
