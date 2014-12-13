@@ -1,6 +1,6 @@
 {
   "name": "encoding-japanese",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Converts character encoding.",
   "main": "encoding.js",
   "directories": {
@@ -23,7 +23,7 @@
     "iso-2022-jp", "convert", "detect", "urlencode", "urldecode"
   ],
   "author": "polygon planet",
-  "license": "MIT or GPL v2",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/polygonplanet/encoding.js/issues"
   },
