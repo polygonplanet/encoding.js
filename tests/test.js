@@ -199,6 +199,28 @@ describe('Encoding', function() {
       assert.deepEqual(unicode, tests.surrogatePairs);
     });
 
+    it('Surrogate pairs and UTF-8 conversion', function() {
+      var surrogatePairs = [
+        83,117,114,114,111,103,97,116,101,32,80,97,105,114,115,32,84,
+        101,115,116,10,55362,57271,37326,23478,12391,55399,56893,10
+      ];
+      var surrogatePairs_utf8 = [
+        0x53, 0x75, 0x72, 0x72, 0x6F, 0x67, 0x61, 0x74, 0x65, 0x20,
+        0x50, 0x61, 0x69, 0x72, 0x73, 0x20, 0x54, 0x65, 0x73, 0x74,
+        0x0A, 0xF0, 0xA0, 0xAE, 0xB7, 0xE9, 0x87, 0x8E, 0xE5, 0xAE,
+        0xB6, 0xE3, 0x81, 0xA7, 0xF0, 0xA9, 0xB8, 0xBD, 0x0A
+      ];
+      var utf8 = encoding.convert(surrogatePairs, 'utf-8', 'unicode');
+      assert(utf8.length > 0);
+      assert.notDeepEqual(utf8, surrogatePairs);
+      assert.deepEqual(utf8, surrogatePairs_utf8);
+
+      var unicode = encoding.convert(utf8, 'unicode', 'utf-8');
+      assert(unicode.length > 0);
+      assert.notDeepEqual(unicode, utf8);
+      assert.deepEqual(unicode, surrogatePairs);
+    });
+
     it('Surrogate pairs and UTF-16 conversion', function() {
       var surrogatePairs = [];
       for (var i = 0; i < tests.surrogatePairs2.length; i++) {
