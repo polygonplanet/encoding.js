@@ -81,8 +81,8 @@ if (detected === 'UTF8') {
 * '**SJIS**'
 * '**UNICODE**' (JavaScript Unicode Array)
 
-Note: UNICODE is an array that has a value of String.charCodeAt() in JavaScript.
-　　(Each value in the array possibly has a number of more than 256.)
+Note: UNICODE is an array that has a value of String.charCodeAt() in JavaScript.  
+(Each value in the array possibly has a number of more than 256.)
 
 
 ##### Specify the Object argument
