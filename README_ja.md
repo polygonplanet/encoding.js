@@ -41,11 +41,11 @@ encoding.js の各メソッドは Node.js の Buffer に対しても使えます
 
 #### 文字コード変換 (convert):
 
-* {_Array.<number>_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
+* {_Array.&lt;number&gt;|string_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
   文字コードを変換します  
-  @param {_Array.<number>_|_TypedArray_|_Buffer_} _data_ 対象のデータ  
+  @param {_Array.&lt;number&gt;|TypedArray|Buffer|string_} _data_ 対象のデータ  
   @param {_(string|Object)_} _to\_encoding_ 変換先の文字コード  
-  @param {_(string|Array.<string>)=_} [_from\_encoding_] 変換元の文字コード or 'AUTO'  
+  @param {_(string|Array.&lt;string&gt;)=_} [_from\_encoding_] 変換元の文字コード or 'AUTO'  
   @return {_Array_}  変換した配列が返ります
 
 
@@ -95,6 +95,26 @@ var sjisArray = Encoding.convert(utf8Array, {
 
 第二引数にオブジェクトで渡すことで可読性が上がります
 
+
+##### 'type' オプションで文字列を指定し、文字列を直接渡す
+
+```javascript
+var utf8String = 'ã\u0081\u0093ã\u0082\u0093ã\u0081«ã\u0081¡ã\u0081¯';
+var unicodeString = Encoding.convert(utf8String, {
+  to: 'UNICODE',
+  from: 'UTF8',
+  type: 'string' // 文字列 'string' を指定 (string で返ります)
+});
+console.log(unicodeString); // こんにちは
+```
+
+'*type*' オプションは以下が利用可能です:
+
+* '**string**': 文字列として返ります
+* '**arraybuffer**': ArrayBuffer として返ります
+* '**array**': Array として返ります (デフォルト)
+
+
 ##### UTF16 に BOM をつける
 
 UTF16 に変換する際に bom オプションを指定すると BOM が付加できます
@@ -134,8 +154,8 @@ var utf16beArray = Encoding.convert(utf8Array, {
 
 * {_Array_} Encoding.**detect** ( data [, encodings ] )  
   文字コードを検出します  
-  @param {_Array.<number>_|_TypedArray_} _data_ 対象のデータ  
-  @param {_(string|Array.<string>)_} [_encodings_] 検出を絞り込む際の文字コード  
+  @param {_Array.&lt;number&gt;|TypedArray|string_} _data_ 対象のデータ  
+  @param {_(string|Array.&lt;string&gt;)_} [_encodings_] 検出を絞り込む際の文字コード  
   @return {_string|boolean_}  検出された文字コード、または false が返ります
 
 ```javascript
@@ -157,13 +177,13 @@ if (isSJIS) {
 
 * {_Array_} Encoding.**urlEncode** ( data )  
   URL(percent) エンコードします  
-  @param {_Array.<number>_|_TypedArray_} _data_ 対象のデータ  
+  @param {_Array.&lt;number&gt;_|_TypedArray_} _data_ 対象のデータ  
   @return {_string_}  エンコードされた文字列が返ります
 
 * {_Array_} Encoding.**urlDecode** ( string )  
   URL(percent) デコードします  
   @param {_string_} _string_ 対象の文字列  
-  @return {_Array.<number>_}  デコードされた文字コード配列が返ります
+  @return {_Array.&lt;number&gt;_}  デコードされた文字コード配列が返ります
 
 ```javascript
 // 文字コードの配列をURLエンコード/デコード
@@ -257,11 +277,42 @@ console.log( Encoding.codeToString(unicodeArray) );
 
 ### Utilities
 
-* {_string_} Encoding.**codeToString** ( {_Array.<number>_|_TypedArray_} data )  
+* {_string_} Encoding.**codeToString** ( {_Array.&lt;number&gt;_|_TypedArray_} data )  
   文字コード配列を文字列に変換(連結)して返します
 
-* {_Array.<number>_} Encoding.**stringToCode** ( {_string_} string )  
+* {_Array.&lt;number&gt;_} Encoding.**stringToCode** ( {_string_} string )  
   文字列を文字コード配列に分割して返します
+
+#### 全角/半角変換
+
+以下のメソッドは Unicode 文字または Unicode 文字コード配列に対して使用できます  
+
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toHankakuCase** ( {_Array.&lt;number&gt;|string_} data )  
+  全角英数記号文字を半角英数記号文字に変換
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toZenkakuCase** ( {_Array.&lt;number&gt;|string_} data )  
+  半角英数記号文字を全角英数記号文字に変換
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toHiraganaCase** ( {_Array.&lt;number&gt;|string_} data )  
+  全角カタカナを全角ひらがなに変換
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toKatakanaCase** ( {_Array.&lt;number&gt;|string_} data )  
+  全角ひらがなを全角カタカナに変換
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toHankanaCase** ( {_Array.&lt;number&gt;|string_} data )  
+  全角カタカナを半角ｶﾀｶﾅに変換
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toZenkanaCase** ( {_Array.&lt;number&gt;|string_} data )  
+  半角ｶﾀｶﾅを全角カタカナに変換
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toHankakuSpace** ({_Array.&lt;number&gt;|string_} data )  
+  全角スペース(U+3000)を半角スペース(U+0020)に変換
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toZenkakuSpace** ( {_Array.&lt;number&gt;|string_} data )  
+  半角スペース(U+0020)を全角スペース(U+3000)に変換
+
+
 
 
 ### Demo

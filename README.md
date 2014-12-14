@@ -41,11 +41,11 @@ Each methods are also available for the *Buffer* in Node.js.
 
 #### Convert character encoding (convert):
 
-* {_Array.<number>_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
+* {_Array.&lt;number&gt;|string_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
   Converts character encoding.  
-  @param {_Array.<number>_|_TypedArray_|_Buffer_} _data_ Target data.  
+  @param {_Array.&lt;number&gt;|TypedArray|Buffer|string_} _data_ The target data.  
   @param {_(string|Object)_} _to\_encoding_ The encoding name of conversion destination.  
-  @param {_(string|Array.<string>)=_} [_from\_encoding_] The encoding name of source or 'AUTO'.  
+  @param {_(string|Array.&lt;string&gt;)=_} [_from\_encoding_] The encoding name of source or 'AUTO'.  
   @return {_Array_}  Return the converted array.
 
 
@@ -96,6 +96,26 @@ var sjisArray = Encoding.convert(utf8Array, {
 
 Readability goes up by passing an object to the second argument.
 
+##### Specify the string argument and 'type' option
+
+```javascript
+var utf8String = 'ã\u0081\u0093ã\u0082\u0093ã\u0081«ã\u0081¡ã\u0081¯';
+var unicodeString = Encoding.convert(utf8String, {
+  to: 'UNICODE',
+  from: 'UTF8',
+  type: 'string' // Specify 'string' type. (Return as string)
+});
+console.log(unicodeString); // こんにちは
+```
+
+'*type*' option available as following types:
+
+* '**string**': Return as string.
+* '**arraybuffer**': Return as ArrayBuffer.
+* '**array**': Return as Array (default).
+
+
+
 ##### Specify BOM in UTF-16
 
 It's can add the UTF16 BOM with specify the bom option on convert.
@@ -135,8 +155,8 @@ Note: UTF16, UTF16BE and UTF16LE is not JavaScript internal encoding, that is an
 
 * {_Array_} Encoding.**detect** ( data [, encodings ] )  
   Detect character encoding.  
-  @param {_Array.<number>_|_TypedArray_} _data_ Target data  
-  @param {_(string|Array.<string>)_} [_encodings_] The encoding name that to specify the detection.  
+  @param {_Array.&lt;number&gt;|TypedArray|string_} _data_ Target data  
+  @param {_(string|Array.&lt;string&gt;)_} [_encodings_] The encoding name that to specify the detection.  
   @return {_string|boolean_} Return the detected character encoding, or false.
 
 
@@ -159,13 +179,13 @@ if (isSJIS) {
 
 * {_Array_} Encoding.**urlEncode** ( data )  
   URL(percent) encode.  
-  @param {_Array.<number>_|_TypedArray_} _data_ Target data.  
+  @param {_Array.&lt;number&gt;_|_TypedArray_} _data_ Target data.  
   @return {_string_}  Return the encoded string.
 
 * {_Array_} Encoding.**urlDecode** ( string )  
   URL(percent) decode.  
   @param {_string_} _string_ Target data.  
-  @return {_Array.<number>_} Return the decoded array.
+  @return {_Array.&lt;number&gt;_} Return the decoded array.
 
 ```javascript
 // URL encode to an array that has character code.
@@ -260,11 +280,37 @@ console.log( Encoding.codeToString(unicodeArray) );
 
 ### Utilities
 
-* {_string_} Encoding.**codeToString** ( {_Array.<number>_|_TypedArray_} data )  
+* {_string_} Encoding.**codeToString** ( {_Array.&lt;number&gt;_|_TypedArray_} data )  
   Joins a character code array to string.
 
-* {_Array.<number>_} Encoding.**stringToCode** ( {_string_} string )  
+* {_Array.&lt;number&gt;_} Encoding.**stringToCode** ( {_string_} string )  
   Splits string to an array of character codes.
+
+#### Japanese Zenkaku/Hankaku
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toHankakuCase** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert the ascii symbols and alphanumeric characters to the zenkaku symbols and alphanumeric characters.
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toZenkakuCase** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert to the zenkaku symbols and alphanumeric characters from the ascii symbols and alphanumeric characters.
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toHiraganaCase** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert to the zenkaku hiragana from the zenkaku katakana.
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toKatakanaCase** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert to the zenkaku katakana from the zenkaku hiragana.
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toHankanaCase** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert to the hankaku katakana from the zenkaku katakana.
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toZenkanaCase** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert to the zenkaku katakana from the hankaku katakana.
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toHankakuSpace** ({_Array.&lt;number&gt;|string_} data )  
+  Convert the em space(U+3000) to the single space(U+0020).
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toZenkakuSpace** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert the single space(U+0020) to the em space(U+3000).
 
 
 ### Demo
@@ -274,5 +320,6 @@ console.log( Encoding.codeToString(unicodeArray) );
 ### License
 
 MIT
+
 
 
