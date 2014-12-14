@@ -674,4 +674,348 @@ describe('Encoding', function() {
       });
     });
   });
+
+  describe('Result types of convert/detect', function() {
+    var string = getExpectedText(getExpectedName('UTF-8'));
+    assert(string.length > 0);
+
+    var array = encoding.stringToCode(string);
+    assert(array.length > 0);
+    assert(encoding.detect(array, 'UNICODE'));
+
+    var isTypedArray = function(a) {
+      return !Array.isArray(a) && a != null &&
+        typeof a.subarray !== 'undefined';
+    };
+
+    var isString = function(a) {
+      return typeof a === 'string';
+    };
+
+    it('null/undefined', function() {
+      var encoded = encoding.convert(null, 'utf-8');
+      assert(encoded.length === 0);
+      assert(Array.isArray(encoded));
+
+      encoded = encoding.convert(void 0, 'utf-8');
+      assert(encoded.length === 0);
+      assert(Array.isArray(encoded));
+    });
+
+    it('array by default', function() {
+      var encoded = encoding.convert([], 'utf-8');
+      assert(encoded.length === 0);
+      assert(Array.isArray(encoded));
+
+      encoded = encoding.convert([1], 'utf-8');
+      assert(encoded.length === 1);
+      assert(Array.isArray(encoded));
+
+      encoded = encoding.convert(new Array(), 'utf-8');
+      assert(encoded.length === 0);
+      assert(Array.isArray(encoded));
+
+      var a = new Array(2);
+      a[0] = 1;
+      a[1] = 2;
+      encoded = encoding.convert(a, 'utf-8');
+      assert(encoded.length === 2);
+      assert(Array.isArray(encoded));
+    });
+
+    it('Pass the string argument', function() {
+      var encoded = encoding.convert('', 'utf-8');
+      assert(encoded.length === 0);
+      assert(isString(encoded));
+
+      encoded = encoding.convert('123', 'utf-8');
+      assert(encoded.length === 3);
+      assert(isString(encoded));
+
+      var utf8 = '\u00E3\u0081\u0093\u00E3\u0082\u0093\u00E3\u0081' +
+        '\u00AB\u00E3\u0081\u00A1\u00E3\u0081\u00AF';
+
+      var expect = '\u3053\u3093\u306B\u3061\u306F';
+
+      encoded = encoding.convert(utf8, 'unicode', 'utf-8');
+      assert(encoded.length > 0);
+      assert(isString(encoded));
+      assert.equal(encoded, expect);
+
+      var detected = encoding.detect(utf8);
+      assert.equal(detected, 'UTF8');
+      detected = encoding.detect(expect);
+      assert.equal(detected, 'UNICODE');
+    });
+
+    it('Specify { type: "array" }', function() {
+      var encoded = encoding.convert(null, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'array'
+      });
+      assert(encoded.length === 0);
+      assert(Array.isArray(encoded));
+
+      encoded = encoding.convert(void 0, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'array'
+      });
+      assert(encoded.length === 0);
+      assert(Array.isArray(encoded));
+
+      encoded = encoding.convert('', {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'array'
+      });
+      assert(encoded.length === 0);
+      assert(Array.isArray(encoded));
+
+      encoded = encoding.convert('123', {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'array'
+      });
+      assert(encoded.length === 3);
+      assert(Array.isArray(encoded));
+
+      encoded = encoding.convert([], {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'array'
+      });
+      assert(encoded.length === 0);
+      assert(Array.isArray(encoded));
+
+      encoded = encoding.convert([0x61, 0x62], {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'array'
+      });
+      assert(encoded.length === 2);
+      assert(Array.isArray(encoded));
+
+      var buffer = new Buffer(0);
+      encoded = encoding.convert(buffer, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'array'
+      });
+      assert(encoded.length === 0);
+      assert(Array.isArray(encoded));
+
+      buffer = new Buffer(2);
+      buffer[0] = 0x61;
+      buffer[1] = 0x62;
+      encoded = encoding.convert(buffer, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'array'
+      });
+      assert(encoded.length === 2);
+      assert(Array.isArray(encoded));
+
+      buffer = new Uint8Array(0);
+      encoded = encoding.convert(buffer, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'array'
+      });
+      assert(encoded.length === 0);
+      assert(Array.isArray(encoded));
+
+      buffer = new Uint8Array(2);
+      buffer[0] = 0x61;
+      buffer[1] = 0x62;
+      encoded = encoding.convert(buffer, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'array'
+      });
+      assert(encoded.length === 2);
+      assert(Array.isArray(encoded));
+    });
+
+    it('Specify { type: "arraybuffer" }', function() {
+      var encoded = encoding.convert(null, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'arraybuffer'
+      });
+      assert(encoded.length === 0);
+      assert(isTypedArray(encoded));
+
+      encoded = encoding.convert(void 0, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'arraybuffer'
+      });
+      assert(encoded.length === 0);
+      assert(isTypedArray(encoded));
+
+      encoded = encoding.convert('', {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'arraybuffer'
+      });
+      assert(encoded.length === 0);
+      assert(isTypedArray(encoded));
+
+      encoded = encoding.convert('123', {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'arraybuffer'
+      });
+      assert(encoded.length === 3);
+      assert(isTypedArray(encoded));
+
+      encoded = encoding.convert([], {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'arraybuffer'
+      });
+      assert(encoded.length === 0);
+      assert(isTypedArray(encoded));
+
+      encoded = encoding.convert([0x61, 0x62], {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'arraybuffer'
+      });
+      assert(encoded.length === 2);
+      assert(isTypedArray(encoded));
+
+      var buffer = new Buffer(0);
+      encoded = encoding.convert(buffer, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'arraybuffer'
+      });
+      assert(encoded.length === 0);
+      assert(isTypedArray(encoded));
+
+      buffer = new Buffer(2);
+      buffer[0] = 0x61;
+      buffer[1] = 0x62;
+      encoded = encoding.convert(buffer, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'arraybuffer'
+      });
+      assert(encoded.length === 2);
+      assert(isTypedArray(encoded));
+
+      buffer = new Uint8Array(0);
+      encoded = encoding.convert(buffer, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'arraybuffer'
+      });
+      assert(encoded.length === 0);
+      assert(isTypedArray(encoded));
+
+      buffer = new Uint8Array(2);
+      buffer[0] = 0x61;
+      buffer[1] = 0x62;
+      encoded = encoding.convert(buffer, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'arraybuffer'
+      });
+      assert(encoded.length === 2);
+      assert(isTypedArray(encoded));
+    });
+
+    it('Specify { type: "string" }', function() {
+      var encoded = encoding.convert(null, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'string'
+      });
+      assert(encoded.length === 0);
+      assert(isString(encoded));
+
+      encoded = encoding.convert(void 0, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'string'
+      });
+      assert(encoded.length === 0);
+      assert(isString(encoded));
+
+      encoded = encoding.convert('', {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'string'
+      });
+      assert(encoded.length === 0);
+      assert(isString(encoded));
+
+      encoded = encoding.convert('123', {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'string'
+      });
+      assert(encoded.length === 3);
+      assert(isString(encoded));
+
+      encoded = encoding.convert([], {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'string'
+      });
+      assert(encoded.length === 0);
+      assert(isString(encoded));
+
+      encoded = encoding.convert([0x61, 0x62], {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'string'
+      });
+      assert(encoded.length === 2);
+      assert(isString(encoded));
+
+      var buffer = new Buffer(0);
+      encoded = encoding.convert(buffer, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'string'
+      });
+      assert(encoded.length === 0);
+      assert(isString(encoded));
+
+      buffer = new Buffer(2);
+      buffer[0] = 0x61;
+      buffer[1] = 0x62;
+      encoded = encoding.convert(buffer, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'string'
+      });
+      assert(encoded.length === 2);
+      assert(isString(encoded));
+
+      buffer = new Uint8Array(0);
+      encoded = encoding.convert(buffer, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'string'
+      });
+      assert(encoded.length === 0);
+      assert(isString(encoded));
+
+      buffer = new Uint8Array(2);
+      buffer[0] = 0x61;
+      buffer[1] = 0x62;
+      encoded = encoding.convert(buffer, {
+        to: 'utf-8',
+        from: 'unicode',
+        type: 'string'
+      });
+      assert(encoded.length === 2);
+      assert(isString(encoded));
+    });
+  });
 });

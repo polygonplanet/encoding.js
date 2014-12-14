@@ -40,6 +40,32 @@ var slice = Array.prototype.slice;
 var toString = Object.prototype.toString;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
+var HAS_TYPED = typeof Uint8Array !== 'undefined' &&
+                typeof Uint16Array !== 'undefined';
+
+// Test for String.fromCharCode.apply.
+var CAN_CHARCODE_APPLY = false;
+var CAN_CHARCODE_APPLY_TYPED = false;
+
+try {
+  if (fromCharCode.apply(null, [0x61]) === 'a') {
+    CAN_CHARCODE_APPLY = true;
+  }
+} catch (e) {}
+
+if (HAS_TYPED) {
+  try {
+    if (fromCharCode.apply(null, new Uint8Array([0x61])) === 'a') {
+      CAN_CHARCODE_APPLY_TYPED = true;
+    }
+  } catch (e) {}
+}
+
+// Function.prototype.apply stack max range
+var APPLY_BUFFER_SIZE = 65533;
+var APPLY_BUFFER_SIZE_OK = null;
+
+
 /**
  * Encoding names.
  *
@@ -156,7 +182,7 @@ var Encoding = {
    * If encodings is "AUTO", or the encoding-list as an array, or
    *   comma separated list string it will be detected automatically.
    *
-   * @param {Array.<number>|TypedArray} data The data being detected.
+   * @param {Array.<number>|TypedArray|string} data The data being detected.
    * @param {(Object|string|Array.<string>)=} [encodings] The encoding-list of
    *   character encoding.
    * @return {string|boolean} The detected character encoding, or false.
@@ -171,6 +197,10 @@ var Encoding = {
 
     if (isObject(encodings)) {
       encodings = encodings.encoding;
+    }
+
+    if (isString(data)) {
+      data = stringToBuffer(data);
     }
 
     if (encodings == null) {
@@ -215,25 +245,34 @@ var Encoding = {
    * If `from` is "AUTO", or the encoding-list as an array, or
    *   comma separated list string it will be detected automatically.
    *
-   * @param {Array.<number>|TypedArray} data The data being converted.
+   * @param {Array.<number>|TypedArray|string} data The data being converted.
    * @param {(string|Object)} to The name of encoding to.
    * @param {(string|Array.<string>)=} [from] The encoding-list of
    *   character encoding.
-   * @return {Array} The converted array.
+   * @return {Array|TypedArray|string} The converted data.
    *
    * @public
    * @function
    */
   convert: function(data, to, from) {
-    if (data == null || data.length === 0 || data[0] === void 0) {
-      return data;
-    }
-
+    var result;
+    var type;
     var options = {};
+
     if (isObject(to)) {
       options = to;
       from = options.from;
       to = options.to;
+      if (options.type) {
+        type = options.type;
+      }
+    }
+
+    if (isString(data)) {
+      type = type || 'string';
+      data = stringToBuffer(data);
+    } else if (data == null || data.length === 0) {
+      data = [];
     }
 
     var encodingFrom;
@@ -246,12 +285,23 @@ var Encoding = {
 
     var encodingTo = assignEncodingName(to);
     var method = encodingFrom + 'To' + encodingTo;
+
     if (hasOwnProperty.call(EncodingConvert, method)) {
-      return EncodingConvert[method](data, options);
+      result = EncodingConvert[method](data, options);
+    } else {
+      // Returns the raw data if the method is undefined.
+      result = data;
     }
 
-    // Returns the raw data if the method is undefined.
-    return data;
+    switch (('' + type).toLowerCase()) {
+      case 'string':
+        return codeToString_fast(result);
+      case 'arraybuffer':
+        return codeToBuffer(result);
+      case 'array':
+      default:
+        return bufferToCode(result);
+    }
   },
   /**
    * Encode a character code array to URL string like encodeURIComponent.
@@ -273,7 +323,7 @@ var Encoding = {
 
       //FIXME: JavaScript UTF-16 encoding
       if (b > 0xFF) {
-        return encodeURIComponent(Encoding.codeToString(data));
+        return encodeURIComponent(codeToString_fast(data));
       }
 
       if ((b >= 0x61 /*a*/ && b <= 0x7A /*z*/) ||
@@ -329,22 +379,7 @@ var Encoding = {
    * @public
    * @function
    */
-  codeToString: function(data) {
-    try {
-      return fromCharCode.apply(null, data);
-    } catch (e) {
-      // Ignore RangeError: arguments too large
-    }
-
-    var string = '';
-    var len = data && data.length;
-
-    for (var i = 0; i < len; i++) {
-      string += fromCharCode(data[i]);
-    }
-
-    return string;
-  },
+  codeToString: codeToString_fast,
   /**
    * Splits string to an array of character codes.
    *
@@ -354,16 +389,7 @@ var Encoding = {
    * @public
    * @function
    */
-  stringToCode: function(string) {
-    var code = [];
-    var len = string && string.length;
-
-    for (var i = 0; i < len; i++) {
-      code[i] = string.charCodeAt(i);
-    }
-
-    return code;
-  }
+  stringToCode: stringToCode
 };
 
 
@@ -2639,6 +2665,145 @@ function getKeys(object) {
   }
 
   return keys;
+}
+
+
+function createBuffer(bits, size) {
+  if (!HAS_TYPED) {
+    return new Array(size);
+  }
+
+  switch (bits) {
+    case 8: return new Uint8Array(size);
+    case 16: return new Uint16Array(size);
+  }
+}
+
+
+function stringToBuffer(string) {
+  var length = string.length;
+  var buffer = createBuffer(16, length);
+
+  for (var i = 0; i < length; i++) {
+    buffer[i] = string.charCodeAt(i);
+  }
+
+  return buffer;
+}
+
+
+function codeToString_fast(code) {
+  if (CAN_CHARCODE_APPLY && CAN_CHARCODE_APPLY_TYPED) {
+    var len = code && code.length;
+    if (len < APPLY_BUFFER_SIZE) {
+      if (APPLY_BUFFER_SIZE_OK) {
+        return fromCharCode.apply(null, code);
+      }
+
+      if (APPLY_BUFFER_SIZE_OK === null) {
+        try {
+          var s = fromCharCode.apply(null, code);
+          APPLY_BUFFER_SIZE_OK = true;
+          return s;
+        } catch (e) {
+          // Ignore RangeError: arguments too large
+          APPLY_BUFFER_SIZE_OK = false;
+        }
+      }
+    }
+  }
+
+  return codeToString_chunked(code);
+}
+
+
+function codeToString_chunked(code) {
+  var string = '';
+  var length = code && code.length;
+  var i = 0;
+  var sub;
+
+  while (i < length) {
+    if (code.subarray) {
+      sub = code.subarray(i, i + APPLY_BUFFER_SIZE);
+    } else {
+      sub = code.slice(i, i + APPLY_BUFFER_SIZE);
+    }
+    i += APPLY_BUFFER_SIZE;
+
+    if (APPLY_BUFFER_SIZE_OK) {
+      string += fromCharCode.apply(null, sub);
+      continue;
+    }
+
+    if (APPLY_BUFFER_SIZE_OK === null) {
+      try {
+        string += fromCharCode.apply(null, sub);
+        APPLY_BUFFER_SIZE_OK = true;
+        continue;
+      } catch (e) {
+        APPLY_BUFFER_SIZE_OK = false;
+      }
+    }
+
+    return codeToString_slow(code);
+  }
+
+  return string;
+}
+
+
+function codeToString_slow(code) {
+  var string = '';
+  var length = code && code.length;
+
+  for (var i = 0; i < length; i++) {
+    string += fromCharCode(code[i]);
+  }
+
+  return string;
+}
+
+
+function stringToCode(string) {
+  var code = [];
+  var len = string && string.length;
+
+  for (var i = 0; i < len; i++) {
+    code[i] = string.charCodeAt(i);
+  }
+
+  return code;
+}
+
+
+function codeToBuffer(code) {
+  if (HAS_TYPED) {
+    // Use Uint16Array for Unicode codepoint.
+    return new Uint16Array(code);
+  } else {
+    if (isArray(code)) {
+      return code;
+    }
+  }
+
+  var length = code && code.length;
+  var buffer = [];
+
+  for (var i = 0; i < length; i++) {
+    buffer[i] = code[i];
+  }
+
+  return buffer;
+}
+
+
+function bufferToCode(buffer) {
+  if (isArray(buffer)) {
+    return buffer;
+  }
+
+  return slice.call(buffer);
 }
 
 
