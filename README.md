@@ -46,7 +46,7 @@ Each methods are also available for the *Buffer* in Node.js.
   @param {_Array.&lt;number&gt;|TypedArray|Buffer|string_} _data_ The target data.  
   @param {_(string|Object)_} _to\_encoding_ The encoding name of conversion destination.  
   @param {_(string|Array.&lt;string&gt;)=_} [_from\_encoding_] The encoding name of source or 'AUTO'.  
-  @return {_Array_}  Return the converted array.
+  @return {_Array|string_}  Return the converted array/string.
 
 
 ```javascript

@@ -46,7 +46,7 @@ encoding.js の各メソッドは Node.js の Buffer に対しても使えます
   @param {_Array.&lt;number&gt;|TypedArray|Buffer|string_} _data_ 対象のデータ  
   @param {_(string|Object)_} _to\_encoding_ 変換先の文字コード  
   @param {_(string|Array.&lt;string&gt;)=_} [_from\_encoding_] 変換元の文字コード or 'AUTO'  
-  @return {_Array_}  変換した配列が返ります
+  @return {_Array|string_}  変換した配列または(文字列を渡した場合)文字列が返ります
 
 
 ```javascript
