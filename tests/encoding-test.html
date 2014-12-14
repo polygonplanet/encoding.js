@@ -2,118 +2,136 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Convert Encoding in JavaScript</title>
+<title>Converts character encoding in JavaScript - encoding.js</title>
 <link rel="shortcut icon" href="http://api.polygonpla.net/img/icon/house.png">
-<script type="text/javascript" async="async" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script type="text/javascript" async="async" src="js/encoding.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript" src="js/encoding.min.js"></script>
 <script>
-setTimeout(function() {
+(function() {
   'use strict';
 
-  var done;
   var ENCODINGS = ['SJIS', 'JIS', 'EUCJP', 'UTF8'];
 
-  void function loadback() {
-    if (typeof $ === 'undefined' ||
-        typeof Encoding === 'undefined') {
-      setTimeout(loadback, 32);
-
-    } else if (!done) {
-      done = true;
-      doit();
-    }
-  }();
+  $(document).ready(doit);
 
 
   function doit() {
-    $('#run').removeAttr('disabled').click(function() {
-      $(this).attr({disabled : 'disabled'});
+    var run = document.getElementById('run');
+    run.removeAttribute('disabled');
+    run.addEventListener('click', function() {
+      run.disabled = true;
       convert();
-    });
+    }, false);
   }
 
 
   function convert() {
     var d = $.Deferred();
 
-    var wrap = function(a, b, c) {
-      return a + ' (' + b + ' ' + c + ')';
-    };
+    ENCODINGS.forEach(function(encodingName) {
+      d.then(function() {
+        var filename = 'encoding-' + encodingName.toLowerCase() + '.txt';
 
-    $.each(ENCODINGS, function(k, type) {
-      d.done(function() {
-        var fileName = 'encoding-' + type.toLowerCase() + '.txt';
+        return readFile(filename).then(function(data) {
+          appendTitle('Open ', filename);
 
-        return request(fileName).then(function(bytes) {
-          appendText('Open ', '.', fileName);
-          appendText(bytes.toString(), wrap(fileName, type, 'Array'));
-          appendText(Encoding.codeToString(bytes), wrap(fileName, type, 'String'));
+          appendText(encodingName + ' Array', Array.prototype.slice.call(data).toString());
+          appendText(encodingName + ' String', Encoding.codeToString(data));
+
+          var detected = Encoding.detect(data);
+          appendText('Encoding.detect(' + encodingName +' Array)', detected);
+
+          var encoded = Encoding.urlEncode(data);
+          appendText('Encoding.urlEncode(' + encodingName + ' Array)', encoded);
+
+          var decoded = Encoding.urlDecode(encoded);
+          appendText('Encoding.urlDecode()', decoded.toString());
 
           // Convert to Unicode.
-          var unicodes = Encoding.convert(bytes, 'UNICODE');
+          var unicode = Encoding.convert(data, {
+            to: 'UNICODE',
+            from: 'AUTO'
+          });
 
-          var urlEncBytes = Encoding.urlEncode(bytes);
-          appendText(urlEncBytes, wrap(fileName, type, 'URL Encode'));
-
-          var urlDecBytes = Encoding.urlDecode(urlEncBytes);
-          appendText(urlDecBytes, wrap(fileName, type, 'URL Encode => URL Decode'));
-
-          appendText(unicodes, wrap(fileName, type, '=> Unicode Array'));
-          appendText(Encoding.codeToString(unicodes), wrap(fileName, type, '=> Unicode String'));
+          appendText(encodingName + ' Array => UNICODE Array', unicode.toString());
+          appendText('UNICODE Array => UNICODE String', Encoding.codeToString(unicode));
+        }, function(err) {
+          appendTitle('Open ', filename);
+          appendText('Error', err);
+          console.error(err);
+          throw err;
         });
       });
     });
+
     d.resolve();
   }
 
 
-  function request(url) {
+  function readFile(url) {
     var d = $.Deferred();
+    var req = new XMLHttpRequest();
+    req.open('GET', url, true);
+    req.responseType = 'arraybuffer';
 
-    $.ajax({
-      url      : url,
-      dataType : 'text',
-      mimeType : 'text/plain; charset=x-user-defined',
-      success  : function(data) {
-        var bytes = [];
-        for (var i = 0, len = data.length; i < len; i++) {
-          var c = data.charCodeAt(i);
-          bytes[bytes.length] = c & 0xFF;
+    req.onload = function(ev) {
+      if (req.readyState === 4) {
+        if (req.status === 200) {
+          var buffer = req.response;
+          if (buffer) {
+            var data = new Uint8Array(buffer);
+            d.resolve(data);
+          } else {
+            d.reject(req.statusText);
+          }
+        } else {
+          d.reject(req.statusText);
         }
-        d.resolve(bytes);
       }
-    });
+    };
+
+    req.onerror = function(ev) {
+      d.reject(req.statusText);
+    };
+
+    req.send(null);
+
     return d;
   }
 
 
-  function appendText(text, title, url) {
-    var target = $('#container');
-    if (url) {
-      $('<h3/>')
-        .append(text)
-        .append(
-          $('<a/>')
-            .attr({
-              href   : url,
-              target : '_blank'
-            })
-            .text(url)
-        )
-        .append(title)
-        .appendTo(target);
-    } else {
-      $('<div/>').text(title).appendTo(target);
-      $('<textarea/>').val(text).appendTo(target);
-    }
+  function appendTitle(title, url) {
+    var a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.textContent = url;
+
+    var h3 = document.createElement('h3');
+    h3.appendChild(document.createTextNode(title));
+    h3.appendChild(a);
+
+    var result = document.getElementById('result');
+    result.appendChild(h3);
   }
 
 
-}, 200);
+  function appendText(title, text) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(title));
+
+    var textarea = document.createElement('textarea');
+    textarea.value = text;
+
+    var result = document.getElementById('result');
+    result.appendChild(div);
+    result.appendChild(textarea);
+  }
+
+}());
 </script>
 <style>
 * {
-  font-family: verdana, sans-serif;
+  font-family: tahoma, verdana, sans-serif;
 }
 
 textarea {
@@ -122,8 +140,11 @@ textarea {
   font-family: consolas, monospace;
 }
 
-#container {
-  margin: 1em;
+.container {
+  margin-left: 5em;
+  margin-right: 5em;
+  margin-top: 100px;
+  margin-bottom: 1em;
 }
 
 #run {
@@ -131,31 +152,33 @@ textarea {
   font-weight: bold;
 }
 
-#footer {
+footer {
   margin: 0.5em auto;
-  text-align: center;
+  margin-top: 2em;
+  font-weight: bold;
 }
 </style>
 </head>
 <body>
-<h1>Convert Encoding in JavaScript</h1>
-<h2>文字コードを変換します</h2>
-<p>
- いろいろな文字コードで書かれているテキストを取得して
- 文字コードを変換して表示します。
-</p>
-
-<div>
- <button type="button" id="run">Run</button>
-</div>
-
-<div id="container"></div>
-
-<p id="footer">
- Last modified: 2014-12-07
- Written by <a href="http://twitter.com/polygon_planet" title="Twitter @polygon_planet" target="_blank">polygon planet</a>
- <a href="https://github.com/polygonplanet/encoding.js" title="polygonplanet/encoding.js - GitHub">GitHub</a>
-</p>
-
+  <div class="container">
+    <header>
+      <h1>Converts character encoding in JavaScript</h1>
+      <h2>文字コードを変換します</h2>
+      <div class="description">
+        いろいろな文字コードで書かれているテキストを取得して
+        文字コードを変換して表示します。
+      </div>
+    </header>
+    <div class="wrapper">
+      <div>
+        <button type="button" id="run" disabled="disabled">Run</button>
+      </div>
+      <div id="result"></div>
+    </div>
+    <footer>
+      <a href="https://github.com/polygonplanet/encoding.js">Repository in GitHub</a>
+    </footer>
+  </div>
+  <a href="https://github.com/polygonplanet/encoding.js"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/121cd7cbdc3e4855075ea8b558508b91ac463ac2/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_green_007200.png"></a>
 </body>
 </html>
