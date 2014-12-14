@@ -1018,4 +1018,153 @@ describe('Encoding', function() {
       assert(isString(encoded));
     });
   });
+
+  describe('Japanese Zenkaku/Hankaku conversion', function() {
+    var hankakus = [
+      'Hello World! 12345',
+      '!"#$%&\'()*+,-./0123456789:;<=>?@' +
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
+    ];
+
+    var zenkakus = [
+      'Ｈｅｌｌｏ Ｗｏｒｌｄ！ １２３４５',
+      '！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠' +
+        'ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～'
+    ];
+
+    var hankanas = [
+      'ﾎﾞﾎﾟｳﾞｧｱｨｲｩｳｪｴｫｵ',
+      '､｡｢｣ﾞﾟｧｱｨｲｩｳｪｴｫｵｶｷｸｹｺｻｼｽｾｿﾀﾁｯﾂﾃﾄ' +
+      'ﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓｬﾔｭﾕｮﾖﾗﾘﾙﾚﾛﾜｦﾝｳﾞヵヶﾜﾞｦﾞ･ｰ'
+    ];
+
+    var zenkanas = [
+      'ボポヴァアィイゥウェエォオ',
+      '、。「」゛゜ァアィイゥウェエォオカキクケコサシスセソタチッツテト' +
+        'ナニヌネノハヒフヘホマミムメモャヤュユョヨラリルレロワヲンヴヵヶ\u30F7\u30FA・ー'
+    ];
+
+    var hiraganas = [
+      'ぼぽ\u3094ぁあぃいぅうぇえぉお',
+      '、。「」゛゜ぁあぃいぅうぇえぉおかきくけこさしすせそたちっつてと' +
+        'なにぬねのはひふへほまみむめもゃやゅゆょよらりるれろわをんう゛\u3094\u3095\u3096わ゛を゛・ー'
+    ];
+
+    var katakanas = [
+      'ボポヴァアィイゥウェエォオ',
+      '、。「」゛゜ァアィイゥウェエォオカキクケコサシスセソタチッツテト' +
+        'ナニヌネノハヒフヘホマミムメモャヤュユョヨラリルレロワヲンウ゛ヴヵヶ\u30F7\u30FA・ー'
+    ];
+
+    var hanspace = 'Hello World! 1 2 3 4 5';
+    var zenspace = 'Hello\u3000World!\u30001\u30002\u30003\u30004\u30005';
+
+    it('toHankakuCase', function() {
+      zenkakus.forEach(function(zenkaku, i) {
+        var expect = hankakus[i];
+        var res = encoding.toHankakuCase(zenkaku);
+        assert.equal(res, expect);
+
+        var zenkakuArray = encoding.stringToCode(zenkaku);
+        var expectArray = encoding.stringToCode(expect);
+        res = encoding.toHankakuCase(zenkakuArray);
+        assert(Array.isArray(res));
+        assert.deepEqual(res, expectArray);
+      });
+    });
+
+    it('toZenkakuCase', function() {
+      hankakus.forEach(function(hankaku, i) {
+        var expect = zenkakus[i];
+        var res = encoding.toZenkakuCase(hankaku);
+        assert.equal(res, expect);
+
+        var hankakuArray = encoding.stringToCode(hankaku);
+        var expectArray = encoding.stringToCode(expect);
+        res = encoding.toZenkakuCase(hankakuArray);
+        assert(Array.isArray(res));
+        assert.deepEqual(res, expectArray);
+      });
+    });
+
+    it('toHiraganaCase', function() {
+      katakanas.forEach(function(katakana, i) {
+        var expect = hiraganas[i];
+        var res = encoding.toHiraganaCase(katakana);
+        assert.equal(res, expect);
+
+        var zenkanaArray = encoding.stringToCode(katakana);
+        var expectArray = encoding.stringToCode(expect);
+        res = encoding.toHiraganaCase(zenkanaArray);
+        assert(Array.isArray(res));
+        assert.deepEqual(res, expectArray);
+      });
+    });
+
+    it('toKatakanaCase', function() {
+      hiraganas.forEach(function(hiragana, i) {
+        var expect = katakanas[i];
+        var res = encoding.toKatakanaCase(hiragana);
+        assert.equal(res, expect);
+
+        var hiraganaArray = encoding.stringToCode(hiragana);
+        var expectArray = encoding.stringToCode(expect);
+        res = encoding.toKatakanaCase(hiraganaArray);
+        assert(Array.isArray(res));
+        assert.deepEqual(res, expectArray);
+      });
+    });
+
+    it('toHankanaCase', function() {
+      zenkanas.forEach(function(zenkana, i) {
+        var expect = hankanas[i];
+        var res = encoding.toHankanaCase(zenkana);
+        assert.equal(res, expect);
+
+        var zenkanaArray = encoding.stringToCode(zenkana);
+        var expectArray = encoding.stringToCode(expect);
+        res = encoding.toHankanaCase(zenkanaArray);
+        assert(Array.isArray(res));
+        assert.deepEqual(res, expectArray);
+      });
+    });
+
+    it('toZenkanaCase', function() {
+      hankanas.forEach(function(hankana, i) {
+        var expect = zenkanas[i];
+        var res = encoding.toZenkanaCase(hankana);
+        assert.equal(res, expect);
+
+        var hankanaArray = encoding.stringToCode(hankana);
+        var expectArray = encoding.stringToCode(expect);
+        res = encoding.toZenkanaCase(hankanaArray);
+        assert(Array.isArray(res));
+        assert.deepEqual(res, expectArray);
+      });
+    });
+
+    it('toHankakuSpace', function() {
+      var expect = hanspace;
+      var res = encoding.toHankakuSpace(zenspace);
+      assert.equal(res, expect);
+
+      var zenspaceArray = encoding.stringToCode(zenspace);
+      var expectArray = encoding.stringToCode(expect);
+      res = encoding.toHankakuSpace(zenspaceArray);
+      assert(Array.isArray(res));
+      assert.deepEqual(res, expectArray);
+    });
+
+    it('toZenkakuSpace', function() {
+      var expect = zenspace;
+      var res = encoding.toZenkakuSpace(hanspace);
+      assert.equal(res, expect);
+
+      var hanspaceArray = encoding.stringToCode(hanspace);
+      var expectArray = encoding.stringToCode(expect);
+      res = encoding.toZenkakuSpace(hanspaceArray);
+      assert(Array.isArray(res));
+      assert.deepEqual(res, expectArray);
+    });
+  });
 });
