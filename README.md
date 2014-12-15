@@ -149,11 +149,11 @@ var utf16beArray = Encoding.convert(utf8Array, {
 });
 ```
 
-Note: UTF16, UTF16BE and UTF16LE is not JavaScript internal encoding, that is an byte array.
+Note: UTF16, UTF16BE and UTF16LE is not JavaScript internal encoding, that is a byte array.
 
 #### Detect character encoding (detect):
 
-* {_Array_} Encoding.**detect** ( data [, encodings ] )  
+* {_string|boolean_} Encoding.**detect** ( data [, encodings ] )  
   Detect character encoding.  
   @param {_Array.&lt;number&gt;|TypedArray|string_} _data_ Target data  
   @param {_(string|Array.&lt;string&gt;)_} [_encodings_] The encoding name that to specify the detection.  

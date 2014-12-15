@@ -152,7 +152,7 @@ var utf16beArray = Encoding.convert(utf8Array, {
 
 #### 文字コード検出 (detect):
 
-* {_Array_} Encoding.**detect** ( data [, encodings ] )  
+* {_string|boolean_} Encoding.**detect** ( data [, encodings ] )  
   文字コードを検出します  
   @param {_Array.&lt;number&gt;|TypedArray|string_} _data_ 対象のデータ  
   @param {_(string|Array.&lt;string&gt;)_} [_encodings_] 検出を絞り込む際の文字コード  
