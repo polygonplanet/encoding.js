@@ -177,12 +177,12 @@ if (isSJIS) {
 
 ##### URL Encode/Decode:
 
-* {_Array_} Encoding.**urlEncode** ( data )  
+* {_string_} Encoding.**urlEncode** ( data )  
   URL(percent) encode.  
   @param {_Array.&lt;number&gt;_|_TypedArray_} _data_ Target data.  
   @return {_string_}  Return the encoded string.
 
-* {_Array_} Encoding.**urlDecode** ( string )  
+* {_Array.&lt;number&gt;_} Encoding.**urlDecode** ( string )  
   URL(percent) decode.  
   @param {_string_} _string_ Target data.  
   @return {_Array.&lt;number&gt;_} Return the decoded array.

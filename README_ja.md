@@ -175,12 +175,12 @@ if (isSJIS) {
 
 ##### URL Encode/Decode:
 
-* {_Array_} Encoding.**urlEncode** ( data )  
+* {_string_} Encoding.**urlEncode** ( data )  
   URL(percent) エンコードします  
   @param {_Array.&lt;number&gt;_|_TypedArray_} _data_ 対象のデータ  
   @return {_string_}  エンコードされた文字列が返ります
 
-* {_Array_} Encoding.**urlDecode** ( string )  
+* {_Array.&lt;number&gt;_} Encoding.**urlDecode** ( string )  
   URL(percent) デコードします  
   @param {_string_} _string_ 対象の文字列  
   @return {_Array.&lt;number&gt;_}  デコードされた文字コード配列が返ります
