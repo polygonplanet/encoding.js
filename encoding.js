@@ -318,6 +318,10 @@ var Encoding = {
    * @function
    */
   urlEncode: function(data) {
+    if (isString(data)) {
+      data = stringToBuffer(data);
+    }
+
     var result = '';
     var i = 0;
     var len = data && data.length;
@@ -3059,7 +3063,9 @@ function codeToString_fast(code) {
       if (APPLY_BUFFER_SIZE_OK === null) {
         try {
           var s = fromCharCode.apply(null, code);
-          APPLY_BUFFER_SIZE_OK = true;
+          if (len > APPLY_BUFFER_SIZE) {
+            APPLY_BUFFER_SIZE_OK = true;
+          }
           return s;
         } catch (e) {
           // Ignore RangeError: arguments too large
@@ -3095,7 +3101,9 @@ function codeToString_chunked(code) {
     if (APPLY_BUFFER_SIZE_OK === null) {
       try {
         string += fromCharCode.apply(null, sub);
-        APPLY_BUFFER_SIZE_OK = true;
+        if (sub.length > APPLY_BUFFER_SIZE) {
+          APPLY_BUFFER_SIZE_OK = true;
+        }
         continue;
       } catch (e) {
         APPLY_BUFFER_SIZE_OK = false;
