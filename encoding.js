@@ -4,8 +4,8 @@
  * @description    Converts character encoding.
  * @fileOverview   Encoding library
  * @author         polygon planet
- * @version        1.0.19
- * @date           2014-12-16
+ * @version        1.0.20
+ * @date           2014-12-17
  * @link           https://github.com/polygonplanet/encoding.js
  * @copyright      Copyright (c) 2013-2014 polygon planet <polygon.planet.aqua@gmail.com>
  * @license        licensed under the MIT license.
@@ -322,7 +322,8 @@ var Encoding = {
       data = stringToBuffer(data);
     }
 
-    var result = '';
+    var alpha = stringToCode('0123456789ABCDEF');
+    var results = [];
     var i = 0;
     var len = data && data.length;
     var b;
@@ -343,13 +344,20 @@ var Encoding = {
           b === 0x2D /*-*/ || b === 0x2E /*.*/ ||
           b === 0x5F /*_*/ || b === 0x7E /*~*/
       ) {
-        result += fromCharCode(b);
+        results[results.length] = b;
       } else {
-        result += (b < 0x10 ? '%0' : '%') + b.toString(16).toUpperCase();
+        results[results.length] = 0x25; /*%*/
+        if (b < 0x10) {
+          results[results.length] = 0x30; /*0*/
+          results[results.length] = alpha[b];
+        } else {
+          results[results.length] = alpha[b >> 4 & 0xF];
+          results[results.length] = alpha[b & 0xF];
+        }
       }
     }
 
-    return result;
+    return codeToString_fast(results);
   },
   /**
    * Decode a percent encoded string to
