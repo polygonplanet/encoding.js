@@ -4,10 +4,10 @@
  * @description    Converts character encoding.
  * @fileOverview   Encoding library
  * @author         polygon planet
- * @version        1.0.20
- * @date           2014-12-17
+ * @version        1.0.21
+ * @date           2015-02-12
  * @link           https://github.com/polygonplanet/encoding.js
- * @copyright      Copyright (c) 2013-2014 polygon planet <polygon.planet.aqua@gmail.com>
+ * @copyright      Copyright (c) 2013-2015 polygon planet <polygon.planet.aqua@gmail.com>
  * @license        licensed under the MIT license.
  *
  * Based:
