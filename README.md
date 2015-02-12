@@ -39,6 +39,12 @@ var encoding = require('encoding-japanese');
 
 Each methods are also available for the *Buffer* in Node.js.
 
+#### bower:
+
+```bash
+bower install encoding-japanese
+```
+
 #### Convert character encoding (convert):
 
 * {_Array.&lt;number&gt;|string_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  

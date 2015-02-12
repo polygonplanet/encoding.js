@@ -39,6 +39,12 @@ var encoding = require('encoding-japanese');
 
 encoding.js の各メソッドは Node.js の Buffer に対しても使えます
 
+#### bower:
+
+```bash
+bower install encoding-japanese
+```
+
 #### 文字コード変換 (convert):
 
 * {_Array.&lt;number&gt;|string_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
