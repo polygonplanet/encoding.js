@@ -1,0 +1,29 @@
+{
+  "name": "encoding-japanese",
+  "main": "encoding.js",
+  "version": "1.0.21",
+  "homepage": "https://github.com/polygonplanet/encoding.js",
+  "authors": [
+    "polygonplanet <polygon.planet.aqua@gmail.com>"
+  ],
+  "description": "Converts character encoding.",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "encoding", "charset", "iconv", "japanese", "unicode",
+    "utf", "utf-8", "utf-16", "utf-32", "sjis", "shift_jis",
+    "eucjp", "euc-jp", "jis", "iso-2022-jp", "convert",
+    "detect", "urlencode", "urldecode"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
