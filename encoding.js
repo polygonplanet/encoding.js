@@ -3131,7 +3131,8 @@ function assignEncodingName(target) {
 // Helpers
 
 function isObject(x) {
-  return toString.call(x) === '[object Object]';
+    var type = typeof obj;
+    return type === 'function' || type === 'object' && !!obj;
 }
 
 function isArray(x) {
