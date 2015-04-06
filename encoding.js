@@ -4,8 +4,8 @@
  * @description    Converts character encoding.
  * @fileOverview   Encoding library
  * @author         polygon planet
- * @version        1.0.21
- * @date           2015-02-12
+ * @version        1.0.22
+ * @date           2015-04-06
  * @link           https://github.com/polygonplanet/encoding.js
  * @copyright      Copyright (c) 2013-2015 polygon planet <polygon.planet.aqua@gmail.com>
  * @license        licensed under the MIT license.
@@ -3131,7 +3131,8 @@ function assignEncodingName(target) {
 // Helpers
 
 function isObject(x) {
-  return toString.call(x) === '[object Object]';
+  var type = typeof x;
+  return type === 'function' || type === 'object' && !!x;
 }
 
 function isArray(x) {
