@@ -4,7 +4,7 @@
  * @description    Converts character encoding.
  * @fileOverview   Encoding library
  * @author         polygon planet
- * @version        1.0.22
+ * @version        1.0.23
  * @date           2015-04-06
  * @link           https://github.com/polygonplanet/encoding.js
  * @copyright      Copyright (c) 2013-2015 polygon planet <polygon.planet.aqua@gmail.com>
