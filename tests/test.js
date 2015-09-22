@@ -773,6 +773,20 @@ describe('Encoding', function() {
     });
   });
 
+
+  describe('base64Encode/base64Decode', function() {
+    encodings.forEach(function(encodingName) {
+      it(encodingName, function () {
+        var data = buffers[encodingName];
+        var res = encoding.base64Encode(data);
+        assert(typeof res === 'string');
+        assert.equal(res, data.toString('base64'));
+        assert.deepEqual(getCode(data), encoding.base64Decode(res));
+      });
+    });
+  });
+
+
   describe('Assign/Expect encoding names', function() {
     var aliasNames = {
       'UCS-4': 'UTF32BE',
