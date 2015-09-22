@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="shortcut icon" href="http://api.polygonpla.net/img/icon/house.png">
+  <title>Encoding.js - Detect and Convert encoding from DataURL - DEMO</title>
+  <style>
+    body {
+      font-family: tahoma, "Helvetica Neue", Helvetica, sans-serif;
+      margin: 1em;
+    }
+
+    h1 {
+      margin: 3em 1em 2em 1em;
+    }
+
+    #file {
+      margin-bottom: 1em;
+    }
+
+    textarea {
+      width: 90%;
+      height: 200px;
+      font-family: consolas, monospace;
+    }
+
+    footer {
+      margin-top: 1em;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Encoding.js - Detect and Convert encoding from DataURL - DEMO</h1>
+  <p>
+    Shift_JIS, EUC-JP, UTF-8 などの文字コードで書かれたテキストファイルを文字コード変換して表示します。
+  </p>
+
+  <input type="file" id="file">
+  <div id="encoding"></div>
+  <textarea id="result" rows="5" cols="80"></textarea>
+
+  <script src="js/encoding.min.js"></script>
+  <script>
+  function onFileSelect(event) {
+    var file = event.target.files[0];
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var base64 = e.target.result.split(',').pop();
+      var codes = Encoding.base64Decode(base64);
+      var encoding = Encoding.detect(codes);
+      document.getElementById('encoding').textContent = encoding;
+
+      var unicodeString = Encoding.convert(codes, {
+        to: 'unicode',
+        from: encoding,
+        type: 'string'
+      });
+
+      document.getElementById('result').value = unicodeString;
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById('file').addEventListener('change', onFileSelect, false);
+  </script>
+
+  <footer>
+    <a href="https://github.com/polygonplanet/encoding.js">Repository in GitHub</a>
+  </footer>
+
+  <a href="https://github.com/polygonplanet/encoding.js"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://camo.githubusercontent.com/121cd7cbdc3e4855075ea8b558508b91ac463ac2/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_left_green_007200.png"></a>
+</body>
+</html>
