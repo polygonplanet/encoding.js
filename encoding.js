@@ -2,10 +2,10 @@
  * Encoding.js
  *
  * @description    Converts character encoding.
- * @fileOverview   Encoding library
+ * @fileoverview   Encoding library
  * @author         polygon planet
- * @version        1.0.23
- * @date           2015-04-06
+ * @version        1.0.24
+ * @date           2015-09-22
  * @link           https://github.com/polygonplanet/encoding.js
  * @copyright      Copyright (c) 2013-2015 polygon planet <polygon.planet.aqua@gmail.com>
  * @license        licensed under the MIT license.
@@ -386,6 +386,33 @@ var Encoding = {
     }
 
     return results;
+  },
+  /**
+   * Encode a character code array to Base64 encoded string.
+   *
+   * @param {Array.<number>|TypedArray} data The data being encoded.
+   * @return {string} The Base64 encoded string.
+   *
+   * @public
+   * @function
+   */
+  base64Encode: function(data) {
+    if (isString(data)) {
+      data = stringToBuffer(data);
+    }
+    return base64encode(data);
+  },
+  /**
+   * Decode a Base64 encoded string to character code array.
+   *
+   * @param {string} string The data being decoded.
+   * @return {Array.<number>} The decoded array.
+   *
+   * @public
+   * @function
+   */
+  base64Decode: function(string) {
+    return base64decode(string);
   },
   /**
    * Joins a character code array to string.
@@ -3301,6 +3328,138 @@ function bufferToCode(buffer) {
   }
 
   return slice.call(buffer);
+}
+
+// Base64
+/* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
+ * Version: 1.0
+ * LastModified: Dec 25 1999
+ * This library is free.  You can redistribute it and/or modify it.
+ */
+// -- Masanao Izumo Copyright 1999 "free"
+// Modified to add support for Binary Array for Encoding.js
+
+var base64EncodeChars = [
+  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,
+  78,  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,
+  97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109,
+ 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122,
+  48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  43,  47
+];
+
+var base64DecodeChars = [
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63,
+  52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1,
+  -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+  15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1,
+  -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+  41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1
+];
+
+var base64EncodePadding = '='.charCodeAt(0);
+
+
+function base64encode(data) {
+  var out, i, len;
+  var c1, c2, c3;
+
+  len = data && data.length;
+  i = 0;
+  out = [];
+
+  while (i < len) {
+    c1 = data[i++];
+    if (i == len) {
+      out[out.length] = base64EncodeChars[c1 >> 2];
+      out[out.length] = base64EncodeChars[(c1 & 0x3) << 4];
+      out[out.length] = base64EncodePadding;
+      out[out.length] = base64EncodePadding;
+      break;
+    }
+
+    c2 = data[i++];
+    if (i == len) {
+      out[out.length] = base64EncodeChars[c1 >> 2];
+      out[out.length] = base64EncodeChars[((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4)];
+      out[out.length] = base64EncodeChars[(c2 & 0xF) << 2];
+      out[out.length] = base64EncodePadding;
+      break;
+    }
+
+    c3 = data[i++];
+    out[out.length] = base64EncodeChars[c1 >> 2];
+    out[out.length] = base64EncodeChars[((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4)];
+    out[out.length] = base64EncodeChars[((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6)];
+    out[out.length] = base64EncodeChars[c3 & 0x3F];
+  }
+
+  return codeToString_fast(out);
+}
+
+
+function base64decode(str) {
+  var c1, c2, c3, c4;
+  var i, len, out;
+
+  len = str && str.length;
+  i = 0;
+  out = [];
+
+  while (i < len) {
+    /* c1 */
+    do {
+      c1 = base64DecodeChars[str.charCodeAt(i++) & 0xFF];
+    } while (i < len && c1 == -1);
+
+    if (c1 == -1) {
+      break;
+    }
+
+    /* c2 */
+    do {
+      c2 = base64DecodeChars[str.charCodeAt(i++) & 0xFF];
+    } while (i < len && c2 == -1);
+
+    if (c2 == -1) {
+      break;
+    }
+
+    out[out.length] = (c1 << 2) | ((c2 & 0x30) >> 4);
+
+    /* c3 */
+    do {
+      c3 = str.charCodeAt(i++) & 0xFF;
+      if (c3 == 61) {
+        return out;
+      }
+      c3 = base64DecodeChars[c3];
+    } while (i < len && c3 == -1);
+
+    if (c3 == -1) {
+      break;
+    }
+
+    out[out.length] = ((c2 & 0xF) << 4) | ((c3 & 0x3C) >> 2);
+
+    /* c4 */
+    do {
+      c4 = str.charCodeAt(i++) & 0xFF;
+      if (c4 == 61) {
+        return out;
+      }
+      c4 = base64DecodeChars[c4];
+    } while (i < len && c4 == -1);
+
+    if (c4 == -1) {
+      break;
+    }
+
+    out[out.length] = ((c3 & 0x03) << 6) | c4;
+  }
+
+  return out;
 }
 
 
