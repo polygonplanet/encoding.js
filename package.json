@@ -1,6 +1,6 @@
 {
   "name": "encoding-japanese",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "Converts character encoding.",
   "main": "encoding.js",
   "directories": {
@@ -33,6 +33,7 @@
     "euc-jp",
     "jis",
     "iso-2022-jp",
+    "base64",
     "convert",
     "detect",
     "urlencode",

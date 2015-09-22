@@ -213,6 +213,31 @@ console.log(decoded);
 // ]
 ```
 
+##### Base64 Encode/Decode:
+
+* {_string_} Encoding.**base64Encode** ( data )  
+  Base64 encode.  
+  @param {_Array.&lt;number&gt;_|_TypedArray_} _data_ Target data.  
+  @return {_string_}  Return the Base64 encoded string.
+
+* {_Array.&lt;number&gt;_} Encoding.**base64Decode** ( string )  
+  Base64 decode.  
+  @param {_string_} _string_ Target data.  
+  @return {_Array.&lt;number&gt;_} Return the Base64 decoded array.
+
+
+```javascript
+var sjisArray = [
+  130, 177, 130, 241, 130, 201, 130, 191, 130, 205
+];
+var encoded = Encoding.base64Encode(sjisArray);
+console.log(encoded); // 'grGC8YLJgr+CzQ=='
+
+var decoded = Encoding.base64Decode(encoded);
+console.log(decoded);
+// [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
+```
+
 #### Example:
 
 ##### Example using the XMLHttpRequest and Typed arrays (Uint8Array):
@@ -245,6 +270,46 @@ req.onload = function (event) {
 
 req.send(null);
 ```
+
+##### Convert encoding for file using the File APIs:
+
+Reads file using the File APIs.  
+Detect file encoding and convert to Unicode, and display it.
+
+```html
+<input type="file" id="file">
+<div id="encoding"></div>
+<textarea id="result" rows="5" cols="80"></textarea>
+
+<script>
+function onFileSelect(event) {
+  var file = event.target.files[0];
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var base64 = e.target.result.split(',').pop();
+    // Decode Base64 encoded string
+    var codes = Encoding.base64Decode(base64);
+    var encoding = Encoding.detect(codes);
+    document.getElementById('encoding').textContent = encoding;
+
+    // Convert encoding to unicode
+    var unicodeString = Encoding.convert(codes, {
+      to: 'unicode',
+      from: encoding,
+      type: 'string'
+    });
+    document.getElementById('result').value = unicodeString;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('file').addEventListener('change', onFileSelect, false);
+</script>
+```
+
+[**Demo**](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ##### Example of the character encoding conversion:
 
@@ -321,7 +386,8 @@ console.log( Encoding.codeToString(unicodeArray) );
 
 ### Demo
 
-[Test for character encoding conversion (Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+* [Test for character encoding conversion (Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+* [Detect and Convert encoding from DataURL (Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ### License
 

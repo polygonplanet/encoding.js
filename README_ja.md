@@ -211,6 +211,33 @@ console.log(decoded);
 // ]
 ```
 
+
+##### Base64 Encode/Decode:
+
+* {_string_} Encoding.**base64Encode** ( data )  
+  Base64エンコードします  
+  @param {_Array.&lt;number&gt;_|_TypedArray_} _data_ 対象のデータ  
+  @return {_string_}  Base64エンコードされた文字列が返ります
+
+* {_Array.&lt;number&gt;_} Encoding.**base64Decode** ( string )  
+  Base64デコードします  
+  @param {_string_} _string_ 対象のデータ  
+  @return {_Array.&lt;number&gt;_} Base64デコードされた文字コード配列が返ります
+
+
+```javascript
+var sjisArray = [
+  130, 177, 130, 241, 130, 201, 130, 191, 130, 205
+];
+var encoded = Encoding.base64Encode(sjisArray);
+console.log(encoded); // 'grGC8YLJgr+CzQ=='
+
+var decoded = Encoding.base64Decode(encoded);
+console.log(decoded);
+// [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
+```
+
+
 #### Example:
 
 ##### XMLHttpRequest と Typed arrays (Uint8Array) を使用した例:
@@ -242,6 +269,48 @@ req.onload = function (event) {
 
 req.send(null);
 ```
+
+
+##### File API を使用したファイルの文字コード検出・変換例:
+
+File API を使用してファイルを読み込みます。  
+その際にファイルの文字コードを検出し、正しく表示されるようUnicodeに変換して表示します。
+
+```html
+<input type="file" id="file">
+<div id="encoding"></div>
+<textarea id="result" rows="5" cols="80"></textarea>
+
+<script>
+function onFileSelect(event) {
+  var file = event.target.files[0];
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var base64 = e.target.result.split(',').pop();
+    // Decode Base64 encoded string
+    var codes = Encoding.base64Decode(base64);
+    var encoding = Encoding.detect(codes);
+    document.getElementById('encoding').textContent = encoding;
+
+    // Convert encoding to unicode
+    var unicodeString = Encoding.convert(codes, {
+      to: 'unicode',
+      from: encoding,
+      type: 'string'
+    });
+    document.getElementById('result').value = unicodeString;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+document.getElementById('file').addEventListener('change', onFileSelect, false);
+</script>
+```
+
+[**この例のデモ**](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
+
 
 ##### 文字コード変換例:
 
@@ -323,7 +392,8 @@ console.log( Encoding.codeToString(unicodeArray) );
 
 ### Demo
 
-[文字コード変換テスト(Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+* [文字コード変換テスト(Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+* [DataURLから文字コードの検出・変換(Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ### License
 
