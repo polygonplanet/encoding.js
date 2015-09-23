@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <link rel="shortcut icon" href="http://api.polygonpla.net/img/icon/house.png">
-  <title>Encoding.js - Detect and Convert encoding from DataURL - DEMO</title>
+  <title>Encoding.js - Detect and Convert encoding from file - DEMO</title>
   <style>
     body {
       font-family: tahoma, "Helvetica Neue", Helvetica, sans-serif;
@@ -31,7 +31,7 @@
   </style>
 </head>
 <body>
-  <h1>Encoding.js - Detect and Convert encoding from DataURL - DEMO</h1>
+  <h1>Encoding.js - Detect and Convert encoding from file - DEMO</h1>
   <p>
     Shift_JIS, EUC-JP, UTF-8 などの文字コードで書かれたテキストファイルを文字コード変換して表示します。
   </p>
@@ -47,8 +47,7 @@
 
     var reader = new FileReader();
     reader.onload = function(e) {
-      var base64 = e.target.result.split(',').pop();
-      var codes = Encoding.base64Decode(base64);
+      var codes = new Uint8Array(e.target.result);
       var encoding = Encoding.detect(codes);
       document.getElementById('encoding').textContent = encoding;
 
@@ -61,7 +60,7 @@
       document.getElementById('result').value = unicodeString;
     };
 
-    reader.readAsDataURL(file);
+    reader.readAsArrayBuffer(file);
   }
 
   document.getElementById('file').addEventListener('change', onFileSelect, false);
