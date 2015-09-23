@@ -287,9 +287,7 @@ function onFileSelect(event) {
 
   var reader = new FileReader();
   reader.onload = function(e) {
-    var base64 = e.target.result.split(',').pop();
-    // Decode Base64 encoded string
-    var codes = Encoding.base64Decode(base64);
+    var codes = new Uint8Array(e.target.result);
     var encoding = Encoding.detect(codes);
     document.getElementById('encoding').textContent = encoding;
 
@@ -302,7 +300,7 @@ function onFileSelect(event) {
     document.getElementById('result').value = unicodeString;
   };
 
-  reader.readAsDataURL(file);
+  reader.readAsArrayBuffer(file);
 }
 
 document.getElementById('file').addEventListener('change', onFileSelect, false);
@@ -393,7 +391,7 @@ console.log( Encoding.codeToString(unicodeArray) );
 ### Demo
 
 * [文字コード変換テスト(Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
-* [DataURLから文字コードの検出・変換(Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
+* [ファイルから文字コードの検出・変換(Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ### License
 
