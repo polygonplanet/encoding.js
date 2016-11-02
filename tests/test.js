@@ -136,6 +136,19 @@ describe('Encoding', function() {
       assert(encoding.detect(utf32le, 'utf-32'));
       assert(encoding.detect(utf32le) === 'UTF32');
     });
+
+    it('Specifying multiple encodings', function() {
+      var unicode = 'ユニコード';
+
+      assert.equal(encoding.detect(unicode, 'UNICODE'), 'UNICODE');
+      assert.equal(encoding.detect(unicode, ['UNICODE']), 'UNICODE');
+      assert.equal(encoding.detect(unicode, {encoding: 'UNICODE'}), 'UNICODE');
+      assert.equal(encoding.detect(unicode, {encoding: ['UNICODE']}), 'UNICODE');
+      assert.equal(encoding.detect(unicode, []), false);
+      assert.equal(encoding.detect(unicode, ['UNICODE', 'ASCII']), 'UNICODE');
+      assert.equal(encoding.detect(unicode, 'ASCII, EUCJP, UNICODE'), 'UNICODE');
+      assert.equal(encoding.detect(unicode, ['SJIS', 'UTF8', 'ASCII']), false);
+    });
   });
 
   describe('convert', function() {

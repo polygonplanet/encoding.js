@@ -199,7 +199,7 @@ var Encoding = {
       return false;
     }
 
-    if (isObject(encodings)) {
+    if (isObject(encodings) && !isArray(encodings)) {
       encodings = encodings.encoding;
     }
 
