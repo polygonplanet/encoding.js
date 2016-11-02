@@ -8,10 +8,14 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "mocha": "^3.1.2"
+    "grunt": "^1.0.1",
+    "grunt-contrib-uglify": "^2.0.0",
+    "mocha": "^3.1.2",
+    "uglify-js": "^2.7.4"
   },
   "scripts": {
-    "test": "mocha tests/test"
+    "test": "mocha tests/test",
+    "minify": "grunt"
   },
   "repository": {
     "type": "git",
