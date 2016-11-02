@@ -10,6 +10,8 @@ module.exports = function(grunt) {
     uglify: {
       build: {
         options: {
+          sourceMap: true,
+          sourceMapName: 'encoding.map',
           ASCIIOnly: true,
           maxLineLen: 8000,
           banner: [
@@ -18,8 +20,7 @@ module.exports = function(grunt) {
             ' * Copyright (c) 2013-2016 <%= pkg.author %>',
             ' * <%= pkg.homepage %>',
             ' * @license <%= pkg.license %>',
-            ' */',
-            ''
+            ' */'
           ].join('\n')
         },
         files: {
