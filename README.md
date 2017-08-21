@@ -21,7 +21,7 @@ or
 <script src="encoding.min.js"></script>
 ```
 
-Object **Encoding** will defined in the global scope.
+Object **Encoding** will be defined in the global scope.
 
 Conversion and detection for the Array (like Array object).  
 
@@ -88,7 +88,7 @@ if (detected === 'UTF8') {
 * '**UNICODE**' (JavaScript Unicode Array)
 
 Note: UNICODE is an array that has a value of String.charCodeAt() in JavaScript.  
-(Each value in the array possibly has a number of more than 256.)
+(Each value in the array possibly has a number greater than 256.)
 
 
 ##### Specify the Object argument
@@ -100,7 +100,7 @@ var sjisArray = Encoding.convert(utf8Array, {
 });
 ```
 
-Readability goes up by passing an object to the second argument.
+Readability improves by passing an object to the second argument.
 
 ##### Specify the string argument and 'type' option
 
@@ -114,7 +114,7 @@ var unicodeString = Encoding.convert(utf8String, {
 console.log(unicodeString); // こんにちは
 ```
 
-'*type*' option available as following types:
+Following '*type*' options are available:
 
 * '**string**': Return as string.
 * '**arraybuffer**': Return as ArrayBuffer.
@@ -124,7 +124,7 @@ console.log(unicodeString); // こんにちは
 
 ##### Specify BOM in UTF-16
 
-It's can add the UTF16 BOM with specify the bom option on convert.
+It's possible to add the UTF16 BOM by specifying the bom option for conversion.
 
 ```javascript
 var utf16Array = Encoding.convert(utf8Array, {
@@ -136,7 +136,7 @@ var utf16Array = Encoding.convert(utf8Array, {
 
 The byte order of UTF16 is big-endian by default.
 
-Specify the 'LE' in bom options if you want to convert as little-endian.  
+Specify the 'LE' for the bom option if you want to convert as little-endian.  
 
 ```javascript
 var utf16leArray = Encoding.convert(utf8Array, {
@@ -146,7 +146,7 @@ var utf16leArray = Encoding.convert(utf8Array, {
 });
 ```
 
-Convert with specifying the UTF16LE or UTF16BE if BOM is not required.
+You can specify UTF16LE or UTF16BE if the BOM is not required.
 
 ```javascript
 var utf16beArray = Encoding.convert(utf8Array, {
@@ -155,7 +155,7 @@ var utf16beArray = Encoding.convert(utf8Array, {
 });
 ```
 
-Note: UTF16, UTF16BE and UTF16LE is not JavaScript internal encoding, that is a byte array.
+Note: UTF16, UTF16BE and UTF16LE are not JavaScript internal encodings, they are a byte arrays.
 
 #### Detect character encoding (detect):
 
@@ -167,7 +167,7 @@ Note: UTF16, UTF16BE and UTF16LE is not JavaScript internal encoding, that is a 
 
 
 ```javascript
-// Detect character encoding by automatic. (AUTO detect).
+// Detect character encoding automatically. (AUTO detect).
 var detected = Encoding.detect(utf8Array);
 if (detected === 'UTF8') {
   console.log('Encoding is UTF-8');
@@ -242,8 +242,8 @@ console.log(decoded);
 
 ##### Example using the XMLHttpRequest and Typed arrays (Uint8Array):
 
-In this sample, reads the text file written in Shift_JIS as binary data.  
-And displays string that is converted to Unicode by Encoding.convert.
+This sample reads the text file written in Shift_JIS as binary data,
+and displays a string that is converted to Unicode by Encoding.convert.
 
 ```javascript
 var req = new XMLHttpRequest();
@@ -331,7 +331,7 @@ console.log( utf8Array );
 //   => 'こんにちは、ほげ☆ぴよ'
 ```
 
-##### Example of convert a character code by automatic detection (Auto detect):
+##### Example of converting a character code by automatic detection (Auto detect):
 
 ```javascript
 var sjisArray = [
