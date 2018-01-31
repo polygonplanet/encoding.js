@@ -1352,4 +1352,44 @@ describe('Encoding', function() {
       assert.deepEqual(res, expectArray);
     });
   });
+
+  describe('codeToString / stringToCode', function() {
+    it('Test for JISX0208', function() {
+      assert(Array.isArray(tests.jisx0208Array));
+      assert(tests.jisx0208Array.length > 0);
+
+      var string = encoding.codeToString(tests.jisx0208Array);
+      assert(typeof string === 'string');
+
+      var code = encoding.stringToCode(string);
+      assert.deepEqual(code, tests.jisx0208Array);
+    });
+
+    it('Test for a long string', function() {
+      this.timeout(5000);
+
+      var config = require('../src/config');
+      var longArray = [];
+      var max = config.APPLY_BUFFER_SIZE;
+      assert(typeof max === 'number');
+      assert(max > 0);
+
+      while (longArray.length < max) {
+        for (var i = 0; i < tests.jisx0208Array.length; i++) {
+          longArray.push(tests.jisx0208Array[i]);
+        }
+      }
+      assert(longArray.length > max);
+
+      var string = encoding.codeToString(longArray);
+      assert(typeof string === 'string');
+      var code = encoding.stringToCode(string);
+      assert.deepEqual(code, longArray);
+
+      // Run 2 times to check if APPLY_BUFFER_SIZE_OK is set up expected
+      string = encoding.codeToString(longArray);
+      code = encoding.stringToCode(string);
+      assert.deepEqual(code, longArray);
+    });
+  });
 });
