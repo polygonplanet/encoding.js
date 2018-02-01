@@ -65,7 +65,7 @@ function JISToSJIS(data) {
       results[results.length] = data[i] + 0x80 & 0xFF;
     } else if (index === 3) {
       // Shift_JIS cannot convert JIS X 0212:1990.
-      results[results.length] = config.UTF8_UNKNOWN;
+      results[results.length] = config.UNKNOWN_CHARACTER;
     } else {
       results[results.length] = data[i] & 0xFF;
     }
@@ -332,7 +332,7 @@ function EUCJPToSJIS(data) {
   for (; i < len; i++) {
     b1 = data[i];
     if (b1 === 0x8F) {
-      results[results.length] = config.UTF8_UNKNOWN;
+      results[results.length] = config.UNKNOWN_CHARACTER;
       i += 2;
     } else if (b1 > 0x8E) {
       b2 = data[++i];
@@ -422,7 +422,7 @@ function SJISToUTF8(data) {
 
       utf8 = EncodingTable.JIS_TO_UTF8_TABLE[jis];
       if (utf8 === void 0) {
-        results[results.length] = config.UTF8_UNKNOWN;
+        results[results.length] = config.UNKNOWN_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
           results[results.length] = utf8 >> 8 & 0xFF;
@@ -470,7 +470,7 @@ function EUCJPToUTF8(data) {
 
       utf8 = EncodingTable.JISX0212_TO_UTF8_TABLE[jis];
       if (utf8 === void 0) {
-        results[results.length] = config.UTF8_UNKNOWN;
+        results[results.length] = config.UNKNOWN_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
           results[results.length] = utf8 >> 8 & 0xFF;
@@ -486,7 +486,7 @@ function EUCJPToUTF8(data) {
 
       utf8 = EncodingTable.JIS_TO_UTF8_TABLE[jis];
       if (utf8 === void 0) {
-        results[results.length] = config.UTF8_UNKNOWN;
+        results[results.length] = config.UNKNOWN_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
           results[results.length] = utf8 >> 8 & 0xFF;
@@ -544,7 +544,7 @@ function JISToUTF8(data) {
 
       utf8 = EncodingTable.JIS_TO_UTF8_TABLE[jis];
       if (utf8 === void 0) {
-        results[results.length] = config.UTF8_UNKNOWN;
+        results[results.length] = config.UNKNOWN_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
           results[results.length] = utf8 >> 8 & 0xFF;
@@ -568,7 +568,7 @@ function JISToUTF8(data) {
 
       utf8 = EncodingTable.JISX0212_TO_UTF8_TABLE[jis];
       if (utf8 === void 0) {
-        results[results.length] = config.UTF8_UNKNOWN;
+        results[results.length] = config.UNKNOWN_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
           results[results.length] = utf8 >> 8 & 0xFF;
@@ -612,7 +612,7 @@ function UTF8ToSJIS(data) {
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
       if (jis === void 0) {
-        results[results.length] = config.UTF8_UNKNOWN;
+        results[results.length] = config.UNKNOWN_CHARACTER;
       } else {
         if (jis < 0xFF) {
           results[results.length] = jis + 0x80;
@@ -682,7 +682,7 @@ function UTF8ToEUCJP(data) {
       if (jis === void 0) {
         jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
         if (jis === void 0) {
-          results[results.length] = config.UTF8_UNKNOWN;
+          results[results.length] = config.UNKNOWN_CHARACTER;
         } else {
           results[results.length] = 0x8F;
           results[results.length] = (jis >> 8) - 0x80 & 0xFF;
@@ -752,7 +752,7 @@ function UTF8ToJIS(data) {
             results[results.length] = esc[1];
             results[results.length] = esc[2];
           }
-          results[results.length] = config.UTF8_UNKNOWN;
+          results[results.length] = config.UNKNOWN_CHARACTER;
         } else {
           // JIS X 0212:1990
           if (index !== 3) {

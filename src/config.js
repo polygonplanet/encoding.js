@@ -3,7 +3,8 @@ var EncodingTable = require('./encoding-table');
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-exports.UTF8_UNKNOWN = '?'.charCodeAt(0);
+// Alternate character when can't detect
+exports.UNKNOWN_CHARACTER = 63; // '?'
 
 var HAS_TYPED = exports.HAS_TYPED = typeof Uint8Array !== 'undefined' && typeof Uint16Array !== 'undefined';
 
