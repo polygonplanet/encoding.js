@@ -387,6 +387,12 @@ console.log( Encoding.codeToString(unicodeArray) );
 * [Test for character encoding conversion (Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
 * [Detect and Convert encoding from file (Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
+### Contributing
+
+We're waiting for your pull requests and issues.
+Don't forget to execute `npm run test` before requesting.
+Accepted only requests without errors.
+
 ### License
 
 MIT

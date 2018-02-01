@@ -393,6 +393,12 @@ console.log( Encoding.codeToString(unicodeArray) );
 * [文字コード変換テスト(Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
 * [ファイルから文字コードの検出・変換(Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
+### 貢献
+
+pull request または issues を歓迎します。
+
+pull request の際は、 `npm run test` を実行してエラーがないことを確認してください。
+
 ### License
 
 MIT
