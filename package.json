@@ -18,6 +18,7 @@
   },
   "scripts": {
     "compile": "browserify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare",
+    "watch": "watchify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare --poll=200 -v",
     "minify": "uglifyjs encoding.js -o encoding.min.js --source-map \"url='encoding.min.js.map'\" --comments -c warnings=false -m -b ascii_only=true,beautify=false",
     "build": "npm run compile && npm run minify",
     "test": "npm run build && mocha tests/test"
