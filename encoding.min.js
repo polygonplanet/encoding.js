@@ -1,5 +1,5 @@
 /*!
- * encoding-japanese v1.0.27 - Converts character encoding
+ * encoding-japanese v1.0.28 - Converts character encoding
  * Copyright (c) 2013-2018 polygon planet <polygon.planet.aqua@gmail.com>
  * https://github.com/polygonplanet/encoding.js
  * @license MIT
