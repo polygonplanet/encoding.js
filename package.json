@@ -1,21 +1,27 @@
 {
   "name": "encoding-japanese",
-  "version": "1.0.26",
-  "description": "Converts character encoding.",
+  "version": "1.0.27",
+  "description": "Converts character encoding",
   "main": "encoding.js",
   "directories": {
     "test": "tests"
   },
   "dependencies": {},
   "devDependencies": {
-    "grunt": "^1.0.1",
-    "grunt-contrib-uglify": "^2.0.0",
-    "mocha": "^3.1.2",
-    "uglify-js": "^2.7.4"
+    "bannerify": "^1.0.1",
+    "browserify": "^15.2.0",
+    "mocha": "^5.0.0",
+    "power-assert": "^1.4.4",
+    "uglify-js": "^3.3.8",
+    "uglifyify": "^4.0.5",
+    "watchify": "^3.9.0"
   },
   "scripts": {
-    "test": "mocha tests/test",
-    "minify": "grunt"
+    "compile": "browserify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare",
+    "watch": "watchify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare --poll=200 -v",
+    "minify": "uglifyjs encoding.js -o encoding.min.js --source-map \"url='encoding.min.js.map'\" --comments -c warnings=false -m -b ascii_only=true,beautify=false",
+    "build": "npm run compile && npm run minify",
+    "test": "npm run build && mocha tests/test"
   },
   "repository": {
     "type": "git",
@@ -43,7 +49,7 @@
     "urlencode",
     "urldecode"
   ],
-  "author": "polygon planet",
+  "author": "polygon planet <polygon.planet.aqua@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/polygonplanet/encoding.js/issues"

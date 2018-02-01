@@ -1,0 +1,21 @@
+{
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true,
+    "shared-node-browser": true,
+    "worker": true
+  },
+  "rules": {
+    "no-empty": "off",
+    "no-mixed-spaces-and-tabs": "error",
+    "no-unused-vars": "warn",
+    "no-console": "warn",
+    "semi": "warn"
+  }
+}
