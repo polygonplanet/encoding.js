@@ -45,6 +45,10 @@ encoding.js の各メソッドは Node.js の Buffer に対しても使えます
 bower install encoding-japanese
 ```
 
+#### CDN
+
+[cdnjs.com](https://cdnjs.com/libraries/encoding-japanese) でCDNが利用できます。
+
 #### 文字コード変換 (convert):
 
 * {_Array.&lt;number&gt;|string_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  

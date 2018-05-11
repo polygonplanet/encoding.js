@@ -1,7 +1,7 @@
 {
   "name": "encoding-japanese",
   "main": "encoding.js",
-  "version": "1.0.28",
+  "version": "1.0.29",
   "homepage": "https://github.com/polygonplanet/encoding.js",
   "authors": [
     "polygon planet <polygon.planet.aqua@gmail.com>"
