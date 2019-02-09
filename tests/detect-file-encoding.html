@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Encoding.js - Detect and Convert encoding from file - DEMO</title>
+  <title>Encoding.jsでファイルを指定して文字コード変換・検出するデモ</title>
   <style>
     body {
       font-family: tahoma, "Helvetica Neue", Helvetica, sans-serif;
@@ -10,16 +10,20 @@
     }
 
     h1 {
-      margin: 3em 1em 2em 1em;
+      margin: 1em 1em 2em 3em;
     }
 
     #file {
       margin-bottom: 1em;
     }
 
+    #detected-encoding {
+      font-weight: bold;
+    }
+
     textarea {
-      width: 90%;
-      height: 200px;
+      width: 98%;
+      height: 120px;
       font-family: consolas, monospace;
     }
 
@@ -30,16 +34,35 @@
   </style>
 </head>
 <body>
-  <h1>Encoding.js - Detect and Convert encoding from file - DEMO</h1>
+  <h1><a href="https://github.com/polygonplanet/encoding.js">Encoding.js</a>でファイルを指定して文字コード変換・検出するデモ</h1>
   <p>
-    Shift_JIS, EUC-JP, UTF-8 などの文字コードで書かれたテキストファイルを文字コード変換して表示します。
+    テキストファイルを読み込んで文字コード変換して表示します。
+    <br>
+    通常、ブラウザで Shift_JIS や EUC-JP で書かれたファイルを読み込むと文字化けしますが、 encoding.js で文字コードを変換して文字化けしないようにします。
+  </p>
+  <p>
+    適当なファイルを選択してみてください。
   </p>
 
   <input type="file" id="file">
-  <div id="encoding"></div>
-  <textarea id="result" rows="5" cols="80"></textarea>
 
-  <script src="js/encoding.min.js"></script>
+  <div id="detected-encoding"></div>
+
+  <fieldset>
+    <legend>ファイル内容そのまま表示:</legend>
+    <div>
+      <textarea id="raw-result" rows="5" cols="80"></textarea>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>encoding.js で文字コードを変換して表示:</legend>
+    <div>
+      <textarea id="result" rows="5" cols="80"></textarea>
+    </div>
+  </fieldset>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/1.0.29/encoding.min.js"></script>
   <script>
   function onFileSelect(event) {
     var file = event.target.files[0];
@@ -47,16 +70,25 @@
     var reader = new FileReader();
     reader.onload = function(e) {
       var codes = new Uint8Array(e.target.result);
-      var encoding = Encoding.detect(codes);
-      document.getElementById('encoding').textContent = encoding;
+      var detectedEncoding = Encoding.detect(codes);
 
-      var unicodeString = Encoding.convert(codes, {
-        to: 'unicode',
-        from: encoding,
-        type: 'string'
-      });
+      document.getElementById('detected-encoding').textContent = 'ファイルから検出した文字コード: ' + detectedEncoding;
 
-      document.getElementById('result').value = unicodeString;
+      try {
+        var rawResult = String.fromCharCode.apply(null, codes);
+
+        var unicodeString = Encoding.convert(codes, {
+          to: 'unicode',
+          from: detectedEncoding,
+          type: 'string'
+        });
+
+        document.getElementById('raw-result').value = rawResult;
+        document.getElementById('result').value = unicodeString;
+      } catch (e) {
+        // Uncaught RangeError: Maximum call stack size exceeded
+        alert('ファイルサイズが大きすぎます');
+      }
     };
 
     reader.readAsArrayBuffer(file);
