@@ -1,3 +1,13 @@
-# 1.0.29
+# Change Log
 
-* Fix bug for can't find module
+## [1.0.30]
+
+### Changed
+
+* No API changes.
+
+## [1.0.29]
+
+### Fixed
+
+* Fixed can't find module in using 'require'.

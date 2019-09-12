@@ -1,12 +1,12 @@
 {
   "name": "encoding-japanese",
   "main": "encoding.js",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "homepage": "https://github.com/polygonplanet/encoding.js",
   "authors": [
     "polygon planet <polygon.planet.aqua@gmail.com>"
   ],
-  "description": "Converts character encoding",
+  "description": "Convert or detect character encoding in JavaScript",
   "moduleType": [
     "amd",
     "globals",

@@ -1,5 +1,5 @@
 /*!
- * encoding-japanese v1.0.29 - Convert or detect character encoding in JavaScript
+ * encoding-japanese v1.0.30 - Convert or detect character encoding in JavaScript
  * Copyright (c) 2013-2018 polygon planet <polygon.planet.aqua@gmail.com>
  * https://github.com/polygonplanet/encoding.js
  * @license MIT
