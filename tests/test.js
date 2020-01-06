@@ -1,9 +1,8 @@
-'use strict';
+/* global describe, it, before */
 
-var assert = require('assert');
-var fs = require('fs');
-var encoding = require('../encoding');
-
+const assert = require('assert');
+const fs = require('fs');
+const Encoding = require('../encoding');
 
 describe('Encoding', function() {
   var encodings = ['SJIS', 'UTF-8', 'JIS', 'EUC-JP'];
@@ -72,7 +71,7 @@ describe('Encoding', function() {
   describe('detect', function() {
     encodings.forEach(function(encodingName) {
       it(encodingName, function () {
-        var res = encoding.detect(buffers[encodingName]);
+        var res = Encoding.detect(buffers[encodingName]);
         assert.equal(res, getExpectedName(encodingName));
       });
     });
@@ -84,12 +83,12 @@ describe('Encoding', function() {
         0x00,0x31,0x00,0x36,0x00,0x20,0x30,0x67,0x66,0xF8,0x30,0x4B,0x30,
         0x8C,0x30,0x66,0x30,0x44,0x30,0x7E,0x30,0x59,0x30,0x02
       ];
-      assert(encoding.detect(utf16, 'utf-16'));
-      assert(encoding.detect(utf16) === 'UTF16');
+      assert(Encoding.detect(utf16, 'utf-16'));
+      assert(Encoding.detect(utf16) === 'UTF16');
 
       var utf16_noBom = utf16.slice(2);
-      assert(encoding.detect(utf16_noBom, 'utf-16'));
-      assert(/^UTF16/.test(encoding.detect(utf16_noBom)));
+      assert(Encoding.detect(utf16_noBom, 'utf-16'));
+      assert(/^UTF16/.test(Encoding.detect(utf16_noBom)));
     });
 
     it('UTF-16LE', function() {
@@ -99,8 +98,8 @@ describe('Encoding', function() {
         0x36,0x00,0x4C,0x00,0x45,0x00,0x20,0x00,0x67,0x30,0xF8,0x66,0x4B,
         0x30,0x8C,0x30,0x66,0x30,0x44,0x30,0x7E,0x30,0x59,0x30,0x02,0x30
       ];
-      assert(encoding.detect(utf16le, 'utf-16'));
-      assert(encoding.detect(utf16le) === 'UTF16');
+      assert(Encoding.detect(utf16le, 'utf-16'));
+      assert(Encoding.detect(utf16le) === 'UTF16');
     });
 
     it('UTF-32, UTF-32BE', function() {
@@ -114,12 +113,12 @@ describe('Encoding', function() {
         0x30,0x8C,0x00,0x00,0x30,0x66,0x00,0x00,0x30,0x44,0x00,0x00,0x30,
         0x7E,0x00,0x00,0x30,0x59,0x00,0x00,0x30,0x02
       ];
-      assert(encoding.detect(utf32, 'utf-32'));
-      assert(encoding.detect(utf32) === 'UTF32');
+      assert(Encoding.detect(utf32, 'utf-32'));
+      assert(Encoding.detect(utf32) === 'UTF32');
 
       var utf32_noBom = utf32.slice(4);
-      assert(encoding.detect(utf32_noBom, 'utf-32'));
-      assert(/^UTF32/.test(encoding.detect(utf32_noBom)));
+      assert(Encoding.detect(utf32_noBom, 'utf-32'));
+      assert(/^UTF32/.test(Encoding.detect(utf32_noBom)));
     });
 
     it('UTF-32LE', function() {
@@ -133,81 +132,81 @@ describe('Encoding', function() {
         0x00,0x00,0x8C,0x30,0x00,0x00,0x66,0x30,0x00,0x00,0x44,0x30,0x00,
         0x00,0x7E,0x30,0x00,0x00,0x59,0x30,0x00,0x00,0x02,0x30,0x00,0x00
       ];
-      assert(encoding.detect(utf32le, 'utf-32'));
-      assert(encoding.detect(utf32le) === 'UTF32');
+      assert(Encoding.detect(utf32le, 'utf-32'));
+      assert(Encoding.detect(utf32le) === 'UTF32');
     });
 
     it('Specifying multiple encodings', function() {
       var unicode = 'ユニコード';
 
-      assert.equal(encoding.detect(unicode, 'UNICODE'), 'UNICODE');
-      assert.equal(encoding.detect(unicode, ['UNICODE']), 'UNICODE');
-      assert.equal(encoding.detect(unicode, {encoding: 'UNICODE'}), 'UNICODE');
-      assert.equal(encoding.detect(unicode, {encoding: ['UNICODE']}), 'UNICODE');
-      assert.equal(encoding.detect(unicode, []), false);
-      assert.equal(encoding.detect(unicode, ['UNICODE', 'ASCII']), 'UNICODE');
-      assert.equal(encoding.detect(unicode, 'ASCII, EUCJP, UNICODE'), 'UNICODE');
-      assert.equal(encoding.detect(unicode, ['SJIS', 'UTF8', 'ASCII']), false);
+      assert.equal(Encoding.detect(unicode, 'UNICODE'), 'UNICODE');
+      assert.equal(Encoding.detect(unicode, ['UNICODE']), 'UNICODE');
+      assert.equal(Encoding.detect(unicode, {encoding: 'UNICODE'}), 'UNICODE');
+      assert.equal(Encoding.detect(unicode, {encoding: ['UNICODE']}), 'UNICODE');
+      assert.equal(Encoding.detect(unicode, []), false);
+      assert.equal(Encoding.detect(unicode, ['UNICODE', 'ASCII']), 'UNICODE');
+      assert.equal(Encoding.detect(unicode, 'ASCII, EUCJP, UNICODE'), 'UNICODE');
+      assert.equal(Encoding.detect(unicode, ['SJIS', 'UTF8', 'ASCII']), false);
     });
   });
 
   describe('convert', function() {
     encodings.forEach(function(encodingName) {
       it(encodingName, function () {
-        var res = encoding.codeToString(
-          encoding.convert(buffers[encodingName], 'unicode', encodingName));
+        var res = Encoding.codeToString(
+          Encoding.convert(buffers[encodingName], 'unicode', encodingName));
         assert.equal(res, getExpectedText(encodingName));
       });
     });
 
     it('ASCII', function() {
       assert(tests.ascii.length > 0);
-      var encoded = encoding.convert(tests.ascii, 'sjis', 'auto');
+      var encoded = Encoding.convert(tests.ascii, 'sjis', 'auto');
       assert(encoded.length > 0);
-      var decoded = encoding.convert(encoded, 'unicode', 'auto');
+      var decoded = Encoding.convert(encoded, 'unicode', 'auto');
       assert(decoded.length > 0);
       assert.deepEqual(decoded, tests.ascii);
     });
 
     it('Unicode/UTF-8', function() {
       assert(tests.unicode.length === 65536);
-      var utf8 = encoding.convert(tests.unicode, 'utf-8', 'unicode');
+      var utf8 = Encoding.convert(tests.unicode, 'utf-8', 'unicode');
       assert(utf8.length > 0);
       assert.notDeepEqual(utf8, tests.unicode);
-      var unicode = encoding.convert(utf8, 'unicode', 'utf-8');
+      var unicode = Encoding.convert(utf8, 'unicode', 'utf-8');
       assert(unicode.length === 65536);
       assert.deepEqual(unicode, tests.unicode);
     });
 
     it('Object arguments', function() {
       var text = getExpectedText(getExpectedName('UTF-8'));
-      var data = encoding.stringToCode(text);
+      var data = Encoding.stringToCode(text);
       assert(data.length > 0);
-      assert(encoding.detect(data, 'UNICODE'));
+      assert(Encoding.detect(data, 'UNICODE'));
 
-      var utf8 = encoding.convert(data, {
+      var utf8 = Encoding.convert(data, {
         to: 'utf-8',
         from: 'unicode'
       });
       assert(utf8.length > 0);
       assert.notDeepEqual(utf8, data);
-      assert(encoding.detect(utf8, 'utf-8'));
+      assert(Encoding.detect(utf8, 'utf-8'));
 
-      var unicode = encoding.convert(utf8, {
+      var unicode = Encoding.convert(utf8, {
         to: 'unicode',
         from: 'utf-8'
       });
       assert(unicode.length > 0);
       assert.deepEqual(unicode, data);
-      assert(encoding.detect(unicode, 'unicode'));
+      assert(Encoding.detect(unicode, 'unicode'));
     });
 
     it('Surrogate pairs', function() {
       assert(tests.surrogatePairs.length >= 2);
-      var utf8 = encoding.convert(tests.surrogatePairs, 'utf-8', 'unicode');
+      var utf8 = Encoding.convert(tests.surrogatePairs, 'utf-8', 'unicode');
       assert(utf8.length > 0);
       assert.notDeepEqual(utf8, tests.surrogatePairs);
-      var unicode = encoding.convert(utf8, 'unicode', 'utf-8');
+      var unicode = Encoding.convert(utf8, 'unicode', 'utf-8');
       assert(unicode.length >= 2);
       assert.deepEqual(unicode, tests.surrogatePairs);
     });
@@ -223,12 +222,12 @@ describe('Encoding', function() {
         0x0A, 0xF0, 0xA0, 0xAE, 0xB7, 0xE9, 0x87, 0x8E, 0xE5, 0xAE,
         0xB6, 0xE3, 0x81, 0xA7, 0xF0, 0xA9, 0xB8, 0xBD, 0x0A
       ];
-      var utf8 = encoding.convert(surrogatePairs, 'utf-8', 'unicode');
+      var utf8 = Encoding.convert(surrogatePairs, 'utf-8', 'unicode');
       assert(utf8.length > 0);
       assert.notDeepEqual(utf8, surrogatePairs);
       assert.deepEqual(utf8, surrogatePairs_utf8);
 
-      var unicode = encoding.convert(utf8, 'unicode', 'utf-8');
+      var unicode = Encoding.convert(utf8, 'unicode', 'utf-8');
       assert(unicode.length > 0);
       assert.notDeepEqual(unicode, utf8);
       assert.deepEqual(unicode, surrogatePairs);
@@ -240,25 +239,25 @@ describe('Encoding', function() {
         surrogatePairs.push(tests.surrogatePairs2[i]);
       }
       assert(surrogatePairs.length >= 2);
-      var utf8 = encoding.convert(surrogatePairs, 'utf-8', 'unicode');
+      var utf8 = Encoding.convert(surrogatePairs, 'utf-8', 'unicode');
       assert(utf8.length > 0);
       assert.notDeepEqual(utf8, surrogatePairs);
-      var unicode = encoding.convert(utf8, 'unicode', 'utf-8');
+      var unicode = Encoding.convert(utf8, 'unicode', 'utf-8');
       assert(unicode.length >= 2);
       assert.deepEqual(unicode, surrogatePairs);
 
-      var utf16 = encoding.convert(utf8, 'utf-16', 'utf-8');
+      var utf16 = Encoding.convert(utf8, 'utf-16', 'utf-8');
       assert(utf16.length > 0);
       assert.notDeepEqual(utf16, utf8);
-      var isUTF16 = encoding.detect(utf16, 'utf-16');
+      var isUTF16 = Encoding.detect(utf16, 'utf-16');
       assert(isUTF16);
       var c1 = utf16[0];
       var c2 = utf16[1];
       // Check BOM
       assert(!((c1 === 0xFE && c2 === 0xFF) && (c1 === 0xFF && c2 === 0xFE)));
-      var newUTF8 = encoding.convert(utf16, 'utf-8', 'utf-16');
+      var newUTF8 = Encoding.convert(utf16, 'utf-8', 'utf-16');
       assert.deepEqual(utf8, newUTF8);
-      var newUnicode = encoding.convert(utf16, 'unicode', 'utf-16');
+      var newUnicode = Encoding.convert(utf16, 'unicode', 'utf-16');
       assert.deepEqual(newUnicode, unicode);
     });
 
@@ -268,15 +267,15 @@ describe('Encoding', function() {
         data.push(tests.surrogatePairs2[i]);
       }
       assert(data.length > 0);
-      var utf8 = encoding.convert(data, 'utf-8', 'unicode');
+      var utf8 = Encoding.convert(data, 'utf-8', 'unicode');
       assert(utf8.length > 0);
       assert.notDeepEqual(utf8, data);
-      var unicode = encoding.convert(utf8, 'unicode', 'utf-8');
+      var unicode = Encoding.convert(utf8, 'unicode', 'utf-8');
       assert(unicode.length > 0);
       assert.deepEqual(unicode, data);
 
       // UTF-16 without BOM
-      var utf16_noBom = encoding.convert(utf8, 'utf-16', 'utf-8');
+      var utf16_noBom = Encoding.convert(utf8, 'utf-16', 'utf-8');
       assert(utf16_noBom.length > 0);
       assert.notDeepEqual(utf16_noBom, utf8);
 
@@ -286,15 +285,15 @@ describe('Encoding', function() {
       assert(!((c1 === 0xFE && c2 === 0xFF) && (c1 === 0xFF && c2 === 0xFE)));
 
       // Test detect
-      var isUTF16 = encoding.detect(utf16_noBom, 'utf-16');
+      var isUTF16 = Encoding.detect(utf16_noBom, 'utf-16');
       assert(isUTF16);
-      var isUTF16BE = encoding.detect(utf16_noBom, 'utf-16be');
+      var isUTF16BE = Encoding.detect(utf16_noBom, 'utf-16be');
       assert(isUTF16BE);
-      var isUTF16LE = encoding.detect(utf16_noBom, 'utf-16le');
+      var isUTF16LE = Encoding.detect(utf16_noBom, 'utf-16le');
       assert(!isUTF16LE);
 
       // UTF-16 with BOM (BE)
-      var utf16_bom_true = encoding.convert(utf8, {
+      var utf16_bom_true = Encoding.convert(utf8, {
         to: 'utf-16',
         from: 'utf-8',
         bom: true
@@ -306,28 +305,28 @@ describe('Encoding', function() {
       assert(c1 === 0xFE && c2 === 0xFF);
 
       // Test detect
-      isUTF16 = encoding.detect(utf16_bom_true, 'utf-16');
+      isUTF16 = Encoding.detect(utf16_bom_true, 'utf-16');
       assert(isUTF16);
-      isUTF16BE = encoding.detect(utf16_bom_true, 'utf-16be');
+      isUTF16BE = Encoding.detect(utf16_bom_true, 'utf-16be');
       assert(isUTF16BE);
-      isUTF16LE = encoding.detect(utf16_bom_true, 'utf-16le');
+      isUTF16LE = Encoding.detect(utf16_bom_true, 'utf-16le');
       assert(!isUTF16LE);
 
       // Check other argument specified
-      var utf16_bom_be = encoding.convert(utf8, {
+      var utf16_bom_be = Encoding.convert(utf8, {
         to: 'utf-16',
         from: 'utf-8',
         bom: 'be'
       });
       assert.deepEqual(utf16_bom_true, utf16_bom_be);
 
-      var newUTF8 = encoding.convert(utf16_bom_be, 'utf-8', 'utf-16');
+      var newUTF8 = Encoding.convert(utf16_bom_be, 'utf-8', 'utf-16');
       assert.deepEqual(utf8, newUTF8);
-      var newUnicode = encoding.convert(utf16_bom_be, 'unicode', 'utf-16');
+      var newUnicode = Encoding.convert(utf16_bom_be, 'unicode', 'utf-16');
       assert.deepEqual(newUnicode, unicode);
 
       // UTF-16 with BOM (LE)
-      var utf16_bom_le = encoding.convert(utf8, {
+      var utf16_bom_le = Encoding.convert(utf8, {
         to: 'utf-16',
         from: 'utf-8',
         bom: 'le'
@@ -339,16 +338,16 @@ describe('Encoding', function() {
       assert(c1 === 0xFF && c2 === 0xFE);
 
       // Test detect
-      isUTF16 = encoding.detect(utf16_bom_le, 'utf-16');
+      isUTF16 = Encoding.detect(utf16_bom_le, 'utf-16');
       assert(isUTF16);
-      isUTF16BE = encoding.detect(utf16_bom_le, 'utf-16be');
+      isUTF16BE = Encoding.detect(utf16_bom_le, 'utf-16be');
       assert(!isUTF16BE);
-      isUTF16LE = encoding.detect(utf16_bom_le, 'utf-16le');
+      isUTF16LE = Encoding.detect(utf16_bom_le, 'utf-16le');
       assert(isUTF16LE);
 
-      newUTF8 = encoding.convert(utf16_bom_le, 'utf-8', 'utf-16');
+      newUTF8 = Encoding.convert(utf16_bom_le, 'utf-8', 'utf-16');
       assert.deepEqual(utf8, newUTF8);
-      newUnicode = encoding.convert(utf16_bom_le, 'unicode', 'utf-16');
+      newUnicode = Encoding.convert(utf16_bom_le, 'unicode', 'utf-16');
       assert.deepEqual(newUnicode, unicode);
     });
 
@@ -358,31 +357,31 @@ describe('Encoding', function() {
         data.push(tests.surrogatePairs2[i]);
       }
       assert(data.length > 0);
-      var utf8 = encoding.convert(data, 'utf-8', 'unicode');
+      var utf8 = Encoding.convert(data, 'utf-8', 'unicode');
       assert(utf8.length > 0);
       assert.notDeepEqual(utf8, data);
-      var unicode = encoding.convert(utf8, 'unicode', 'utf-8');
+      var unicode = Encoding.convert(utf8, 'unicode', 'utf-8');
       assert(unicode.length > 0);
       assert.deepEqual(unicode, data);
 
-      var utf16be = encoding.convert(utf8, 'utf-16be', 'utf-8');
+      var utf16be = Encoding.convert(utf8, 'utf-16be', 'utf-8');
       assert(utf16be.length > 0);
       assert.notDeepEqual(utf16be, utf8);
 
-      var isUTF16BE = encoding.detect(utf16be, 'utf-16be');
+      var isUTF16BE = Encoding.detect(utf16be, 'utf-16be');
       assert(isUTF16BE);
-      var isUTF16 = encoding.detect(utf16be, 'utf-16');
+      var isUTF16 = Encoding.detect(utf16be, 'utf-16');
       assert(isUTF16);
-      var isUTF16LE = encoding.detect(utf16be, 'utf-16le');
+      var isUTF16LE = Encoding.detect(utf16be, 'utf-16le');
       assert(!isUTF16LE);
 
       var c1 = utf16be[0];
       var c2 = utf16be[1];
       // Check BOM
       assert(!((c1 === 0xFE && c2 === 0xFF) && (c1 === 0xFF && c2 === 0xFE)));
-      var newUTF8 = encoding.convert(utf16be, 'utf-8', 'utf-16be');
+      var newUTF8 = Encoding.convert(utf16be, 'utf-8', 'utf-16be');
       assert.deepEqual(utf8, newUTF8);
-      var newUnicode = encoding.convert(utf16be, 'unicode', 'utf-16be');
+      var newUnicode = Encoding.convert(utf16be, 'unicode', 'utf-16be');
       assert.deepEqual(newUnicode, unicode);
     });
 
@@ -392,39 +391,39 @@ describe('Encoding', function() {
         data.push(tests.surrogatePairs2[i]);
       }
       assert(data.length > 0);
-      var utf8 = encoding.convert(data, 'utf-8', 'unicode');
+      var utf8 = Encoding.convert(data, 'utf-8', 'unicode');
       assert(utf8.length > 0);
       assert.notDeepEqual(utf8, data);
-      var unicode = encoding.convert(utf8, 'unicode', 'utf-8');
+      var unicode = Encoding.convert(utf8, 'unicode', 'utf-8');
       assert(unicode.length > 0);
       assert.deepEqual(unicode, data);
 
-      var utf16le = encoding.convert(utf8, 'utf-16le', 'utf-8');
+      var utf16le = Encoding.convert(utf8, 'utf-16le', 'utf-8');
       assert(utf16le.length > 0);
       assert.notDeepEqual(utf16le, utf8);
 
-      var isUTF16LE = encoding.detect(utf16le, 'utf-16le');
+      var isUTF16LE = Encoding.detect(utf16le, 'utf-16le');
       assert(isUTF16LE);
-      var isUTF16 = encoding.detect(utf16le, 'utf-16');
+      var isUTF16 = Encoding.detect(utf16le, 'utf-16');
       assert(isUTF16);
-      var isUTF16BE = encoding.detect(utf16le, 'utf-16be');
+      var isUTF16BE = Encoding.detect(utf16le, 'utf-16be');
       assert(!isUTF16BE);
 
       var c1 = utf16le[0];
       var c2 = utf16le[1];
       // Check BOM
       assert(!((c1 === 0xFE && c2 === 0xFF) && (c1 === 0xFF && c2 === 0xFE)));
-      var newUTF8 = encoding.convert(utf16le, 'utf-8', 'utf-16le');
+      var newUTF8 = Encoding.convert(utf16le, 'utf-8', 'utf-16le');
       assert.deepEqual(utf8, newUTF8);
-      var newUnicode = encoding.convert(utf16le, 'unicode', 'utf-16le');
+      var newUnicode = Encoding.convert(utf16le, 'unicode', 'utf-16le');
       assert.deepEqual(newUnicode, unicode);
     });
 
     it('Halfwidth Katakana conversion', function() {
       var hankana = '｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ';
-      var hankanas = encoding.stringToCode(hankana);
+      var hankanas = Encoding.stringToCode(hankana);
       assert(hankanas.length > 0);
-      assert(encoding.detect(hankanas) === 'UNICODE');
+      assert(Encoding.detect(hankanas) === 'UNICODE');
 
       var sjis_expect = [
         0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,
@@ -434,8 +433,8 @@ describe('Encoding', function() {
         0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF
       ];
 
-      var sjis = encoding.convert(hankanas, 'SJIS', 'UNICODE');
-      assert(encoding.detect(sjis) === 'SJIS');
+      var sjis = Encoding.convert(hankanas, 'SJIS', 'UNICODE');
+      assert(Encoding.detect(sjis) === 'SJIS');
       assert.deepEqual(sjis, sjis_expect);
 
       var jis_expect = [
@@ -446,8 +445,8 @@ describe('Encoding', function() {
         0x52,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5A,0x5B,0x5C,0x5D,0x5E,
         0x5F,0x1B,0x28,0x42
       ];
-      var jis = encoding.convert(hankanas, 'jis', 'unicode');
-      assert(encoding.detect(jis) === 'JIS');
+      var jis = Encoding.convert(hankanas, 'jis', 'unicode');
+      assert(Encoding.detect(jis) === 'JIS');
       assert.deepEqual(jis, jis_expect);
 
       var eucjp_expect = [
@@ -463,8 +462,8 @@ describe('Encoding', function() {
         0xDB,0x8E,0xDC,0x8E,0xDD,0x8E,0xDE,0x8E,0xDF
       ];
 
-      var eucjp = encoding.convert(hankanas, 'eucjp', 'unicode');
-      assert(encoding.detect(eucjp) === 'EUCJP');
+      var eucjp = Encoding.convert(hankanas, 'eucjp', 'unicode');
+      assert(Encoding.detect(eucjp) === 'EUCJP');
       assert.deepEqual(eucjp, eucjp_expect);
     });
 
@@ -483,14 +482,14 @@ describe('Encoding', function() {
       ];
 
       ['JIS', 'SJIS', 'EUCJP', 'UTF8'].forEach(function(encodingName) {
-        var encoded = encoding.convert(chars, {
+        var encoded = Encoding.convert(chars, {
           to: encodingName,
           from: 'auto'
         });
-        assert(encoding.detect(encoded) === encodingName);
+        assert(Encoding.detect(encoded) === encodingName);
         assert(encoded.length > 0);
 
-        var decoded = encoding.convert(encoded, {
+        var decoded = Encoding.convert(encoded, {
           to: 'unicode',
           from: 'auto'
         });
@@ -643,23 +642,23 @@ describe('Encoding', function() {
     encodingNames.forEach(function(encodingName) {
       it('UTF8 to ' + encodingName, function() {
         assert(tests.jisx0208.length > 0);
-        assert(encoding.detect(tests.jisx0208, 'utf-8'));
-        assert(encoding.detect(tests.jisx0208) === 'UTF8');
-        var encoded = encoding.convert(tests.jisx0208, {
+        assert(Encoding.detect(tests.jisx0208, 'utf-8'));
+        assert(Encoding.detect(tests.jisx0208) === 'UTF8');
+        var encoded = Encoding.convert(tests.jisx0208, {
           to: encodingName,
           from: 'utf-8'
         });
         assert(encoded.length > 0);
-        assert(encoding.detect(encoded, encodingName));
+        assert(Encoding.detect(encoded, encodingName));
 
-        var detected = encoding.detect(encoded);
+        var detected = Encoding.detect(encoded);
         if (/^UTF16/.test(encodingName)) {
           assert(/^UTF16/.test(detected));
         } else {
           assert(detected === encodingName);
         }
 
-        var decoded = encoding.convert(encoded, {
+        var decoded = Encoding.convert(encoded, {
           to: 'utf-8',
           from: encodingName
         });
@@ -668,13 +667,13 @@ describe('Encoding', function() {
     });
 
     it('UTF-8 to Unicode', function() {
-      var encoded = encoding.convert(tests.jisx0208, {
+      var encoded = Encoding.convert(tests.jisx0208, {
         to: 'unicode',
         from: 'utf-8'
       });
       assert(encoded.length > 0);
-      assert(encoding.detect(encoded, 'unicode'));
-      assert(encoding.detect(encoded) === 'UNICODE');
+      assert(Encoding.detect(encoded, 'unicode'));
+      assert(Encoding.detect(encoded) === 'UNICODE');
       tests.jisx0208_unicode = encoded;
     });
 
@@ -684,23 +683,23 @@ describe('Encoding', function() {
     encodingNames.forEach(function(encodingName) {
       it('UNICODE to ' + encodingName, function() {
         assert(tests.jisx0208_unicode.length > 0);
-        assert(encoding.detect(tests.jisx0208_unicode, 'unicode'));
-        assert(encoding.detect(tests.jisx0208_unicode) === 'UNICODE');
-        var encoded = encoding.convert(tests.jisx0208_unicode, {
+        assert(Encoding.detect(tests.jisx0208_unicode, 'unicode'));
+        assert(Encoding.detect(tests.jisx0208_unicode) === 'UNICODE');
+        var encoded = Encoding.convert(tests.jisx0208_unicode, {
           to: encodingName,
           from: 'unicode'
         });
         assert(encoded.length > 0);
-        assert(encoding.detect(encoded, encodingName));
+        assert(Encoding.detect(encoded, encodingName));
 
-        var detected = encoding.detect(encoded);
+        var detected = Encoding.detect(encoded);
         if (/^UTF16/.test(encodingName)) {
           assert(/^UTF16/.test(detected));
         } else {
           assert(detected === encodingName);
         }
 
-        var decoded = encoding.convert(encoded, {
+        var decoded = Encoding.convert(encoded, {
           to: 'unicode',
           from: encodingName
         });
@@ -709,13 +708,13 @@ describe('Encoding', function() {
     });
 
     it('Unicode to Shift_JIS', function() {
-      var encoded = encoding.convert(tests.jisx0208, {
+      var encoded = Encoding.convert(tests.jisx0208, {
         to: 'sjis',
         from: 'utf-8'
       });
       assert(encoded.length > 0);
-      assert(encoding.detect(encoded, 'sjis'));
-      assert(encoding.detect(encoded) === 'SJIS');
+      assert(Encoding.detect(encoded, 'sjis'));
+      assert(Encoding.detect(encoded) === 'SJIS');
       tests.jisx0208_sjis = encoded;
     });
 
@@ -725,23 +724,23 @@ describe('Encoding', function() {
     encodingNames.forEach(function(encodingName) {
       it('SJIS to ' + encodingName, function() {
         assert(tests.jisx0208_sjis.length > 0);
-        assert(encoding.detect(tests.jisx0208_sjis, 'sjis'));
-        assert(encoding.detect(tests.jisx0208_sjis) === 'SJIS');
-        var encoded = encoding.convert(tests.jisx0208_sjis, {
+        assert(Encoding.detect(tests.jisx0208_sjis, 'sjis'));
+        assert(Encoding.detect(tests.jisx0208_sjis) === 'SJIS');
+        var encoded = Encoding.convert(tests.jisx0208_sjis, {
           to: encodingName,
           from: 'sjis'
         });
         assert(encoded.length > 0);
-        assert(encoding.detect(encoded, encodingName));
+        assert(Encoding.detect(encoded, encodingName));
 
-        var detected = encoding.detect(encoded);
+        var detected = Encoding.detect(encoded);
         if (/^UTF16/.test(encodingName)) {
           assert(/^UTF16/.test(detected));
         } else {
           assert(detected === encodingName);
         }
 
-        var decoded = encoding.convert(encoded, {
+        var decoded = Encoding.convert(encoded, {
           to: 'sjis',
           from: encodingName
         });
@@ -750,13 +749,13 @@ describe('Encoding', function() {
     });
 
     it('Shift_JIS to EUC-JP', function() {
-      var encoded = encoding.convert(tests.jisx0208, {
+      var encoded = Encoding.convert(tests.jisx0208, {
         to: 'eucjp',
         from: 'utf-8'
       });
       assert(encoded.length > 0);
-      assert(encoding.detect(encoded, 'eucjp'));
-      assert(encoding.detect(encoded) === 'EUCJP');
+      assert(Encoding.detect(encoded, 'eucjp'));
+      assert(Encoding.detect(encoded) === 'EUCJP');
       tests.jisx0208_eucjp = encoded;
     });
 
@@ -766,23 +765,23 @@ describe('Encoding', function() {
     encodingNames.forEach(function(encodingName) {
       it('EUCJP to ' + encodingName, function() {
         assert(tests.jisx0208_eucjp.length > 0);
-        assert(encoding.detect(tests.jisx0208_eucjp, 'eucjp'));
-        assert(encoding.detect(tests.jisx0208_eucjp) === 'EUCJP');
-        var encoded = encoding.convert(tests.jisx0208_eucjp, {
+        assert(Encoding.detect(tests.jisx0208_eucjp, 'eucjp'));
+        assert(Encoding.detect(tests.jisx0208_eucjp) === 'EUCJP');
+        var encoded = Encoding.convert(tests.jisx0208_eucjp, {
           to: encodingName,
           from: 'eucjp'
         });
         assert(encoded.length > 0);
-        assert(encoding.detect(encoded, encodingName));
+        assert(Encoding.detect(encoded, encodingName));
 
-        var detected = encoding.detect(encoded);
+        var detected = Encoding.detect(encoded);
         if (/^UTF16/.test(encodingName)) {
           assert(/^UTF16/.test(detected));
         } else {
           assert(detected === encodingName);
         }
 
-        var decoded = encoding.convert(encoded, {
+        var decoded = Encoding.convert(encoded, {
           to: 'eucjp',
           from: encodingName
         });
@@ -791,13 +790,13 @@ describe('Encoding', function() {
     });
 
     it('EUC-JP to JIS', function() {
-      var encoded = encoding.convert(tests.jisx0208, {
+      var encoded = Encoding.convert(tests.jisx0208, {
         to: 'jis',
         from: 'utf-8'
       });
       assert(encoded.length > 0);
-      assert(encoding.detect(encoded, 'jis'));
-      assert(encoding.detect(encoded) === 'JIS');
+      assert(Encoding.detect(encoded, 'jis'));
+      assert(Encoding.detect(encoded) === 'JIS');
       tests.jisx0208_jis = encoded;
     });
 
@@ -807,23 +806,23 @@ describe('Encoding', function() {
     encodingNames.forEach(function(encodingName) {
       it('JIS to ' + encodingName, function() {
         assert(tests.jisx0208_jis.length > 0);
-        assert(encoding.detect(tests.jisx0208_jis, 'jis'));
-        assert(encoding.detect(tests.jisx0208_jis) === 'JIS');
-        var encoded = encoding.convert(tests.jisx0208_jis, {
+        assert(Encoding.detect(tests.jisx0208_jis, 'jis'));
+        assert(Encoding.detect(tests.jisx0208_jis) === 'JIS');
+        var encoded = Encoding.convert(tests.jisx0208_jis, {
           to: encodingName,
           from: 'jis'
         });
         assert(encoded.length > 0);
-        assert(encoding.detect(encoded, encodingName));
+        assert(Encoding.detect(encoded, encodingName));
 
-        var detected = encoding.detect(encoded);
+        var detected = Encoding.detect(encoded);
         if (/^UTF16/.test(encodingName)) {
           assert(/^UTF16/.test(detected));
         } else {
           assert(detected === encodingName);
         }
 
-        var decoded = encoding.convert(encoded, {
+        var decoded = Encoding.convert(encoded, {
           to: 'jis',
           from: encodingName
         });
@@ -835,35 +834,36 @@ describe('Encoding', function() {
   describe('convert JIS-X-0212', function() {
     var jisx0212_buffer = fs.readFileSync(__dirname + '/jis-x-0212-utf8.txt');
     var jisx0212_array = [];
-    for (var i = 0, len = jisx0212_buffer.length; i < len; i++) {
+    var i, len;
+    for (i = 0, len = jisx0212_buffer.length; i < len; i++) {
       jisx0212_array.push(jisx0212_buffer[i]);
     }
 
     var jisx0212_sjis_buffer = fs.readFileSync(__dirname + '/jis-x-0212-sjis-to-utf8.txt');
     var jisx0212_sjis_array = [];
-    for (var i = 0, len = jisx0212_sjis_buffer.length; i < len; i++) {
+    for (i = 0, len = jisx0212_sjis_buffer.length; i < len; i++) {
       jisx0212_sjis_array.push(jisx0212_sjis_buffer[i]);
     }
 
     it('UTF-8 to Unicode', function() {
-      var encoded = encoding.convert(jisx0212_buffer, {
+      var encoded = Encoding.convert(jisx0212_buffer, {
         to: 'unicode',
         from: 'utf-8'
       });
       assert(encoded.length > 0);
-      assert(encoding.detect(encoded, 'unicode'));
-      assert(encoding.detect(encoded) === 'UNICODE');
+      assert(Encoding.detect(encoded, 'unicode'));
+      assert(Encoding.detect(encoded) === 'UNICODE');
     });
 
     it('UTF-8 to SJIS / SJIS to UTF-8', function() {
-      var encoded = encoding.convert(jisx0212_buffer, {
+      var encoded = Encoding.convert(jisx0212_buffer, {
         to: 'sjis',
         from: 'utf-8'
       });
       assert(encoded.length > 0);
-      assert(encoding.detect(encoded, 'sjis'));
-      assert(encoding.detect(encoded) === 'SJIS');
-      var encoded_sjis_to_utf8 = encoding.convert(encoded, {
+      assert(Encoding.detect(encoded, 'sjis'));
+      assert(Encoding.detect(encoded) === 'SJIS');
+      var encoded_sjis_to_utf8 = Encoding.convert(encoded, {
         to: 'utf-8',
         from: 'sjis'
       });
@@ -875,11 +875,11 @@ describe('Encoding', function() {
     ];
 
     encodingNames.forEach(function(encodingName1) {
-      var encoded1 = encoding.convert(jisx0212_array, {
+      var encoded1 = Encoding.convert(jisx0212_array, {
         to: encodingName1,
         from: 'utf-8'
       });
-      var detected = encoding.detect(encoded1);
+      var detected = Encoding.detect(encoded1);
       if (/^UTF16/.test(encodingName1)) {
         assert(/^UTF16/.test(detected));
       } else {
@@ -888,20 +888,20 @@ describe('Encoding', function() {
 
       encodingNames.forEach(function(encodingName2) {
         it(encodingName1 + ' to ' + encodingName2, function() {
-          var encoded2 = encoding.convert(encoded1, {
+          var encoded2 = Encoding.convert(encoded1, {
             to: encodingName2,
             from: encodingName1
           });
           assert(encoded2.length > 0);
 
-          var detected2 = encoding.detect(encoded2);
+          var detected2 = Encoding.detect(encoded2);
           if (/^UTF16/.test(encodingName2)) {
             assert(/^UTF16/.test(detected2));
           } else {
             assert(detected2 === encodingName2);
           }
 
-          var decoded = encoding.convert(encoded2, {
+          var decoded = Encoding.convert(encoded2, {
             to: 'utf-8',
             from: encodingName2
           });
@@ -916,9 +916,9 @@ describe('Encoding', function() {
     encodings.forEach(function(encodingName) {
       it(encodingName, function () {
         var data = buffers[encodingName];
-        var res = encoding.urlEncode(data);
+        var res = Encoding.urlEncode(data);
         assert.equal(res, urlEncoded[getExpectedName(encodingName)]);
-        assert.deepEqual(getCode(data), encoding.urlDecode(res));
+        assert.deepEqual(getCode(data), Encoding.urlDecode(res));
       });
     });
   });
@@ -928,10 +928,10 @@ describe('Encoding', function() {
     encodings.forEach(function(encodingName) {
       it(encodingName, function () {
         var data = buffers[encodingName];
-        var res = encoding.base64Encode(data);
+        var res = Encoding.base64Encode(data);
         assert(typeof res === 'string');
         assert.equal(res, data.toString('base64'));
-        assert.deepEqual(getCode(data), encoding.base64Decode(res));
+        assert.deepEqual(getCode(data), Encoding.base64Decode(res));
       });
     });
   });
@@ -965,17 +965,17 @@ describe('Encoding', function() {
     };
 
     var text = getExpectedText(getExpectedName('UTF-8'));
-    var data = encoding.stringToCode(text);
+    var data = Encoding.stringToCode(text);
     assert(data.length > 0);
-    assert(encoding.detect(data, 'UNICODE'));
+    assert(Encoding.detect(data, 'UNICODE'));
 
-    var sjis = encoding.convert(data, 'sjis');
+    var sjis = Encoding.convert(data, 'sjis');
     assert(sjis.length > 0);
-    assert(encoding.detect(sjis, 'SJIS'));
+    assert(Encoding.detect(sjis, 'SJIS'));
 
-    var eucjp = encoding.convert(data, 'EUCJP');
+    var eucjp = Encoding.convert(data, 'EUCJP');
     assert(eucjp.length > 0);
-    assert(encoding.detect(eucjp, 'EUCJP'));
+    assert(Encoding.detect(eucjp, 'EUCJP'));
 
     var codes = {
       'SJIS': sjis,
@@ -984,13 +984,13 @@ describe('Encoding', function() {
 
     Object.keys(aliasNames).forEach(function(name) {
       it(name + ' is ' + aliasNames[name], function() {
-        var encoded = encoding.convert(data, name);
+        var encoded = Encoding.convert(data, name);
         assert(encoded.length > 0);
         var encodingName = aliasNames[name];
         if (encodingName in codes) {
           var code = codes[encodingName];
           assert(code.length > 0);
-          assert.equal(encoding.detect(code), encodingName);
+          assert.equal(Encoding.detect(code), encodingName);
           assert.deepEqual(encoded, code);
         }
       });
@@ -1001,9 +1001,9 @@ describe('Encoding', function() {
     var string = getExpectedText(getExpectedName('UTF-8'));
     assert(string.length > 0);
 
-    var array = encoding.stringToCode(string);
+    var array = Encoding.stringToCode(string);
     assert(array.length > 0);
-    assert(encoding.detect(array, 'UNICODE'));
+    assert(Encoding.detect(array, 'UNICODE'));
 
     var isTypedArray = function(a) {
       return !Array.isArray(a) && a != null &&
@@ -1015,42 +1015,42 @@ describe('Encoding', function() {
     };
 
     it('null/undefined', function() {
-      var encoded = encoding.convert(null, 'utf-8');
+      var encoded = Encoding.convert(null, 'utf-8');
       assert(encoded.length === 0);
       assert(Array.isArray(encoded));
 
-      encoded = encoding.convert(void 0, 'utf-8');
+      encoded = Encoding.convert(void 0, 'utf-8');
       assert(encoded.length === 0);
       assert(Array.isArray(encoded));
     });
 
     it('array by default', function() {
-      var encoded = encoding.convert([], 'utf-8');
+      var encoded = Encoding.convert([], 'utf-8');
       assert(encoded.length === 0);
       assert(Array.isArray(encoded));
 
-      encoded = encoding.convert([1], 'utf-8');
+      encoded = Encoding.convert([1], 'utf-8');
       assert(encoded.length === 1);
       assert(Array.isArray(encoded));
 
-      encoded = encoding.convert(new Array(), 'utf-8');
+      encoded = Encoding.convert(new Array(), 'utf-8');
       assert(encoded.length === 0);
       assert(Array.isArray(encoded));
 
       var a = new Array(2);
       a[0] = 1;
       a[1] = 2;
-      encoded = encoding.convert(a, 'utf-8');
+      encoded = Encoding.convert(a, 'utf-8');
       assert(encoded.length === 2);
       assert(Array.isArray(encoded));
     });
 
     it('Pass the string argument', function() {
-      var encoded = encoding.convert('', 'utf-8');
+      var encoded = Encoding.convert('', 'utf-8');
       assert(encoded.length === 0);
       assert(isString(encoded));
 
-      encoded = encoding.convert('123', 'utf-8');
+      encoded = Encoding.convert('123', 'utf-8');
       assert(encoded.length === 3);
       assert(isString(encoded));
 
@@ -1059,19 +1059,19 @@ describe('Encoding', function() {
 
       var expect = '\u3053\u3093\u306B\u3061\u306F';
 
-      encoded = encoding.convert(utf8, 'unicode', 'utf-8');
+      encoded = Encoding.convert(utf8, 'unicode', 'utf-8');
       assert(encoded.length > 0);
       assert(isString(encoded));
       assert.equal(encoded, expect);
 
-      var detected = encoding.detect(utf8);
+      var detected = Encoding.detect(utf8);
       assert.equal(detected, 'UTF8');
-      detected = encoding.detect(expect);
+      detected = Encoding.detect(expect);
       assert.equal(detected, 'UNICODE');
     });
 
     it('Specify { type: "array" }', function() {
-      var encoded = encoding.convert(null, {
+      var encoded = Encoding.convert(null, {
         to: 'utf-8',
         from: 'unicode',
         type: 'array'
@@ -1079,7 +1079,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(Array.isArray(encoded));
 
-      encoded = encoding.convert(void 0, {
+      encoded = Encoding.convert(void 0, {
         to: 'utf-8',
         from: 'unicode',
         type: 'array'
@@ -1087,7 +1087,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(Array.isArray(encoded));
 
-      encoded = encoding.convert('', {
+      encoded = Encoding.convert('', {
         to: 'utf-8',
         from: 'unicode',
         type: 'array'
@@ -1095,7 +1095,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(Array.isArray(encoded));
 
-      encoded = encoding.convert('123', {
+      encoded = Encoding.convert('123', {
         to: 'utf-8',
         from: 'unicode',
         type: 'array'
@@ -1103,7 +1103,7 @@ describe('Encoding', function() {
       assert(encoded.length === 3);
       assert(Array.isArray(encoded));
 
-      encoded = encoding.convert([], {
+      encoded = Encoding.convert([], {
         to: 'utf-8',
         from: 'unicode',
         type: 'array'
@@ -1111,7 +1111,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(Array.isArray(encoded));
 
-      encoded = encoding.convert([0x61, 0x62], {
+      encoded = Encoding.convert([0x61, 0x62], {
         to: 'utf-8',
         from: 'unicode',
         type: 'array'
@@ -1120,7 +1120,7 @@ describe('Encoding', function() {
       assert(Array.isArray(encoded));
 
       var buffer = Buffer.alloc(0);
-      encoded = encoding.convert(buffer, {
+      encoded = Encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
         type: 'array'
@@ -1131,7 +1131,7 @@ describe('Encoding', function() {
       buffer = Buffer.alloc(2);
       buffer[0] = 0x61;
       buffer[1] = 0x62;
-      encoded = encoding.convert(buffer, {
+      encoded = Encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
         type: 'array'
@@ -1140,7 +1140,7 @@ describe('Encoding', function() {
       assert(Array.isArray(encoded));
 
       buffer = new Uint8Array(0);
-      encoded = encoding.convert(buffer, {
+      encoded = Encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
         type: 'array'
@@ -1151,7 +1151,7 @@ describe('Encoding', function() {
       buffer = new Uint8Array(2);
       buffer[0] = 0x61;
       buffer[1] = 0x62;
-      encoded = encoding.convert(buffer, {
+      encoded = Encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
         type: 'array'
@@ -1161,7 +1161,7 @@ describe('Encoding', function() {
     });
 
     it('Specify { type: "arraybuffer" }', function() {
-      var encoded = encoding.convert(null, {
+      var encoded = Encoding.convert(null, {
         to: 'utf-8',
         from: 'unicode',
         type: 'arraybuffer'
@@ -1169,7 +1169,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(isTypedArray(encoded));
 
-      encoded = encoding.convert(void 0, {
+      encoded = Encoding.convert(void 0, {
         to: 'utf-8',
         from: 'unicode',
         type: 'arraybuffer'
@@ -1177,7 +1177,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(isTypedArray(encoded));
 
-      encoded = encoding.convert('', {
+      encoded = Encoding.convert('', {
         to: 'utf-8',
         from: 'unicode',
         type: 'arraybuffer'
@@ -1185,7 +1185,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(isTypedArray(encoded));
 
-      encoded = encoding.convert('123', {
+      encoded = Encoding.convert('123', {
         to: 'utf-8',
         from: 'unicode',
         type: 'arraybuffer'
@@ -1193,7 +1193,7 @@ describe('Encoding', function() {
       assert(encoded.length === 3);
       assert(isTypedArray(encoded));
 
-      encoded = encoding.convert([], {
+      encoded = Encoding.convert([], {
         to: 'utf-8',
         from: 'unicode',
         type: 'arraybuffer'
@@ -1201,7 +1201,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(isTypedArray(encoded));
 
-      encoded = encoding.convert([0x61, 0x62], {
+      encoded = Encoding.convert([0x61, 0x62], {
         to: 'utf-8',
         from: 'unicode',
         type: 'arraybuffer'
@@ -1210,7 +1210,7 @@ describe('Encoding', function() {
       assert(isTypedArray(encoded));
 
       var buffer = Buffer.alloc(0);
-      encoded = encoding.convert(buffer, {
+      encoded = Encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
         type: 'arraybuffer'
@@ -1221,7 +1221,7 @@ describe('Encoding', function() {
       buffer = Buffer.alloc(2);
       buffer[0] = 0x61;
       buffer[1] = 0x62;
-      encoded = encoding.convert(buffer, {
+      encoded = Encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
         type: 'arraybuffer'
@@ -1230,7 +1230,7 @@ describe('Encoding', function() {
       assert(isTypedArray(encoded));
 
       buffer = new Uint8Array(0);
-      encoded = encoding.convert(buffer, {
+      encoded = Encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
         type: 'arraybuffer'
@@ -1241,7 +1241,7 @@ describe('Encoding', function() {
       buffer = new Uint8Array(2);
       buffer[0] = 0x61;
       buffer[1] = 0x62;
-      encoded = encoding.convert(buffer, {
+      encoded = Encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
         type: 'arraybuffer'
@@ -1251,7 +1251,7 @@ describe('Encoding', function() {
     });
 
     it('Specify { type: "string" }', function() {
-      var encoded = encoding.convert(null, {
+      var encoded = Encoding.convert(null, {
         to: 'utf-8',
         from: 'unicode',
         type: 'string'
@@ -1259,7 +1259,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(isString(encoded));
 
-      encoded = encoding.convert(void 0, {
+      encoded = Encoding.convert(void 0, {
         to: 'utf-8',
         from: 'unicode',
         type: 'string'
@@ -1267,7 +1267,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(isString(encoded));
 
-      encoded = encoding.convert('', {
+      encoded = Encoding.convert('', {
         to: 'utf-8',
         from: 'unicode',
         type: 'string'
@@ -1275,7 +1275,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(isString(encoded));
 
-      encoded = encoding.convert('123', {
+      encoded = Encoding.convert('123', {
         to: 'utf-8',
         from: 'unicode',
         type: 'string'
@@ -1283,7 +1283,7 @@ describe('Encoding', function() {
       assert(encoded.length === 3);
       assert(isString(encoded));
 
-      encoded = encoding.convert([], {
+      encoded = Encoding.convert([], {
         to: 'utf-8',
         from: 'unicode',
         type: 'string'
@@ -1291,7 +1291,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(isString(encoded));
 
-      encoded = encoding.convert([0x61, 0x62], {
+      encoded = Encoding.convert([0x61, 0x62], {
         to: 'utf-8',
         from: 'unicode',
         type: 'string'
@@ -1300,7 +1300,7 @@ describe('Encoding', function() {
       assert(isString(encoded));
 
       var buffer = Buffer.alloc(0);
-      encoded = encoding.convert(buffer, {
+      encoded = Encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
         type: 'string'
@@ -1311,7 +1311,7 @@ describe('Encoding', function() {
       buffer = Buffer.alloc(2);
       buffer[0] = 0x61;
       buffer[1] = 0x62;
-      encoded = encoding.convert(buffer, {
+      encoded = Encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
         type: 'string'
@@ -1320,7 +1320,7 @@ describe('Encoding', function() {
       assert(isString(encoded));
 
       buffer = new Uint8Array(0);
-      encoded = encoding.convert(buffer, {
+      encoded = Encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
         type: 'string'
@@ -1331,7 +1331,7 @@ describe('Encoding', function() {
       buffer = new Uint8Array(2);
       buffer[0] = 0x61;
       buffer[1] = 0x62;
-      encoded = encoding.convert(buffer, {
+      encoded = Encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
         type: 'string'
@@ -1384,12 +1384,12 @@ describe('Encoding', function() {
     it('toHankakuCase', function() {
       zenkakus.forEach(function(zenkaku, i) {
         var expect = hankakus[i];
-        var res = encoding.toHankakuCase(zenkaku);
+        var res = Encoding.toHankakuCase(zenkaku);
         assert.equal(res, expect);
 
-        var zenkakuArray = encoding.stringToCode(zenkaku);
-        var expectArray = encoding.stringToCode(expect);
-        res = encoding.toHankakuCase(zenkakuArray);
+        var zenkakuArray = Encoding.stringToCode(zenkaku);
+        var expectArray = Encoding.stringToCode(expect);
+        res = Encoding.toHankakuCase(zenkakuArray);
         assert(Array.isArray(res));
         assert.deepEqual(res, expectArray);
       });
@@ -1398,12 +1398,12 @@ describe('Encoding', function() {
     it('toZenkakuCase', function() {
       hankakus.forEach(function(hankaku, i) {
         var expect = zenkakus[i];
-        var res = encoding.toZenkakuCase(hankaku);
+        var res = Encoding.toZenkakuCase(hankaku);
         assert.equal(res, expect);
 
-        var hankakuArray = encoding.stringToCode(hankaku);
-        var expectArray = encoding.stringToCode(expect);
-        res = encoding.toZenkakuCase(hankakuArray);
+        var hankakuArray = Encoding.stringToCode(hankaku);
+        var expectArray = Encoding.stringToCode(expect);
+        res = Encoding.toZenkakuCase(hankakuArray);
         assert(Array.isArray(res));
         assert.deepEqual(res, expectArray);
       });
@@ -1412,12 +1412,12 @@ describe('Encoding', function() {
     it('toHiraganaCase', function() {
       katakanas.forEach(function(katakana, i) {
         var expect = hiraganas[i];
-        var res = encoding.toHiraganaCase(katakana);
+        var res = Encoding.toHiraganaCase(katakana);
         assert.equal(res, expect);
 
-        var zenkanaArray = encoding.stringToCode(katakana);
-        var expectArray = encoding.stringToCode(expect);
-        res = encoding.toHiraganaCase(zenkanaArray);
+        var zenkanaArray = Encoding.stringToCode(katakana);
+        var expectArray = Encoding.stringToCode(expect);
+        res = Encoding.toHiraganaCase(zenkanaArray);
         assert(Array.isArray(res));
         assert.deepEqual(res, expectArray);
       });
@@ -1426,12 +1426,12 @@ describe('Encoding', function() {
     it('toKatakanaCase', function() {
       hiraganas.forEach(function(hiragana, i) {
         var expect = katakanas[i];
-        var res = encoding.toKatakanaCase(hiragana);
+        var res = Encoding.toKatakanaCase(hiragana);
         assert.equal(res, expect);
 
-        var hiraganaArray = encoding.stringToCode(hiragana);
-        var expectArray = encoding.stringToCode(expect);
-        res = encoding.toKatakanaCase(hiraganaArray);
+        var hiraganaArray = Encoding.stringToCode(hiragana);
+        var expectArray = Encoding.stringToCode(expect);
+        res = Encoding.toKatakanaCase(hiraganaArray);
         assert(Array.isArray(res));
         assert.deepEqual(res, expectArray);
       });
@@ -1440,12 +1440,12 @@ describe('Encoding', function() {
     it('toHankanaCase', function() {
       zenkanas.forEach(function(zenkana, i) {
         var expect = hankanas[i];
-        var res = encoding.toHankanaCase(zenkana);
+        var res = Encoding.toHankanaCase(zenkana);
         assert.equal(res, expect);
 
-        var zenkanaArray = encoding.stringToCode(zenkana);
-        var expectArray = encoding.stringToCode(expect);
-        res = encoding.toHankanaCase(zenkanaArray);
+        var zenkanaArray = Encoding.stringToCode(zenkana);
+        var expectArray = Encoding.stringToCode(expect);
+        res = Encoding.toHankanaCase(zenkanaArray);
         assert(Array.isArray(res));
         assert.deepEqual(res, expectArray);
       });
@@ -1454,12 +1454,12 @@ describe('Encoding', function() {
     it('toZenkanaCase', function() {
       hankanas.forEach(function(hankana, i) {
         var expect = zenkanas[i];
-        var res = encoding.toZenkanaCase(hankana);
+        var res = Encoding.toZenkanaCase(hankana);
         assert.equal(res, expect);
 
-        var hankanaArray = encoding.stringToCode(hankana);
-        var expectArray = encoding.stringToCode(expect);
-        res = encoding.toZenkanaCase(hankanaArray);
+        var hankanaArray = Encoding.stringToCode(hankana);
+        var expectArray = Encoding.stringToCode(expect);
+        res = Encoding.toZenkanaCase(hankanaArray);
         assert(Array.isArray(res));
         assert.deepEqual(res, expectArray);
       });
@@ -1467,24 +1467,24 @@ describe('Encoding', function() {
 
     it('toHankakuSpace', function() {
       var expect = hanspace;
-      var res = encoding.toHankakuSpace(zenspace);
+      var res = Encoding.toHankakuSpace(zenspace);
       assert.equal(res, expect);
 
-      var zenspaceArray = encoding.stringToCode(zenspace);
-      var expectArray = encoding.stringToCode(expect);
-      res = encoding.toHankakuSpace(zenspaceArray);
+      var zenspaceArray = Encoding.stringToCode(zenspace);
+      var expectArray = Encoding.stringToCode(expect);
+      res = Encoding.toHankakuSpace(zenspaceArray);
       assert(Array.isArray(res));
       assert.deepEqual(res, expectArray);
     });
 
     it('toZenkakuSpace', function() {
       var expect = zenspace;
-      var res = encoding.toZenkakuSpace(hanspace);
+      var res = Encoding.toZenkakuSpace(hanspace);
       assert.equal(res, expect);
 
-      var hanspaceArray = encoding.stringToCode(hanspace);
-      var expectArray = encoding.stringToCode(expect);
-      res = encoding.toZenkakuSpace(hanspaceArray);
+      var hanspaceArray = Encoding.stringToCode(hanspace);
+      var expectArray = Encoding.stringToCode(expect);
+      res = Encoding.toZenkakuSpace(hanspaceArray);
       assert(Array.isArray(res));
       assert.deepEqual(res, expectArray);
     });
@@ -1495,10 +1495,10 @@ describe('Encoding', function() {
       assert(Array.isArray(tests.jisx0208Array));
       assert(tests.jisx0208Array.length > 0);
 
-      var string = encoding.codeToString(tests.jisx0208Array);
+      var string = Encoding.codeToString(tests.jisx0208Array);
       assert(typeof string === 'string');
 
-      var code = encoding.stringToCode(string);
+      var code = Encoding.stringToCode(string);
       assert.deepEqual(code, tests.jisx0208Array);
     });
 
@@ -1518,14 +1518,14 @@ describe('Encoding', function() {
       }
       assert(longArray.length > max);
 
-      var string = encoding.codeToString(longArray);
+      var string = Encoding.codeToString(longArray);
       assert(typeof string === 'string');
-      var code = encoding.stringToCode(string);
+      var code = Encoding.stringToCode(string);
       assert.deepEqual(code, longArray);
 
       // Run 2 times to check if APPLY_BUFFER_SIZE_OK is set up expected
-      string = encoding.codeToString(longArray);
-      code = encoding.stringToCode(string);
+      string = Encoding.codeToString(longArray);
+      code = Encoding.stringToCode(string);
       assert.deepEqual(code, longArray);
     });
   });
