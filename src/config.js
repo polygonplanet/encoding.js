@@ -33,7 +33,6 @@ exports.CAN_CHARCODE_APPLY_TYPED = CAN_CHARCODE_APPLY_TYPED;
 exports.APPLY_BUFFER_SIZE = 65533;
 exports.APPLY_BUFFER_SIZE_OK = null;
 
-
 var EncodingNames = exports.EncodingNames = {
   UTF32: {
     order: 0
@@ -90,7 +89,7 @@ exports.EncodingOrders = (function() {
 
     encoding = EncodingNames[name];
     if (encoding != null) {
-      if (typeof encoding.order !== 'undefined') {
+      if (encoding.order != null) {
         orders[orders.length] = name;
       }
 
@@ -124,7 +123,7 @@ function init_JIS_TO_UTF8_TABLE() {
       key = keys[i];
       value = EncodingTable.UTF8_TO_JIS_TABLE[key];
       if (value > 0x5F) {
-        EncodingTable.JIS_TO_UTF8_TABLE[value] = key | 0;
+        EncodingTable.JIS_TO_UTF8_TABLE[value] = key;
       }
     }
 
@@ -135,7 +134,7 @@ function init_JIS_TO_UTF8_TABLE() {
     for (i = 0; i < len; i++) {
       key = keys[i];
       value = EncodingTable.UTF8_TO_JISX0212_TABLE[key];
-      EncodingTable.JISX0212_TO_UTF8_TABLE[value] = key | 0;
+      EncodingTable.JISX0212_TO_UTF8_TABLE[value] = key;
     }
   }
 }
