@@ -7,6 +7,7 @@ var KanaCaseTable = require('./kana-case-table');
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 var Encoding = {
+  version: '__VERSION__',
 
   /**
    * Encoding orders

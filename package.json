@@ -10,6 +10,7 @@
   "devDependencies": {
     "bannerify": "^1.0.1",
     "browserify": "^16.5.0",
+    "browserify-versionify": "^1.0.6",
     "mocha": "^6.2.0",
     "power-assert": "^1.6.1",
     "uglify-js": "^3.6.0",
@@ -22,6 +23,11 @@
     "minify": "uglifyjs encoding.js -o encoding.min.js --source-map \"url='encoding.min.js.map'\" --comments -c -m -b ascii_only=true,beautify=false",
     "build": "npm run compile && npm run minify",
     "test": "npm run build && mocha tests/test"
+  },
+  "browserify": {
+    "transform": [
+      ["browserify-versionify", { "placeholder": "__VERSION__" }]
+    ]
   },
   "repository": {
     "type": "git",
