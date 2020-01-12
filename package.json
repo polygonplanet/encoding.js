@@ -10,8 +10,8 @@
   "devDependencies": {
     "bannerify": "^1.0.1",
     "browserify": "^16.5.0",
-    "browserify-versionify": "^1.0.6",
     "mocha": "^7.0.0",
+    "package-json-versionify": "^1.0.4",
     "power-assert": "^1.6.1",
     "uglify-js": "^3.7.3",
     "uglifyify": "^5.0.2",
@@ -26,7 +26,7 @@
   },
   "browserify": {
     "transform": [
-      ["browserify-versionify", { "placeholder": "__VERSION__" }]
+      "package-json-versionify"
     ]
   },
   "repository": {

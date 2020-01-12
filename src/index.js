@@ -3,11 +3,12 @@ var util = require('./util');
 var EncodingDetect = require('./encoding-detect');
 var EncodingConvert = require('./encoding-convert');
 var KanaCaseTable = require('./kana-case-table');
+var version = require('../package.json').version;
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 var Encoding = {
-  version: '__VERSION__',
+  version: version,
 
   /**
    * Encoding orders
