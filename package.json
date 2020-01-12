@@ -6,6 +6,12 @@
   "directories": {
     "test": "tests"
   },
+  "files": [
+    "src/*",
+    "encoding.js",
+    "encoding.min.js",
+    "encoding.min.js.map"
+  ],
   "dependencies": {},
   "devDependencies": {
     "bannerify": "^1.0.1",
