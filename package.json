@@ -17,8 +17,8 @@
     "uglifyify": "^5.0.2",
     "watchify": "^3.11.1"
   },
-  "directories": {
-    "test": "tests"
+  "engines": {
+    "node": ">=8.10.0"
   },
   "files": [
     "src/*",
