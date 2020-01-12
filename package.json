@@ -1,17 +1,11 @@
 {
   "name": "encoding-japanese",
-  "version": "1.0.30",
   "description": "Convert or detect character encoding in JavaScript",
-  "main": "src/index.js",
-  "directories": {
-    "test": "tests"
+  "version": "1.0.30",
+  "author": "polygon planet <polygon.planet.aqua@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/polygonplanet/encoding.js/issues"
   },
-  "files": [
-    "src/*",
-    "encoding.js",
-    "encoding.min.js",
-    "encoding.min.js.map"
-  ],
   "dependencies": {},
   "devDependencies": {
     "bannerify": "^1.0.1",
@@ -23,48 +17,54 @@
     "uglifyify": "^5.0.2",
     "watchify": "^3.11.1"
   },
+  "directories": {
+    "test": "tests"
+  },
+  "files": [
+    "src/*",
+    "encoding.js",
+    "encoding.min.js",
+    "encoding.min.js.map"
+  ],
+  "homepage": "https://github.com/polygonplanet/encoding.js",
+  "keywords": [
+    "base64",
+    "charset",
+    "convert",
+    "detect",
+    "encoding",
+    "euc-jp",
+    "eucjp",
+    "iconv",
+    "iso-2022-jp",
+    "japanese",
+    "jis",
+    "shift_jis",
+    "sjis",
+    "unicode",
+    "urldecode",
+    "urlencode",
+    "utf",
+    "utf-16",
+    "utf-32",
+    "utf-8"
+  ],
+  "license": "MIT",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/polygonplanet/encoding.js.git"
+  },
   "scripts": {
-    "compile": "browserify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare",
-    "watch": "watchify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare --poll=200 -v",
-    "minify": "uglifyjs encoding.js -o encoding.min.js --source-map \"url='encoding.min.js.map'\" --comments -c -m -b ascii_only=true,beautify=false",
     "build": "npm run compile && npm run minify",
-    "test": "npm run build && mocha tests/test"
+    "compile": "browserify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare",
+    "minify": "uglifyjs encoding.js -o encoding.min.js --source-map \"url='encoding.min.js.map'\" --comments -c -m -b ascii_only=true,beautify=false",
+    "test": "npm run build && mocha tests/test",
+    "watch": "watchify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare --poll=200 -v"
   },
   "browserify": {
     "transform": [
       "package-json-versionify"
     ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/polygonplanet/encoding.js.git"
-  },
-  "keywords": [
-    "encoding",
-    "charset",
-    "iconv",
-    "japanese",
-    "unicode",
-    "utf",
-    "utf-8",
-    "utf-16",
-    "utf-32",
-    "sjis",
-    "shift_jis",
-    "eucjp",
-    "euc-jp",
-    "jis",
-    "iso-2022-jp",
-    "base64",
-    "convert",
-    "detect",
-    "urlencode",
-    "urldecode"
-  ],
-  "author": "polygon planet <polygon.planet.aqua@gmail.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/polygonplanet/encoding.js/issues"
-  },
-  "homepage": "https://github.com/polygonplanet/encoding.js"
+  }
 }
