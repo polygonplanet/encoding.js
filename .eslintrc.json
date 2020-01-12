@@ -2,7 +2,11 @@
   "extends": "eslint:recommended",
   "parserOptions": {
     "ecmaVersion": 6,
-    "sourceType": "module"
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "globalReturn": true,
+      "impliedStrict": true
+    }
   },
   "env": {
     "es6": true,
@@ -12,10 +16,24 @@
     "worker": true
   },
   "rules": {
+    "comma-dangle": "off",
+    "key-spacing": [
+      "error", {
+        "beforeColon": false,
+        "afterColon": true
+      }
+    ],
     "no-empty": "off",
     "no-mixed-spaces-and-tabs": "error",
-    "no-unused-vars": "warn",
+    "no-unused-vars": [
+      "warn", {
+        "args": "none"
+      }
+    ],
+    "no-tabs": "error",
+    "no-useless-escape": "warn",
     "no-console": "warn",
+    "no-undef": "warn",
     "semi": "warn"
   }
 }
