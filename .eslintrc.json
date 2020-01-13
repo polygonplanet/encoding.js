@@ -13,7 +13,8 @@
     "browser": true,
     "node": true,
     "shared-node-browser": true,
-    "worker": true
+    "worker": true,
+    "mocha": true
   },
   "rules": {
     "comma-dangle": "off",
