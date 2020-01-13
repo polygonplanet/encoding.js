@@ -1,5 +1,15 @@
 # Change Log
 
+## [Unreleased]
+
+### Added
+
+* Add `Encoding.version`
+
+### Removed
+
+* Drop bower support
+
 ## [1.0.30]
 
 ### Changed
