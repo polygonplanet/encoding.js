@@ -1,4 +1,6 @@
 **/.*
 docs/
 tests/
+bower_components/
+node_modules/
 .npmignore
