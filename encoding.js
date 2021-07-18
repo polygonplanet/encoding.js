@@ -864,11 +864,19 @@ function UTF8ToEUCJP(data) {
     b = data[i];
     if (b >= 0x80) {
       if (b <= 0xDF) {
-        utf8 = (data[i++] << 8) + data[i];
+        // 2 bytes
+        utf8 = (b << 8) + data[++i];
+      } else if (b <= 0xEF) {
+        // 3 bytes
+        utf8 = (b << 16) +
+               (data[++i] << 8) +
+               (data[++i] & 0xFF);
       } else {
-        utf8 = (data[i++] << 16) +
-               (data[i++] << 8) +
-               (data[i] & 0xFF);
+        // 4 bytes
+        utf8 = (b << 24) +
+               (data[++i] << 16) +
+               (data[++i] << 8) +
+               (data[++i] & 0xFF);
       }
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
@@ -930,9 +938,19 @@ function UTF8ToJIS(data) {
       results[results.length] = b & 0xFF;
     } else {
       if (b <= 0xDF) {
-        utf8 = (data[i] << 8) + data[++i];
+        // 2 bytes
+        utf8 = (b << 8) + data[++i];
+      } else if (b <= 0xEF) {
+        // 3 bytes
+        utf8 = (b << 16) +
+            (data[++i] << 8) +
+            (data[++i] & 0xFF);
       } else {
-        utf8 = (data[i] << 16) + (data[++i] << 8) + data[++i];
+        // 4 bytes
+        utf8 = (b << 24) +
+            (data[++i] << 16) +
+            (data[++i] << 8) +
+            (data[++i] & 0xFF);
       }
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];

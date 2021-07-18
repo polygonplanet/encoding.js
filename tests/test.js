@@ -498,23 +498,53 @@ describe('Encoding', function() {
       });
     });
 
-    it('4byte UTF-8 conversion', function() {
+    describe('4byte UTF-8 conversion', function() {
       var sushiBeer = '🍣寿司ビール🍺';
       var utf8 = encoding.convert(sushiBeer, {
         to: 'utf-8',
         from: 'unicode'
       });
 
-      // Characters that cannot be converted to Shift_JIS ('🍣', '🍺') will be converted to '??'
-      var sjis = encoding.convert(utf8, {
-        to: 'sjis',
-        from: 'utf-8'
+      describe('Convert to unknown character', function() {
+        it('SJIS', function() {
+          // Characters that cannot be converted to Shift_JIS ('🍣', '🍺') will be converted to '?'
+          var sjis = encoding.convert(utf8, {
+            to: 'sjis',
+            from: 'utf-8'
+          });
+          var decoded = encoding.convert(sjis, {
+            to: 'unicode',
+            from: 'sjis'
+          });
+          assert.deepEqual('?寿司ビール?', decoded);
+        });
+
+        it('EUC-JP', function() {
+          // Characters that cannot be converted to EUC-JP ('🍣', '🍺') will be converted to '?'
+          var sjis = encoding.convert(utf8, {
+            to: 'euc-jp',
+            from: 'utf-8'
+          });
+          var decoded = encoding.convert(sjis, {
+            to: 'unicode',
+            from: 'euc-jp'
+          });
+          assert.deepEqual('?寿司ビール?', decoded);
+        });
+
+        it('JIS', function() {
+          // Characters that cannot be converted to JIS ('🍣', '🍺') will be converted to '?'
+          var sjis = encoding.convert(utf8, {
+            to: 'jis',
+            from: 'utf-8'
+          });
+          var decoded = encoding.convert(sjis, {
+            to: 'unicode',
+            from: 'jis'
+          });
+          assert.deepEqual('?寿司ビール?', decoded);
+        });
       });
-      var decoded = encoding.convert(sjis, {
-        to: 'unicode',
-        from: 'sjis'
-      });
-      assert.deepEqual('?寿司ビール?', decoded)
     });
   });
 
