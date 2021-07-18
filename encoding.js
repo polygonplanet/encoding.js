@@ -778,34 +778,63 @@ exports.JISToUTF8 = JISToUTF8;
 /**
  * UTF-8 to SJIS
  */
-function UTF8ToSJIS(data) {
+function UTF8ToSJIS(data, options) {
   var results = [];
-  var i = 0;
+  var i = 0, j = 0;
   var len = data && data.length;
-  var b, b1, b2, utf8, jis;
+  var b, b1, b2, bytes, utf8, jis;
+  var codePoints;
 
   for (; i < len; i++) {
     b = data[i];
     if (b >= 0x80) {
       if (b <= 0xDF) {
         // 2 bytes
-        utf8 = (b << 8) + data[++i];
+        bytes = data.slice(i, i+2)
       } else if (b <= 0xEF) {
         // 3 bytes
-        utf8 = (b << 16) +
-               (data[++i] << 8) +
-               (data[++i] & 0xFF);
+        bytes = data.slice(i, i+3)
       } else {
         // 4 bytes
-        utf8 = (b << 24) +
-               (data[++i] << 16) +
-               (data[++i] << 8) +
-               (data[++i] & 0xFF);
+        bytes = data.slice(i, i+4)
+      }
+
+      i += bytes.length - 1
+      utf8 = 0
+      for (j = 0; j < bytes.length; j++) {
+        utf8 += (bytes[bytes.length - 1 - j] << (j * 8));
       }
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
       if (jis === void 0) {
-        results[results.length] = config.UNKNOWN_CHARACTER;
+        if (util.isObject(options)) {
+          switch (options.unknown) {
+            case 'hex':
+              results[results.length] = 0x26; // &
+              results[results.length] = 0x23; // #
+              results[results.length] = 0x78; // x
+              codePoints = util.bufferToCode(UNICODEToSJIS(util.stringToBuffer(util.utf8CharBytesToCodePoint(bytes).toString(16))));
+              for (j = 0; j < codePoints.length; j++) {
+                results[results.length] = codePoints[j];
+              }
+              results[results.length] = 0x3B; // ;
+              break;
+            case 'decimal':
+              results[results.length] = 0x26; // &
+              results[results.length] = 0x23; // #
+              codePoints = util.bufferToCode(UNICODEToSJIS(util.stringToBuffer(util.utf8CharBytesToCodePoint(bytes).toString())));
+              for (j = 0; j < codePoints.length; j++) {
+                results[results.length] = codePoints[j];
+              }
+              results[results.length] = 0x3B; // ;
+              break;
+            default:
+              results[results.length] = config.UNKNOWN_CHARACTER;
+              break;
+          }
+        } else {
+          results[results.length] = config.UNKNOWN_CHARACTER;
+        }
       } else {
         if (jis < 0xFF) {
           results[results.length] = jis + 0x80;
@@ -854,36 +883,65 @@ exports.UTF8ToSJIS = UTF8ToSJIS;
 /**
  * UTF-8 to EUC-JP
  */
-function UTF8ToEUCJP(data) {
+function UTF8ToEUCJP(data, options) {
   var results = [];
-  var i = 0;
+  var i = 0, j = 0;
   var len = data && data.length;
-  var b, utf8, jis;
+  var b, bytes, utf8, jis;
+  var codePoints;
 
   for (; i < len; i++) {
     b = data[i];
     if (b >= 0x80) {
       if (b <= 0xDF) {
         // 2 bytes
-        utf8 = (b << 8) + data[++i];
+        bytes = data.slice(i, i+2)
       } else if (b <= 0xEF) {
         // 3 bytes
-        utf8 = (b << 16) +
-               (data[++i] << 8) +
-               (data[++i] & 0xFF);
+        bytes = data.slice(i, i+3)
       } else {
         // 4 bytes
-        utf8 = (b << 24) +
-               (data[++i] << 16) +
-               (data[++i] << 8) +
-               (data[++i] & 0xFF);
+        bytes = data.slice(i, i+4)
+      }
+
+      i += bytes.length - 1
+      utf8 = 0
+      for (j = 0; j < bytes.length; j++) {
+        utf8 += (bytes[bytes.length - 1 - j] << (j * 8));
       }
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
       if (jis === void 0) {
         jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
         if (jis === void 0) {
-          results[results.length] = config.UNKNOWN_CHARACTER;
+          if (util.isObject(options)) {
+            switch (options.unknown) {
+              case 'hex':
+                results[results.length] = 0x26; // &
+                results[results.length] = 0x23; // #
+                results[results.length] = 0x78; // x
+                codePoints = util.bufferToCode(UNICODEToEUCJP(util.stringToBuffer(util.utf8CharBytesToCodePoint(bytes).toString(16))));
+                for (j = 0; j < codePoints.length; j++) {
+                  results[results.length] = codePoints[j];
+                }
+                results[results.length] = 0x3B; // ;
+                break;
+              case 'decimal':
+                results[results.length] = 0x26; // &
+                results[results.length] = 0x23; // #
+                codePoints = util.bufferToCode(UNICODEToEUCJP(util.stringToBuffer(util.utf8CharBytesToCodePoint(bytes).toString())));
+                for (j = 0; j < codePoints.length; j++) {
+                  results[results.length] = codePoints[j];
+                }
+                results[results.length] = 0x3B; // ;
+                break;
+              default:
+                results[results.length] = config.UNKNOWN_CHARACTER;
+                break;
+            }
+          } else {
+            results[results.length] = config.UNKNOWN_CHARACTER;
+          }
         } else {
           results[results.length] = 0x8F;
           results[results.length] = (jis >> 8) - 0x80 & 0xFF;
@@ -913,18 +971,19 @@ exports.UTF8ToEUCJP = UTF8ToEUCJP;
 /**
  * UTF-8 to JIS
  */
-function UTF8ToJIS(data) {
+function UTF8ToJIS(data, options) {
   var results = [];
   var index = 0;
   var len = data && data.length;
-  var i = 0;
-  var b, utf8, jis;
+  var i = 0, j = 0;
+  var b, bytes, utf8, jis;
   var esc = [
     0x1B, 0x28, 0x42,
     0x1B, 0x24, 0x42,
     0x1B, 0x28, 0x49,
     0x1B, 0x24, 0x28, 0x44
   ];
+  var codePoints;
 
   for (; i < len; i++) {
     b = data[i];
@@ -939,18 +998,19 @@ function UTF8ToJIS(data) {
     } else {
       if (b <= 0xDF) {
         // 2 bytes
-        utf8 = (b << 8) + data[++i];
+        bytes = data.slice(i, i+2)
       } else if (b <= 0xEF) {
         // 3 bytes
-        utf8 = (b << 16) +
-            (data[++i] << 8) +
-            (data[++i] & 0xFF);
+        bytes = data.slice(i, i+3)
       } else {
         // 4 bytes
-        utf8 = (b << 24) +
-            (data[++i] << 16) +
-            (data[++i] << 8) +
-            (data[++i] & 0xFF);
+        bytes = data.slice(i, i+4)
+      }
+
+      i += bytes.length - 1
+      utf8 = 0
+      for (j = 0; j < bytes.length; j++) {
+        utf8 += (bytes[bytes.length - 1 - j] << (j * 8));
       }
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
@@ -963,7 +1023,34 @@ function UTF8ToJIS(data) {
             results[results.length] = esc[1];
             results[results.length] = esc[2];
           }
-          results[results.length] = config.UNKNOWN_CHARACTER;
+          if (util.isObject(options)) {
+            switch (options.unknown) {
+              case 'hex':
+                results[results.length] = 0x26; // &
+                results[results.length] = 0x23; // #
+                results[results.length] = 0x78; // x
+                codePoints = util.bufferToCode(UNICODEToJIS(util.stringToBuffer(util.utf8CharBytesToCodePoint(bytes).toString(16))));
+                for (j = 0; j < codePoints.length; j++) {
+                  results[results.length] = codePoints[j];
+                }
+                results[results.length] = 0x3B; // ;
+                break;
+              case 'decimal':
+                results[results.length] = 0x26; // &
+                results[results.length] = 0x23; // #
+                codePoints = util.bufferToCode(UNICODEToJIS(util.stringToBuffer(util.utf8CharBytesToCodePoint(bytes).toString())));
+                for (j = 0; j < codePoints.length; j++) {
+                  results[results.length] = codePoints[j];
+                }
+                results[results.length] = 0x3B; // ;
+                break;
+              default:
+                results[results.length] = config.UNKNOWN_CHARACTER;
+                break;
+            }
+          } else {
+            results[results.length] = config.UNKNOWN_CHARACTER;
+          }
         } else {
           // JIS X 0212:1990
           if (index !== 3) {
@@ -1570,8 +1657,8 @@ exports.UTF16LEToUTF16BE = UTF16LEToUTF16BE;
 /**
  * UTF-16 (JavaScript Unicode array) to JIS
  */
-function UNICODEToJIS(data) {
-  return UTF8ToJIS(UNICODEToUTF8(data));
+function UNICODEToJIS(data, options) {
+  return UTF8ToJIS(UNICODEToUTF8(data), options);
 }
 exports.UNICODEToJIS = UNICODEToJIS;
 
@@ -1586,8 +1673,8 @@ exports.JISToUNICODE = JISToUNICODE;
 /**
  * UTF-16 (JavaScript Unicode array) to EUCJP
  */
-function UNICODEToEUCJP(data) {
-  return UTF8ToEUCJP(UNICODEToUTF8(data));
+function UNICODEToEUCJP(data, options) {
+  return UTF8ToEUCJP(UNICODEToUTF8(data), options);
 }
 exports.UNICODEToEUCJP = UNICODEToEUCJP;
 
@@ -1602,8 +1689,8 @@ exports.EUCJPToUNICODE = EUCJPToUNICODE;
 /**
  * UTF-16 (JavaScript Unicode array) to SJIS
  */
-function UNICODEToSJIS(data) {
-  return UTF8ToSJIS(UNICODEToUTF8(data));
+function UNICODEToSJIS(data, options) {
+  return UTF8ToSJIS(UNICODEToUTF8(data), options);
 }
 exports.UNICODEToSJIS = UNICODEToSJIS;
 
@@ -1674,8 +1761,8 @@ exports.JISToUTF16 = JISToUTF16;
 /**
  * UTF-16 to JIS
  */
-function UTF16ToJIS(data) {
-  return UTF8ToJIS(UTF16ToUTF8(data));
+function UTF16ToJIS(data, options) {
+  return UTF8ToJIS(UTF16ToUTF8(data), options);
 }
 exports.UTF16ToJIS = UTF16ToJIS;
 
@@ -1690,8 +1777,8 @@ exports.JISToUTF16BE = JISToUTF16BE;
 /**
  * UTF-16BE to JIS
  */
-function UTF16BEToJIS(data) {
-  return UTF8ToJIS(UTF16BEToUTF8(data));
+function UTF16BEToJIS(data, options) {
+  return UTF8ToJIS(UTF16BEToUTF8(data), options);
 }
 exports.UTF16BEToJIS = UTF16BEToJIS;
 
@@ -1706,8 +1793,8 @@ exports.JISToUTF16LE = JISToUTF16LE;
 /**
  * UTF-16LE to JIS
  */
-function UTF16LEToJIS(data) {
-  return UTF8ToJIS(UTF16LEToUTF8(data));
+function UTF16LEToJIS(data, options) {
+  return UTF8ToJIS(UTF16LEToUTF8(data), options);
 }
 exports.UTF16LEToJIS = UTF16LEToJIS;
 
@@ -1722,8 +1809,8 @@ exports.EUCJPToUTF16 = EUCJPToUTF16;
 /**
  * UTF-16 to EUC-JP
  */
-function UTF16ToEUCJP(data) {
-  return UTF8ToEUCJP(UTF16ToUTF8(data));
+function UTF16ToEUCJP(data, options) {
+  return UTF8ToEUCJP(UTF16ToUTF8(data), options);
 }
 exports.UTF16ToEUCJP = UTF16ToEUCJP;
 
@@ -1738,8 +1825,8 @@ exports.EUCJPToUTF16BE = EUCJPToUTF16BE;
 /**
  * UTF-16BE to EUC-JP
  */
-function UTF16BEToEUCJP(data) {
-  return UTF8ToEUCJP(UTF16BEToUTF8(data));
+function UTF16BEToEUCJP(data, options) {
+  return UTF8ToEUCJP(UTF16BEToUTF8(data), options);
 }
 exports.UTF16BEToEUCJP = UTF16BEToEUCJP;
 
@@ -1754,8 +1841,8 @@ exports.EUCJPToUTF16LE = EUCJPToUTF16LE;
 /**
  * UTF-16LE to EUC-JP
  */
-function UTF16LEToEUCJP(data) {
-  return UTF8ToEUCJP(UTF16LEToUTF8(data));
+function UTF16LEToEUCJP(data, options) {
+  return UTF8ToEUCJP(UTF16LEToUTF8(data), options);
 }
 exports.UTF16LEToEUCJP = UTF16LEToEUCJP;
 
@@ -1770,8 +1857,8 @@ exports.SJISToUTF16 = SJISToUTF16;
 /**
  * UTF-16 to SJIS
  */
-function UTF16ToSJIS(data) {
-  return UTF8ToSJIS(UTF16ToUTF8(data));
+function UTF16ToSJIS(data, options) {
+  return UTF8ToSJIS(UTF16ToUTF8(data), options);
 }
 exports.UTF16ToSJIS = UTF16ToSJIS;
 
@@ -1786,8 +1873,8 @@ exports.SJISToUTF16BE = SJISToUTF16BE;
 /**
  * UTF-16BE to SJIS
  */
-function UTF16BEToSJIS(data) {
-  return UTF8ToSJIS(UTF16BEToUTF8(data));
+function UTF16BEToSJIS(data, options) {
+  return UTF8ToSJIS(UTF16BEToUTF8(data), options);
 }
 exports.UTF16BEToSJIS = UTF16BEToSJIS;
 
@@ -1802,8 +1889,8 @@ exports.SJISToUTF16LE = SJISToUTF16LE;
 /**
  * UTF-16LE to SJIS
  */
-function UTF16LEToSJIS(data) {
-  return UTF8ToSJIS(UTF16LEToUTF8(data));
+function UTF16LEToSJIS(data, options) {
+  return UTF8ToSJIS(UTF16LEToUTF8(data), options);
 }
 exports.UTF16LEToSJIS = UTF16LEToSJIS;
 
@@ -5875,6 +5962,20 @@ function bufferToCode(buffer) {
   return slice.call(buffer);
 }
 exports.bufferToCode = bufferToCode;
+
+function utf8CharBytesToCodePoint(charBytes) {
+  var i = 1;
+  var d = [0x0, 0xC0, 0xE0, 0xF0];
+  var codePoint = charBytes[0] - d[charBytes.length-1];
+
+  for (; i < charBytes.length; i++) {
+    codePoint <<= 6;
+    codePoint += charBytes[i] - 0x80;
+  }
+
+  return codePoint;
+}
+exports.utf8CharBytesToCodePoint = utf8CharBytesToCodePoint;
 
 
 // Base64
