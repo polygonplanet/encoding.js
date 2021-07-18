@@ -497,6 +497,25 @@ describe('Encoding', function() {
         assert.deepEqual(decoded, chars);
       });
     });
+
+    it('4byte UTF-8 conversion', function() {
+      var sushiBeer = '🍣寿司ビール🍺';
+      var utf8 = encoding.convert(sushiBeer, {
+        to: 'utf-8',
+        from: 'unicode'
+      });
+
+      // Characters that cannot be converted to Shift_JIS ('🍣', '🍺') will be converted to '??'
+      var sjis = encoding.convert(utf8, {
+        to: 'sjis',
+        from: 'utf-8'
+      });
+      var decoded = encoding.convert(sjis, {
+        to: 'unicode',
+        from: 'sjis'
+      });
+      assert.deepEqual('?寿司ビール?', decoded)
+    });
   });
 
   describe('convert JIS-X-0208', function() {

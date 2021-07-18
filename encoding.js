@@ -790,9 +790,15 @@ function UTF8ToSJIS(data) {
       if (b <= 0xDF) {
         // 2 bytes
         utf8 = (b << 8) + data[++i];
-      } else {
+      } else if (b <= 0xEF) {
         // 3 bytes
         utf8 = (b << 16) +
+               (data[++i] << 8) +
+               (data[++i] & 0xFF);
+      } else {
+        // 4 bytes
+        utf8 = (b << 24) +
+               (data[++i] << 16) +
                (data[++i] << 8) +
                (data[++i] & 0xFF);
       }
