@@ -497,6 +497,143 @@ describe('Encoding', function() {
         assert.deepEqual(decoded, chars);
       });
     });
+
+    describe('4byte UTF-8 conversion', function() {
+      var sushiBeer = '🍣寿司ビール🍺';
+      var utf8 = encoding.convert(sushiBeer, {
+        to: 'utf-8',
+        from: 'unicode'
+      });
+
+      describe('Convert to unknown character', function() {
+        it('SJIS', function() {
+          // Characters that cannot be converted to Shift_JIS ('🍣', '🍺') will be converted to '?'
+          var sjis = encoding.convert(utf8, {
+            to: 'sjis',
+            from: 'utf-8'
+          });
+          var decoded = encoding.convert(sjis, {
+            to: 'unicode',
+            from: 'sjis'
+          });
+          assert.deepEqual('?寿司ビール?', decoded);
+        });
+
+        it('EUC-JP', function() {
+          // Characters that cannot be converted to EUC-JP ('🍣', '🍺') will be converted to '?'
+          var eucjp = encoding.convert(utf8, {
+            to: 'euc-jp',
+            from: 'utf-8'
+          });
+          var decoded = encoding.convert(eucjp, {
+            to: 'unicode',
+            from: 'euc-jp'
+          });
+          assert.deepEqual('?寿司ビール?', decoded);
+        });
+
+        it('JIS', function() {
+          // Characters that cannot be converted to JIS ('🍣', '🍺') will be converted to '?'
+          var jis = encoding.convert(utf8, {
+            to: 'jis',
+            from: 'utf-8'
+          });
+          var decoded = encoding.convert(jis, {
+            to: 'unicode',
+            from: 'jis'
+          });
+          assert.deepEqual('?寿司ビール?', decoded);
+        });
+      });
+
+      describe('Convert to hex codepoint', function() {
+        it('SJIS', function() {
+          // Characters that cannot be converted to Shift_JIS ('🍣', '🍺') will be converted to numeric character reference ('&#x1f363;', '&#x1f37a')
+          var sjis = encoding.convert(utf8, {
+            to: 'sjis',
+            from: 'utf-8',
+            unknown: 'hex'
+          });
+          var decoded = encoding.convert(sjis, {
+            to: 'unicode',
+            from: 'sjis'
+          });
+          assert.deepEqual(decoded, '&#x1f363;寿司ビール&#x1f37a;');
+        });
+
+        it('EUC-JP', function() {
+          // Characters that cannot be converted to EUC-JP ('🍣', '🍺') will be converted to numeric character reference ('&#x1f363;', '&#x1f37a')
+          var eucjp = encoding.convert(utf8, {
+            to: 'euc-jp',
+            from: 'utf-8',
+            unknown: 'hex'
+          });
+          var decoded = encoding.convert(eucjp, {
+            to: 'unicode',
+            from: 'euc-jp'
+          });
+          assert.deepEqual(decoded, '&#x1f363;寿司ビール&#x1f37a;');
+        });
+
+        it('JIS', function() {
+          // Characters that cannot be converted to JIS ('🍣', '🍺') will be converted to numeric character reference ('&#x1f363;', '&#x1f37a')
+          var jis = encoding.convert(utf8, {
+            to: 'jis',
+            from: 'utf-8',
+            unknown: 'hex'
+          });
+          var decoded = encoding.convert(jis, {
+            to: 'unicode',
+            from: 'jis'
+          });
+          assert.deepEqual(decoded, '&#x1f363;寿司ビール&#x1f37a;');
+        });
+      });
+
+      describe('Convert to decimal codepoint', function() {
+        it('SJIS', function() {
+          // Characters that cannot be converted to Shift_JIS ('🍣', '🍺') will be converted to numeric character reference ('&#127843;', '&#127866')
+          var sjis = encoding.convert(utf8, {
+            to: 'sjis',
+            from: 'utf-8',
+            unknown: 'decimal'
+          });
+          var decoded = encoding.convert(sjis, {
+            to: 'unicode',
+            from: 'sjis'
+          });
+          assert.deepEqual(decoded, '&#127843;寿司ビール&#127866;');
+        });
+
+        it('EUC-JP', function() {
+          // Characters that cannot be converted to EUC-JP ('🍣', '🍺') will be converted to numeric character reference ('&#127843;', '&#127866')
+          var eucjp = encoding.convert(utf8, {
+            to: 'euc-jp',
+            from: 'utf-8',
+            unknown: 'decimal'
+          });
+          var decoded = encoding.convert(eucjp, {
+            to: 'unicode',
+            from: 'euc-jp'
+          });
+          assert.deepEqual(decoded, '&#127843;寿司ビール&#127866;');
+        });
+
+        it('JIS', function() {
+          // Characters that cannot be converted to JIS ('🍣', '🍺') will be converted to numeric character reference ('&#127843;', '&#127866')
+          var jis = encoding.convert(utf8, {
+            to: 'jis',
+            from: 'utf-8',
+            unknown: 'decimal'
+          });
+          var decoded = encoding.convert(jis, {
+            to: 'unicode',
+            from: 'jis'
+          });
+          assert.deepEqual(decoded, '&#127843;寿司ビール&#127866;');
+        });
+      });
+    });
   });
 
   describe('convert JIS-X-0208', function() {

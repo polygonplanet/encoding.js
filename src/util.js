@@ -189,6 +189,20 @@ function bufferToCode(buffer) {
 }
 exports.bufferToCode = bufferToCode;
 
+function utf8CharBytesToCodePoint(charBytes) {
+  var i = 1;
+  var d = [0x0, 0xC0, 0xE0, 0xF0];
+  var codePoint = charBytes[0] - d[charBytes.length-1];
+
+  for (; i < charBytes.length; i++) {
+    codePoint <<= 6;
+    codePoint += charBytes[i] - 0x80;
+  }
+
+  return codePoint;
+}
+exports.utf8CharBytesToCodePoint = utf8CharBytesToCodePoint;
+
 
 // Base64
 /* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
