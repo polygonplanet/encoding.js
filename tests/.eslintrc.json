@@ -1,0 +1,11 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 6
+  },
+  "env": {
+    "es6": true,
+    "node": true,
+    "shared-node-browser": true,
+    "mocha": true
+  }
+}

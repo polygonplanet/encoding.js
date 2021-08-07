@@ -1,8 +1,7 @@
 {
   "extends": "eslint:recommended",
   "parserOptions": {
-    "ecmaVersion": 6,
-    "sourceType": "module",
+    "ecmaVersion": 5,
     "ecmaFeatures": {
       "globalReturn": true,
       "impliedStrict": true
@@ -16,25 +15,40 @@
     "worker": true,
     "mocha": true
   },
+  "ignorePatterns": [
+    "encoding.js",
+    "encoding.min.js"
+  ],
   "rules": {
-    "comma-dangle": "off",
+    "comma-dangle": ["error", "never"],
     "key-spacing": [
       "error", {
         "beforeColon": false,
         "afterColon": true
       }
     ],
-    "no-empty": "off",
-    "no-mixed-spaces-and-tabs": "error",
-    "no-unused-vars": [
-      "warn", {
-        "args": "none"
+    "keyword-spacing": "error",
+    "max-len": [
+      "error", {
+        "code": 100,
+        "tabWidth": 2,
+        "ignoreUrls": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true,
+        "ignoreRegExpLiterals": true
       }
     ],
+    "no-empty": "off",
+    "no-mixed-spaces-and-tabs": "error",
+    "no-multiple-empty-lines": ["error", { "max": 2 }],
+    "no-unused-vars": ["error", { "args": "none" }],
     "no-tabs": "error",
     "no-useless-escape": "warn",
     "no-console": "warn",
-    "no-undef": "warn",
-    "semi": "warn"
+    "no-undef": "error",
+    "quotes": ["error", "single", { "allowTemplateLiterals": true, "avoidEscape": true }],
+    "quote-props": ["error", "as-needed", { "keywords": true }],
+    "semi": "error",
+    "space-infix-ops": "error"
   }
 }
