@@ -1,3 +1,4 @@
+/* eslint-disable indent,key-spacing */
 /**
  * Encoding conversion table for UTF-8 to JIS
  */

@@ -21,6 +21,18 @@
   ],
   "rules": {
     "comma-dangle": ["error", "never"],
+    "indent": [
+      "error", 2, {
+        "ArrayExpression": 1,
+        "ignoreComments": true,
+        "ignoredNodes": ["ConditionalExpression"],
+        "MemberExpression": 1,
+        "ObjectExpression": 1,
+        "outerIIFEBody": "off",
+        "SwitchCase": 1,
+        "VariableDeclarator": "first"
+      }
+    ],
     "key-spacing": [
       "error", {
         "beforeColon": false,
@@ -30,7 +42,7 @@
     "keyword-spacing": "error",
     "max-len": [
       "error", {
-        "code": 100,
+        "code": 120,
         "tabWidth": 2,
         "ignoreUrls": true,
         "ignoreStrings": true,
@@ -47,8 +59,9 @@
     "no-console": "warn",
     "no-undef": "error",
     "quotes": ["error", "single", { "allowTemplateLiterals": true, "avoidEscape": true }],
-    "quote-props": ["error", "as-needed", { "keywords": true }],
+    "quote-props": ["error", "consistent-as-needed", { "keywords": true }],
     "semi": "error",
-    "space-infix-ops": "error"
+    "space-infix-ops": "error",
+    "space-unary-ops": "error"
   }
 }
