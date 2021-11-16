@@ -1,32 +1,33 @@
 {
   "name": "encoding-japanese",
-  "description": "Convert or detect character encoding in JavaScript",
   "version": "1.0.30",
-  "author": "polygonplanet <polygon.planet.aqua@gmail.com>",
-  "bugs": {
-    "url": "https://github.com/polygonplanet/encoding.js/issues"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "bannerify": "^1.0.1",
-    "browserify": "^17.0.0",
-    "eslint": "^7.32.0",
-    "mocha": "^9.0.3",
-    "package-json-versionify": "^1.0.4",
-    "power-assert": "^1.6.1",
-    "uglify-js": "^3.14.1",
-    "uglifyify": "^5.0.2",
-    "watchify": "^4.0.0"
+  "description": "Convert or detect character encoding in JavaScript",
+  "main": "src/index.js",
+  "files": [
+    "encoding.js",
+    "encoding.min.js",
+    "encoding.min.js.map",
+    "src/*"
+  ],
+  "scripts": {
+    "build": "npm run compile && npm run minify",
+    "compile": "browserify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare",
+    "minify": "uglifyjs encoding.js -o encoding.min.js --source-map \"url='encoding.min.js.map'\" --comments -c -m -b ascii_only=true,beautify=false",
+    "test": "./node_modules/.bin/eslint . && npm run build && mocha tests/test",
+    "watch": "watchify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare --poll=300 -v"
   },
   "engines": {
     "node": ">=8.10.0"
   },
-  "files": [
-    "src/*",
-    "encoding.js",
-    "encoding.min.js",
-    "encoding.min.js.map"
-  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/polygonplanet/encoding.js.git"
+  },
+  "author": "polygonplanet <polygon.planet.aqua@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/polygonplanet/encoding.js/issues"
+  },
   "homepage": "https://github.com/polygonplanet/encoding.js",
   "keywords": [
     "base64",
@@ -49,18 +50,17 @@
     "utf-32",
     "utf-8"
   ],
-  "license": "MIT",
-  "main": "src/index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/polygonplanet/encoding.js.git"
-  },
-  "scripts": {
-    "build": "npm run compile && npm run minify",
-    "compile": "browserify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare",
-    "minify": "uglifyjs encoding.js -o encoding.min.js --source-map \"url='encoding.min.js.map'\" --comments -c -m -b ascii_only=true,beautify=false",
-    "test": "./node_modules/.bin/eslint . && npm run build && mocha tests/test",
-    "watch": "watchify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare --poll=300 -v"
+  "dependencies": {},
+  "devDependencies": {
+    "bannerify": "^1.0.1",
+    "browserify": "^17.0.0",
+    "eslint": "^7.32.0",
+    "mocha": "^9.0.3",
+    "package-json-versionify": "^1.0.4",
+    "power-assert": "^1.6.1",
+    "uglify-js": "^3.14.1",
+    "uglifyify": "^5.0.2",
+    "watchify": "^4.0.0"
   },
   "browserify": {
     "transform": [
