@@ -189,20 +189,6 @@ function bufferToCode(buffer) {
 }
 exports.bufferToCode = bufferToCode;
 
-function utf8CharBytesToCodePoint(charBytes) {
-  var i = 1;
-  var d = [0x0, 0xC0, 0xE0, 0xF0];
-  var codePoint = charBytes[0] - d[charBytes.length-1];
-
-  for (; i < charBytes.length; i++) {
-    codePoint <<= 6;
-    codePoint += charBytes[i] - 0x80;
-  }
-
-  return codePoint;
-}
-exports.utf8CharBytesToCodePoint = utf8CharBytesToCodePoint;
-
 
 // Base64
 /* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
@@ -217,7 +203,7 @@ var base64EncodeChars = [
   65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,
   78,  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,
   97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109,
- 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122,
+  110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122,
   48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  43,  47
 ];
 

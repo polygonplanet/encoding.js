@@ -89,14 +89,15 @@ var Encoding = {
    * @return {Array|TypedArray|string} The converted data
    */
   convert: function(data, to, from) {
-    var result;
-    var type;
-    var options = {};
+    var result, type, options;
 
-    if (util.isObject(to)) {
+    if (!util.isObject(to)) {
+      options = {};
+    } else {
       options = to;
       from = options.from;
       to = options.to;
+
       if (options.type) {
         type = options.type;
       }
@@ -123,7 +124,7 @@ var Encoding = {
     if (hasOwnProperty.call(EncodingConvert, method)) {
       result = EncodingConvert[method](data, options);
     } else {
-      // Returns the raw data if the method is undefined.
+      // Returns the raw data if the method is undefined
       result = data;
     }
 
@@ -132,9 +133,7 @@ var Encoding = {
         return util.codeToString_fast(result);
       case 'arraybuffer':
         return util.codeToBuffer(result);
-      case 'array':
-        /* falls through */
-      default:
+      default: // array
         return util.bufferToCode(result);
     }
   },
