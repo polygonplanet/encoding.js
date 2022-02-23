@@ -58,6 +58,7 @@
     "no-useless-escape": "warn",
     "no-console": "warn",
     "no-undef": "error",
+    "object-curly-spacing": ["error", "always", { "objectsInObjects": false }],
     "quotes": ["error", "single", { "allowTemplateLiterals": true, "avoidEscape": true }],
     "quote-props": ["error", "consistent-as-needed", { "keywords": true }],
     "semi": "error",
