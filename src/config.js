@@ -79,7 +79,7 @@ var EncodingAliases = {};
 exports.EncodingOrders = (function() {
   var aliases = EncodingAliases;
 
-  var names = util.getKeys(EncodingNames);
+  var names = util.objectKeys(EncodingNames);
   var orders = [];
   var name, encoding, j, l;
 
@@ -114,7 +114,7 @@ function init_JIS_TO_UTF8_TABLE() {
   if (EncodingTable.JIS_TO_UTF8_TABLE === null) {
     EncodingTable.JIS_TO_UTF8_TABLE = {};
 
-    var keys = util.getKeys(EncodingTable.UTF8_TO_JIS_TABLE);
+    var keys = util.objectKeys(EncodingTable.UTF8_TO_JIS_TABLE);
     var i = 0;
     var len = keys.length;
     var key, value;
@@ -128,7 +128,7 @@ function init_JIS_TO_UTF8_TABLE() {
     }
 
     EncodingTable.JISX0212_TO_UTF8_TABLE = {};
-    keys = util.getKeys(EncodingTable.UTF8_TO_JISX0212_TABLE);
+    keys = util.objectKeys(EncodingTable.UTF8_TO_JISX0212_TABLE);
     len = keys.length;
 
     for (i = 0; i < len; i++) {
@@ -146,7 +146,7 @@ exports.init_JIS_TO_UTF8_TABLE = init_JIS_TO_UTF8_TABLE;
 function assignEncodingName(target) {
   var name = '';
   var expect = ('' + target).toUpperCase().replace(/[^A-Z0-9]+/g, '');
-  var aliasNames = util.getKeys(EncodingAliases);
+  var aliasNames = util.objectKeys(EncodingAliases);
   var len = aliasNames.length;
   var hit = 0;
   var encoding, encodingLen, j;

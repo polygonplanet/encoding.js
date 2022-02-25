@@ -3,6 +3,8 @@ var fromCharCode = String.fromCharCode;
 var slice = Array.prototype.slice;
 var toString = Object.prototype.toString;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
+var nativeIsArray = Array.isArray;
+var nativeObjectKeys = Object.keys;
 
 
 function isObject(x) {
@@ -13,7 +15,7 @@ exports.isObject = isObject;
 
 
 function isArray(x) {
-  return Array.isArray ? Array.isArray(x) : toString.call(x) === '[object Array]';
+  return nativeIsArray ? nativeIsArray(x) : toString.call(x) === '[object Array]';
 }
 exports.isArray = isArray;
 
@@ -24,9 +26,9 @@ function isString(x) {
 exports.isString = isString;
 
 
-function getKeys(object) {
-  if (Object.keys) {
-    return Object.keys(object);
+function objectKeys(object) {
+  if (nativeObjectKeys) {
+    return nativeObjectKeys(object);
   }
 
   var keys = [];
@@ -38,18 +40,17 @@ function getKeys(object) {
 
   return keys;
 }
-exports.getKeys = getKeys;
+exports.objectKeys = objectKeys;
 
 
 function createBuffer(bits, size) {
-  if (!config.HAS_TYPED) {
-    return new Array(size);
+  if (config.HAS_TYPED) {
+    switch (bits) {
+      case 8: return new Uint8Array(size);
+      case 16: return new Uint16Array(size);
+    }
   }
-
-  switch (bits) {
-    case 8: return new Uint8Array(size);
-    case 16: return new Uint16Array(size);
-  }
+  return new Array(size);
 }
 exports.createBuffer = createBuffer;
 
@@ -82,7 +83,7 @@ function codeToString_fast(code) {
         }
         return s;
       } catch (e) {
-        // Ignore RangeError: arguments too large
+        // Ignore the RangeError "arguments too large"
         config.APPLY_BUFFER_SIZE_OK = false;
       }
     }
@@ -160,12 +161,12 @@ exports.stringToCode = stringToCode;
 
 function codeToBuffer(code) {
   if (config.HAS_TYPED) {
-    // Use Uint16Array for Unicode codepoint.
+    // Unicode code point (charCodeAt range) values have a range of 0-0xFFFF, so use Uint16Array
     return new Uint16Array(code);
-  } else {
-    if (isArray(code)) {
-      return code;
-    }
+  }
+
+  if (isArray(code)) {
+    return code;
   }
 
   var length = code && code.length;
@@ -189,7 +190,6 @@ function bufferToCode(buffer) {
 }
 exports.bufferToCode = bufferToCode;
 
-
 // Base64
 /* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
  * Version: 1.0
@@ -197,7 +197,7 @@ exports.bufferToCode = bufferToCode;
  * This library is free.  You can redistribute it and/or modify it.
  */
 // -- Masanao Izumo Copyright 1999 "free"
-// Modified to add support for Binary Array for Encoding.js
+// Added binary array support for the Encoding.js
 
 var base64EncodeChars = [
   65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,
@@ -323,4 +323,3 @@ function base64decode(str) {
   return out;
 }
 exports.base64decode = base64decode;
-
