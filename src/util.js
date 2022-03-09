@@ -190,6 +190,42 @@ function bufferToCode(buffer) {
 }
 exports.bufferToCode = bufferToCode;
 
+/**
+ * Canonicalize the passed encoding name to the internal encoding name
+ */
+function canonicalizeEncodingName(target) {
+  var name = '';
+  var expect = ('' + target).toUpperCase().replace(/[^A-Z0-9]+/g, '');
+  var aliasNames = objectKeys(config.EncodingAliases);
+  var len = aliasNames.length;
+  var hit = 0;
+  var encoding, encodingLen, j;
+
+  for (var i = 0; i < len; i++) {
+    encoding = aliasNames[i];
+    if (encoding === expect) {
+      name = encoding;
+      break;
+    }
+
+    encodingLen = encoding.length;
+    for (j = hit; j < encodingLen; j++) {
+      if (encoding.slice(0, j) === expect.slice(0, j) ||
+          encoding.slice(-j) === expect.slice(-j)) {
+        name = encoding;
+        hit = j;
+      }
+    }
+  }
+
+  if (hasOwnProperty.call(config.EncodingAliases, name)) {
+    return config.EncodingAliases[name];
+  }
+
+  return name;
+}
+exports.canonicalizeEncodingName = canonicalizeEncodingName;
+
 // Base64
 /* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
  * Version: 1.0

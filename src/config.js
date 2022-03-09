@@ -1,8 +1,6 @@
 var util = require('./util');
 var EncodingTable = require('./encoding-table');
 
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-
 // Alternate character when can't detect
 exports.UNKNOWN_CHARACTER = 63; // '?'
 
@@ -75,6 +73,7 @@ var EncodingNames = exports.EncodingNames = {
 };
 
 var EncodingAliases = {};
+exports.EncodingAliases = EncodingAliases;
 
 exports.EncodingOrders = (function() {
   var aliases = EncodingAliases;
@@ -109,7 +108,6 @@ exports.EncodingOrders = (function() {
   return orders;
 }());
 
-
 function init_JIS_TO_UTF8_TABLE() {
   if (EncodingTable.JIS_TO_UTF8_TABLE === null) {
     EncodingTable.JIS_TO_UTF8_TABLE = {};
@@ -139,39 +137,3 @@ function init_JIS_TO_UTF8_TABLE() {
   }
 }
 exports.init_JIS_TO_UTF8_TABLE = init_JIS_TO_UTF8_TABLE;
-
-/**
- * Assign the internal encoding name from the argument encoding name
- */
-function assignEncodingName(target) {
-  var name = '';
-  var expect = ('' + target).toUpperCase().replace(/[^A-Z0-9]+/g, '');
-  var aliasNames = util.objectKeys(EncodingAliases);
-  var len = aliasNames.length;
-  var hit = 0;
-  var encoding, encodingLen, j;
-
-  for (var i = 0; i < len; i++) {
-    encoding = aliasNames[i];
-    if (encoding === expect) {
-      name = encoding;
-      break;
-    }
-
-    encodingLen = encoding.length;
-    for (j = hit; j < encodingLen; j++) {
-      if (encoding.slice(0, j) === expect.slice(0, j) ||
-          encoding.slice(-j) === expect.slice(-j)) {
-        name = encoding;
-        hit = j;
-      }
-    }
-  }
-
-  if (hasOwnProperty.call(EncodingAliases, name)) {
-    return EncodingAliases[name];
-  }
-
-  return name;
-}
-exports.assignEncodingName = assignEncodingName;

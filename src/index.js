@@ -58,7 +58,7 @@ var Encoding = {
     var e, encoding, method;
     for (var i = 0; i < len; i++) {
       e = encodings[i];
-      encoding = config.assignEncodingName(e);
+      encoding = util.canonicalizeEncodingName(e);
       if (!encoding) {
         continue;
       }
@@ -113,12 +113,12 @@ var Encoding = {
     var encodingFrom;
     if (from != null && util.isString(from) &&
         from.toUpperCase() !== 'AUTO' && !~from.indexOf(',')) {
-      encodingFrom = config.assignEncodingName(from);
+      encodingFrom = util.canonicalizeEncodingName(from);
     } else {
       encodingFrom = Encoding.detect(data);
     }
 
-    var encodingTo = config.assignEncodingName(to);
+    var encodingTo = util.canonicalizeEncodingName(to);
     var method = encodingFrom + 'To' + encodingTo;
 
     if (hasOwnProperty.call(EncodingConvert, method)) {
@@ -158,7 +158,9 @@ var Encoding = {
     for (; i < len; i++) {
       b = data[i];
 
-      //FIXME: JavaScript UTF-16 encoding
+      // urlEncode is for an array of numbers in the range 0-255 (Uint8Array), but if an array
+      // of numbers greater than 255 is passed (Unicode code unit i.e. charCodeAt range),
+      // it will be tentatively encoded as UTF-8 using encodeURIComponent.
       if (b > 0xFF) {
         return encodeURIComponent(util.codeToString_fast(data));
       }
