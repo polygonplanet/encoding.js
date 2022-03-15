@@ -1,11 +1,8 @@
-'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const encoding = require('../encoding');
 
-var assert = require('assert');
-var fs = require('fs');
-var encoding = require('../encoding');
-
-
-describe('Encoding', function() {
+describe('encoding', function() {
   var encodings = ['SJIS', 'UTF-8', 'JIS', 'EUC-JP'];
   var urlEncoded = {
     SJIS: '%82%B1%82%CC%83e%83L%83X%83g%82%CD%20SJIS%20%82%C5%8F%91%82%A9%82%EA%82%C4%82%A2%82%DC%82%B7%81B',
@@ -47,7 +44,7 @@ describe('Encoding', function() {
 
     var jisx0208 = fs.readFileSync(__dirname + '/jis-x-0208-utf8.txt');
     var jisx0208Len = jisx0208.length + 1;
-    tests.jisx0208 = new Buffer(jisx0208Len);
+    tests.jisx0208 = Buffer.alloc(jisx0208Len);
     // Prepend an ascii character for UTF-16 detection.
     tests.jisx0208[0] = 'a'.charCodeAt(0);
     for (i = 1; i < jisx0208Len; i++) {
@@ -142,8 +139,8 @@ describe('Encoding', function() {
 
       assert.equal(encoding.detect(unicode, 'UNICODE'), 'UNICODE');
       assert.equal(encoding.detect(unicode, ['UNICODE']), 'UNICODE');
-      assert.equal(encoding.detect(unicode, {encoding: 'UNICODE'}), 'UNICODE');
-      assert.equal(encoding.detect(unicode, {encoding: ['UNICODE']}), 'UNICODE');
+      assert.equal(encoding.detect(unicode, { encoding: 'UNICODE' }), 'UNICODE');
+      assert.equal(encoding.detect(unicode, { encoding: ['UNICODE'] }), 'UNICODE');
       assert.equal(encoding.detect(unicode, []), false);
       assert.equal(encoding.detect(unicode, ['UNICODE', 'ASCII']), 'UNICODE');
       assert.equal(encoding.detect(unicode, 'ASCII, EUCJP, UNICODE'), 'UNICODE');
@@ -505,7 +502,7 @@ describe('Encoding', function() {
         from: 'unicode'
       });
 
-      describe('Convert to unknown character', function() {
+      describe('Convert to fallback character', function() {
         it('SJIS', function() {
           // Characters that cannot be converted to Shift_JIS ('🍣', '🍺') will be converted to '?'
           var sjis = encoding.convert(utf8, {
@@ -546,13 +543,14 @@ describe('Encoding', function() {
         });
       });
 
-      describe('Convert to hex codepoint', function() {
+      describe('Convert untranslatable unknown characters to hexadecimal HTML entities', function() {
         it('SJIS', function() {
-          // Characters that cannot be converted to Shift_JIS ('🍣', '🍺') will be converted to numeric character reference ('&#x1f363;', '&#x1f37a')
+          // Characters that cannot be converted to Shift_JIS ('🍣', '🍺')
+          // will be converted to numeric character reference ('&#x1f363;', '&#x1f37a')
           var sjis = encoding.convert(utf8, {
             to: 'sjis',
             from: 'utf-8',
-            unknown: 'hex'
+            fallback: 'html-entity-hex'
           });
           var decoded = encoding.convert(sjis, {
             to: 'unicode',
@@ -562,11 +560,12 @@ describe('Encoding', function() {
         });
 
         it('EUC-JP', function() {
-          // Characters that cannot be converted to EUC-JP ('🍣', '🍺') will be converted to numeric character reference ('&#x1f363;', '&#x1f37a')
+          // Characters that cannot be converted to EUC-JP ('🍣', '🍺') will be
+          // converted to numeric character reference ('&#x1f363;', '&#x1f37a')
           var eucjp = encoding.convert(utf8, {
             to: 'euc-jp',
             from: 'utf-8',
-            unknown: 'hex'
+            fallback: 'html-entity-hex'
           });
           var decoded = encoding.convert(eucjp, {
             to: 'unicode',
@@ -576,11 +575,12 @@ describe('Encoding', function() {
         });
 
         it('JIS', function() {
-          // Characters that cannot be converted to JIS ('🍣', '🍺') will be converted to numeric character reference ('&#x1f363;', '&#x1f37a')
+          // Characters that cannot be converted to JIS ('🍣', '🍺') will be
+          // converted to numeric character reference ('&#x1f363;', '&#x1f37a')
           var jis = encoding.convert(utf8, {
             to: 'jis',
             from: 'utf-8',
-            unknown: 'hex'
+            fallback: 'html-entity-hex'
           });
           var decoded = encoding.convert(jis, {
             to: 'unicode',
@@ -590,13 +590,14 @@ describe('Encoding', function() {
         });
       });
 
-      describe('Convert to decimal codepoint', function() {
+      describe('Convert untranslatable unknown characters to decimal HTML entities', function() {
         it('SJIS', function() {
-          // Characters that cannot be converted to Shift_JIS ('🍣', '🍺') will be converted to numeric character reference ('&#127843;', '&#127866')
+          // Characters that cannot be converted to Shift_JIS ('🍣', '🍺') will be
+          // converted to numeric character reference ('&#127843;', '&#127866')
           var sjis = encoding.convert(utf8, {
             to: 'sjis',
             from: 'utf-8',
-            unknown: 'decimal'
+            fallback: 'html-entity'
           });
           var decoded = encoding.convert(sjis, {
             to: 'unicode',
@@ -606,11 +607,12 @@ describe('Encoding', function() {
         });
 
         it('EUC-JP', function() {
-          // Characters that cannot be converted to EUC-JP ('🍣', '🍺') will be converted to numeric character reference ('&#127843;', '&#127866')
+          // Characters that cannot be converted to EUC-JP ('🍣', '🍺') will be
+          // converted to numeric character reference ('&#127843;', '&#127866')
           var eucjp = encoding.convert(utf8, {
             to: 'euc-jp',
             from: 'utf-8',
-            unknown: 'decimal'
+            fallback: 'html-entity'
           });
           var decoded = encoding.convert(eucjp, {
             to: 'unicode',
@@ -620,11 +622,12 @@ describe('Encoding', function() {
         });
 
         it('JIS', function() {
-          // Characters that cannot be converted to JIS ('🍣', '🍺') will be converted to numeric character reference ('&#127843;', '&#127866')
+          // Characters that cannot be converted to JIS ('🍣', '🍺') will be
+          // converted to numeric character reference ('&#127843;', '&#127866')
           var jis = encoding.convert(utf8, {
             to: 'jis',
             from: 'utf-8',
-            unknown: 'decimal'
+            fallback: 'html-entity'
           });
           var decoded = encoding.convert(jis, {
             to: 'unicode',
@@ -835,13 +838,14 @@ describe('Encoding', function() {
   describe('convert JIS-X-0212', function() {
     var jisx0212_buffer = fs.readFileSync(__dirname + '/jis-x-0212-utf8.txt');
     var jisx0212_array = [];
-    for (var i = 0, len = jisx0212_buffer.length; i < len; i++) {
+    var i, len;
+    for (i = 0, len = jisx0212_buffer.length; i < len; i++) {
       jisx0212_array.push(jisx0212_buffer[i]);
     }
 
     var jisx0212_sjis_buffer = fs.readFileSync(__dirname + '/jis-x-0212-sjis-to-utf8.txt');
     var jisx0212_sjis_array = [];
-    for (var i = 0, len = jisx0212_sjis_buffer.length; i < len; i++) {
+    for (i = 0, len = jisx0212_sjis_buffer.length; i < len; i++) {
       jisx0212_sjis_array.push(jisx0212_sjis_buffer[i]);
     }
 
@@ -911,7 +915,6 @@ describe('Encoding', function() {
     });
   });
 
-
   describe('urlEncode/urlDecode', function() {
     encodings.forEach(function(encodingName) {
       it(encodingName, function () {
@@ -922,7 +925,6 @@ describe('Encoding', function() {
       });
     });
   });
-
 
   describe('base64Encode/base64Decode', function() {
     encodings.forEach(function(encodingName) {
@@ -935,7 +937,6 @@ describe('Encoding', function() {
       });
     });
   });
-
 
   describe('Assign/Expect encoding names', function() {
     var aliasNames = {
@@ -978,8 +979,8 @@ describe('Encoding', function() {
     assert(encoding.detect(eucjp, 'EUCJP'));
 
     var codes = {
-      'SJIS': sjis,
-      'EUCJP': eucjp
+      SJIS: sjis,
+      EUCJP: eucjp
     };
 
     Object.keys(aliasNames).forEach(function(name) {
@@ -1119,7 +1120,7 @@ describe('Encoding', function() {
       assert(encoded.length === 2);
       assert(Array.isArray(encoded));
 
-      var buffer = new Buffer(0);
+      var buffer = Buffer.alloc(0);
       encoded = encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
@@ -1128,7 +1129,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(Array.isArray(encoded));
 
-      buffer = new Buffer(2);
+      buffer = Buffer.alloc(2);
       buffer[0] = 0x61;
       buffer[1] = 0x62;
       encoded = encoding.convert(buffer, {
@@ -1209,7 +1210,7 @@ describe('Encoding', function() {
       assert(encoded.length === 2);
       assert(isTypedArray(encoded));
 
-      var buffer = new Buffer(0);
+      var buffer = Buffer.alloc(0);
       encoded = encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
@@ -1218,7 +1219,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(isTypedArray(encoded));
 
-      buffer = new Buffer(2);
+      buffer = Buffer.alloc(2);
       buffer[0] = 0x61;
       buffer[1] = 0x62;
       encoded = encoding.convert(buffer, {
@@ -1299,7 +1300,7 @@ describe('Encoding', function() {
       assert(encoded.length === 2);
       assert(isString(encoded));
 
-      var buffer = new Buffer(0);
+      var buffer = Buffer.alloc(0);
       encoded = encoding.convert(buffer, {
         to: 'utf-8',
         from: 'unicode',
@@ -1308,7 +1309,7 @@ describe('Encoding', function() {
       assert(encoded.length === 0);
       assert(isString(encoded));
 
-      buffer = new Buffer(2);
+      buffer = Buffer.alloc(2);
       buffer[0] = 0x61;
       buffer[1] = 0x62;
       encoded = encoding.convert(buffer, {

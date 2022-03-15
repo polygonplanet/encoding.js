@@ -1,21 +1,68 @@
 {
   "extends": "eslint:recommended",
   "parserOptions": {
-    "ecmaVersion": 6,
-    "sourceType": "module"
+    "ecmaVersion": 5,
+    "ecmaFeatures": {
+      "globalReturn": true,
+      "impliedStrict": true
+    }
   },
   "env": {
     "es6": true,
     "browser": true,
     "node": true,
     "shared-node-browser": true,
-    "worker": true
+    "worker": true,
+    "mocha": true
   },
+  "ignorePatterns": [
+    "encoding.js",
+    "encoding.min.js"
+  ],
   "rules": {
+    "comma-dangle": ["error", "never"],
+    "indent": [
+      "error", 2, {
+        "ArrayExpression": 1,
+        "ignoreComments": true,
+        "ignoredNodes": ["ConditionalExpression"],
+        "MemberExpression": 1,
+        "ObjectExpression": 1,
+        "outerIIFEBody": "off",
+        "SwitchCase": 1,
+        "VariableDeclarator": "first"
+      }
+    ],
+    "key-spacing": [
+      "error", {
+        "beforeColon": false,
+        "afterColon": true
+      }
+    ],
+    "keyword-spacing": "error",
+    "max-len": [
+      "error", {
+        "code": 120,
+        "tabWidth": 2,
+        "ignoreUrls": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true,
+        "ignoreRegExpLiterals": true
+      }
+    ],
     "no-empty": "off",
     "no-mixed-spaces-and-tabs": "error",
-    "no-unused-vars": "warn",
+    "no-multiple-empty-lines": ["error", { "max": 2 }],
+    "no-unused-vars": ["error", { "args": "none" }],
+    "no-tabs": "error",
+    "no-useless-escape": "warn",
     "no-console": "warn",
-    "semi": "warn"
+    "no-undef": "error",
+    "object-curly-spacing": ["error", "always", { "objectsInObjects": false }],
+    "quotes": ["error", "single", { "allowTemplateLiterals": true, "avoidEscape": true }],
+    "quote-props": ["error", "consistent-as-needed", { "keywords": true }],
+    "semi": "error",
+    "space-infix-ops": "error",
+    "space-unary-ops": "error"
   }
 }

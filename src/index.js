@@ -3,10 +3,12 @@ var util = require('./util');
 var EncodingDetect = require('./encoding-detect');
 var EncodingConvert = require('./encoding-convert');
 var KanaCaseTable = require('./kana-case-table');
+var version = require('../package.json').version;
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 var Encoding = {
+  version: version,
 
   /**
    * Encoding orders
@@ -56,7 +58,7 @@ var Encoding = {
     var e, encoding, method;
     for (var i = 0; i < len; i++) {
       e = encodings[i];
-      encoding = config.assignEncodingName(e);
+      encoding = util.canonicalizeEncodingName(e);
       if (!encoding) {
         continue;
       }
@@ -87,14 +89,15 @@ var Encoding = {
    * @return {Array|TypedArray|string} The converted data
    */
   convert: function(data, to, from) {
-    var result;
-    var type;
-    var options = {};
+    var result, type, options;
 
-    if (util.isObject(to)) {
+    if (!util.isObject(to)) {
+      options = {};
+    } else {
       options = to;
       from = options.from;
       to = options.to;
+
       if (options.type) {
         type = options.type;
       }
@@ -110,18 +113,18 @@ var Encoding = {
     var encodingFrom;
     if (from != null && util.isString(from) &&
         from.toUpperCase() !== 'AUTO' && !~from.indexOf(',')) {
-      encodingFrom = config.assignEncodingName(from);
+      encodingFrom = util.canonicalizeEncodingName(from);
     } else {
       encodingFrom = Encoding.detect(data);
     }
 
-    var encodingTo = config.assignEncodingName(to);
+    var encodingTo = util.canonicalizeEncodingName(to);
     var method = encodingFrom + 'To' + encodingTo;
 
     if (hasOwnProperty.call(EncodingConvert, method)) {
       result = EncodingConvert[method](data, options);
     } else {
-      // Returns the raw data if the method is undefined.
+      // Returns the raw data if the method is undefined
       result = data;
     }
 
@@ -130,9 +133,7 @@ var Encoding = {
         return util.codeToString_fast(result);
       case 'arraybuffer':
         return util.codeToBuffer(result);
-      case 'array':
-        /* falls through */
-      default:
+      default: // array
         return util.bufferToCode(result);
     }
   },
@@ -157,7 +158,9 @@ var Encoding = {
     for (; i < len; i++) {
       b = data[i];
 
-      //FIXME: JavaScript UTF-16 encoding
+      // urlEncode is for an array of numbers in the range 0-255 (Uint8Array), but if an array
+      // of numbers greater than 255 is passed (Unicode code unit i.e. charCodeAt range),
+      // it will be tentatively encoded as UTF-8 using encodeURIComponent.
       if (b > 0xFF) {
         return encodeURIComponent(util.codeToString_fast(data));
       }

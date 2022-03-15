@@ -1,10 +1,8 @@
 var util = require('./util');
 var EncodingTable = require('./encoding-table');
 
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-// Alternate character when can't detect
-exports.UNKNOWN_CHARACTER = 63; // '?'
+// Fallback character when a character can't be represented
+exports.FALLBACK_CHARACTER = 63; // '?'
 
 var HAS_TYPED = exports.HAS_TYPED = typeof Uint8Array !== 'undefined' && typeof Uint16Array !== 'undefined';
 
@@ -32,7 +30,6 @@ exports.CAN_CHARCODE_APPLY_TYPED = CAN_CHARCODE_APPLY_TYPED;
 // Function.prototype.apply stack max range
 exports.APPLY_BUFFER_SIZE = 65533;
 exports.APPLY_BUFFER_SIZE_OK = null;
-
 
 var EncodingNames = exports.EncodingNames = {
   UTF32: {
@@ -76,11 +73,12 @@ var EncodingNames = exports.EncodingNames = {
 };
 
 var EncodingAliases = {};
+exports.EncodingAliases = EncodingAliases;
 
 exports.EncodingOrders = (function() {
   var aliases = EncodingAliases;
 
-  var names = util.getKeys(EncodingNames);
+  var names = util.objectKeys(EncodingNames);
   var orders = [];
   var name, encoding, j, l;
 
@@ -90,7 +88,7 @@ exports.EncodingOrders = (function() {
 
     encoding = EncodingNames[name];
     if (encoding != null) {
-      if (typeof encoding.order !== 'undefined') {
+      if (encoding.order != null) {
         orders[orders.length] = name;
       }
 
@@ -110,12 +108,11 @@ exports.EncodingOrders = (function() {
   return orders;
 }());
 
-
 function init_JIS_TO_UTF8_TABLE() {
   if (EncodingTable.JIS_TO_UTF8_TABLE === null) {
     EncodingTable.JIS_TO_UTF8_TABLE = {};
 
-    var keys = util.getKeys(EncodingTable.UTF8_TO_JIS_TABLE);
+    var keys = util.objectKeys(EncodingTable.UTF8_TO_JIS_TABLE);
     var i = 0;
     var len = keys.length;
     var key, value;
@@ -129,7 +126,7 @@ function init_JIS_TO_UTF8_TABLE() {
     }
 
     EncodingTable.JISX0212_TO_UTF8_TABLE = {};
-    keys = util.getKeys(EncodingTable.UTF8_TO_JISX0212_TABLE);
+    keys = util.objectKeys(EncodingTable.UTF8_TO_JISX0212_TABLE);
     len = keys.length;
 
     for (i = 0; i < len; i++) {
@@ -140,39 +137,3 @@ function init_JIS_TO_UTF8_TABLE() {
   }
 }
 exports.init_JIS_TO_UTF8_TABLE = init_JIS_TO_UTF8_TABLE;
-
-/**
- * Assign the internal encoding name from the argument encoding name
- */
-function assignEncodingName(target) {
-  var name = '';
-  var expect = ('' + target).toUpperCase().replace(/[^A-Z0-9]+/g, '');
-  var aliasNames = util.getKeys(EncodingAliases);
-  var len = aliasNames.length;
-  var hit = 0;
-  var encoding, encodingLen, j;
-
-  for (var i = 0; i < len; i++) {
-    encoding = aliasNames[i];
-    if (encoding === expect) {
-      name = encoding;
-      break;
-    }
-
-    encodingLen = encoding.length;
-    for (j = hit; j < encodingLen; j++) {
-      if (encoding.slice(0, j) === expect.slice(0, j) ||
-          encoding.slice(-j) === expect.slice(-j)) {
-        name = encoding;
-        hit = j;
-      }
-    }
-  }
-
-  if (hasOwnProperty.call(EncodingAliases, name)) {
-    return EncodingAliases[name];
-  }
-
-  return name;
-}
-exports.assignEncodingName = assignEncodingName;
