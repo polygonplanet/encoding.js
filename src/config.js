@@ -121,7 +121,7 @@ function init_JIS_TO_UTF8_TABLE() {
       key = keys[i];
       value = EncodingTable.UTF8_TO_JIS_TABLE[key];
       if (value > 0x5F) {
-        EncodingTable.JIS_TO_UTF8_TABLE[value] = key;
+        EncodingTable.JIS_TO_UTF8_TABLE[value] = key | 0;
       }
     }
 
@@ -132,7 +132,7 @@ function init_JIS_TO_UTF8_TABLE() {
     for (i = 0; i < len; i++) {
       key = keys[i];
       value = EncodingTable.UTF8_TO_JISX0212_TABLE[key];
-      EncodingTable.JISX0212_TO_UTF8_TABLE[value] = key;
+      EncodingTable.JISX0212_TO_UTF8_TABLE[value] = key | 0;
     }
   }
 }
