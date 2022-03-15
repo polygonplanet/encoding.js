@@ -2,7 +2,7 @@ encoding.js
 ===========
 
 [![NPM Version](https://img.shields.io/npm/v/encoding-japanese.svg)](https://www.npmjs.com/package/encoding-japanese)
-[![Build Status](https://travis-ci.com/polygonplanet/encoding.js.svg?branch=master)](https://travis-ci.com/polygonplanet/encoding.js)
+[![Build Status](https://app.travis-ci.com/polygonplanet/encoding.js.svg?branch=master)](https://app.travis-ci.com/polygonplanet/encoding.js)
 [![GitHub License](https://img.shields.io/github/license/polygonplanet/encoding.js.svg)](https://github.com/polygonplanet/encoding.js/blob/master/LICENSE)
 
 Converts character encoding in JavaScript.  
