@@ -1,7 +1,9 @@
 encoding.js
 ===========
 
-[![Build Status](https://travis-ci.org/polygonplanet/encoding.js.svg?branch=master)](https://travis-ci.org/polygonplanet/encoding.js)
+[![NPM Version](https://img.shields.io/npm/v/encoding-japanese.svg)](https://www.npmjs.com/package/encoding-japanese)
+[![Build Status](https://travis-ci.com/polygonplanet/encoding.js.svg?branch=master)](https://travis-ci.com/polygonplanet/encoding.js)
+[![GitHub License](https://img.shields.io/github/license/polygonplanet/encoding.js.svg)](https://github.com/polygonplanet/encoding.js/blob/master/LICENSE)
 
 Converts character encoding in JavaScript.  
 JavaScript で文字コード変換をします
@@ -38,12 +40,6 @@ var encoding = require('encoding-japanese');
 ```
 
 encoding.js の各メソッドは Node.js の Buffer に対しても使えます
-
-#### bower:
-
-```bash
-bower install encoding-japanese
-```
 
 #### CDN
 
