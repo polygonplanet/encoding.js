@@ -502,7 +502,7 @@ describe('encoding', function() {
         from: 'unicode'
       });
 
-      describe('Convert to unknown character', function() {
+      describe('Convert to fallback character', function() {
         it('SJIS', function() {
           // Characters that cannot be converted to Shift_JIS ('🍣', '🍺') will be converted to '?'
           var sjis = encoding.convert(utf8, {
@@ -550,7 +550,7 @@ describe('encoding', function() {
           var sjis = encoding.convert(utf8, {
             to: 'sjis',
             from: 'utf-8',
-            unknown: 'html-entity-hex'
+            fallback: 'html-entity-hex'
           });
           var decoded = encoding.convert(sjis, {
             to: 'unicode',
@@ -565,7 +565,7 @@ describe('encoding', function() {
           var eucjp = encoding.convert(utf8, {
             to: 'euc-jp',
             from: 'utf-8',
-            unknown: 'html-entity-hex'
+            fallback: 'html-entity-hex'
           });
           var decoded = encoding.convert(eucjp, {
             to: 'unicode',
@@ -580,7 +580,7 @@ describe('encoding', function() {
           var jis = encoding.convert(utf8, {
             to: 'jis',
             from: 'utf-8',
-            unknown: 'html-entity-hex'
+            fallback: 'html-entity-hex'
           });
           var decoded = encoding.convert(jis, {
             to: 'unicode',
@@ -597,7 +597,7 @@ describe('encoding', function() {
           var sjis = encoding.convert(utf8, {
             to: 'sjis',
             from: 'utf-8',
-            unknown: 'html-entity'
+            fallback: 'html-entity'
           });
           var decoded = encoding.convert(sjis, {
             to: 'unicode',
@@ -612,7 +612,7 @@ describe('encoding', function() {
           var eucjp = encoding.convert(utf8, {
             to: 'euc-jp',
             from: 'utf-8',
-            unknown: 'html-entity'
+            fallback: 'html-entity'
           });
           var decoded = encoding.convert(eucjp, {
             to: 'unicode',
@@ -627,7 +627,7 @@ describe('encoding', function() {
           var jis = encoding.convert(utf8, {
             to: 'jis',
             from: 'utf-8',
-            unknown: 'html-entity'
+            fallback: 'html-entity'
           });
           var decoded = encoding.convert(jis, {
             to: 'unicode',
