@@ -120,6 +120,46 @@ console.log(unicodeString); // こんにちは
 * '**arraybuffer**': ArrayBuffer として返ります
 * '**array**': Array として返ります (デフォルト)
 
+##### 変換できない文字を HTML エンティティ（HTML 数値文字参照）に置き換える
+
+変換先の文字コードで表現できない文字はデフォルトで「?」 (U+003F) に置き換えられますが、`fallback` オプションを指定すると HTML エンティティに置き換えることができます。
+
+`fallback` オプションは以下の値が使用できます。
+
+* **html-entity** : HTML エンティティ (10進数の HTML 数値文字参照) に置き換える
+* **html-entity-hex** : HTML エンティティ (16進数の HTML 数値文字参照) に置き換える
+
+`{ fallback: 'html-entity' }` オプションを指定する例
+
+```javascript
+var unicodeArray = Encoding.stringToCode('寿司🍣ビール🍺');
+// fallback指定なし
+var sjisArray = Encoding.convert(unicodeArray, {
+  to: 'SJIS',
+  from: 'UNICODE'
+});
+console.log(sjisArray); // '寿司?ビール?' の数値配列に変換されます
+
+// `fallback: html-entity`を指定
+sjisArray = Encoding.convert(unicodeArray, {
+  to: 'SJIS',
+  from: 'UNICODE',
+  fallback: 'html-entity'
+});
+console.log(sjisArray); // '寿司&#127843;ビール&#127866;' の数値配列に変換されます
+```
+
+`{ fallback: 'html-entity-hex' }` オプションを指定する例
+
+```javascript
+var unicodeArray = Encoding.stringToCode('ホッケの漢字は𩸽');
+var sjisArray = Encoding.convert(unicodeArray, {
+  to: 'SJIS',
+  from: 'UNICODE',
+  fallback: 'html-entity-hex'
+});
+console.log(sjisArray); // 'ホッケの漢字は&#x29e3d;' の数値配列に変換されます
+```
 
 ##### UTF16 に BOM をつける
 

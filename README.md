@@ -121,7 +121,46 @@ Following '*type*' options are available:
 * '**arraybuffer**': Return as ArrayBuffer.
 * '**array**': Return as Array (default).
 
+##### Replace to HTML entity (Numeric character reference) when cannot be represented
 
+Characters that cannot be represented in the target character set are replaced with '?' (U+003F) by default but can be replaced with HTML entities by specifying the `fallback` option.
+
+The `fallback` option supports the following values.
+
+* **html-entity** : Replace to HTML entity (decimal HTML numeric character reference)
+* **html-entity-hex** : Replace to HTML entity (hexadecimal HTML numeric character reference)
+
+Example of specifying `{ fallback: 'html-entity' }` option
+
+```javascript
+var unicodeArray = Encoding.stringToCode('寿司🍣ビール🍺');
+// No fallback specified
+var sjisArray = Encoding.convert(unicodeArray, {
+  to: 'SJIS',
+  from: 'UNICODE'
+});
+console.log(sjisArray); // Converted to a code array of '寿司?ビール?'
+
+// Specify `fallback: html-entity`
+sjisArray = Encoding.convert(unicodeArray, {
+  to: 'SJIS',
+  from: 'UNICODE',
+  fallback: 'html-entity'
+});
+console.log(sjisArray); // Converted to a code array of '寿司&#127843;ビール&#127866;'
+```
+
+Example of specifying `{ fallback: 'html-entity-hex' }` option
+
+```javascript
+var unicodeArray = Encoding.stringToCode('ホッケの漢字は𩸽');
+var sjisArray = Encoding.convert(unicodeArray, {
+  to: 'SJIS',
+  from: 'UNICODE',
+  fallback: 'html-entity-hex'
+});
+console.log(sjisArray); // Converted to a code array of 'ホッケの漢字は&#x29e3d;'
+```
 
 ##### Specify BOM in UTF-16
 
