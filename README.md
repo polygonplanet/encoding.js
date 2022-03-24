@@ -5,13 +5,13 @@ encoding.js
 [![Build Status](https://app.travis-ci.com/polygonplanet/encoding.js.svg?branch=master)](https://app.travis-ci.com/polygonplanet/encoding.js)
 [![GitHub License](https://img.shields.io/github/license/polygonplanet/encoding.js.svg)](https://github.com/polygonplanet/encoding.js/blob/master/LICENSE)
 
-Converts character encoding in JavaScript.  
+Convert or detect character encoding in JavaScript.
 
 **[README(Japanese)](https://github.com/polygonplanet/encoding.js/blob/master/README_ja.md)**
 
-### Installation
+## Installation
 
-#### In Browser:
+### browser (standalone)
 
 ```html
 <script src="encoding.js"></script>
@@ -23,11 +23,9 @@ or
 <script src="encoding.min.js"></script>
 ```
 
-Object **Encoding** will be defined in the global scope.
+When the script is loaded, the object `Encoding` is defined in the global scope (ie `window.Encoding`).
 
-Conversion and detection for the Array (like Array object).  
-
-#### In Node.js:
+### npm
 
 encoding.js is published by module name of `encoding-japanese` in npm.
 
@@ -41,12 +39,32 @@ var encoding = require('encoding-japanese');
 
 Each methods are also available for the *Buffer* in Node.js.
 
-#### CDN
+### CDN
 
 encoding.js is available on [cdnjs.com](https://cdnjs.com/libraries/encoding-japanese).
 
+## Available Encodings
 
-#### Convert character encoding (convert):
+* **UTF32** (detect only)
+* **UTF16**
+* **UTF16BE**
+* **UTF16LE**
+* **BINARY** (detect only)
+* **ASCII** (detect only)
+* **JIS**
+* **UTF8**
+* **EUCJP**
+* **SJIS**
+* **UNICODE** (JavaScript's internal encoding)
+
+Note: UNICODE is an array that has a value of String.charCodeAt() in JavaScript.  
+(Each value in the array possibly has a number greater than 256.)
+
+----
+
+## API
+
+### Convert character encoding (convert)
 
 * {_Array.&lt;number&gt;|string_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
   Converts character encoding.  
@@ -74,25 +92,7 @@ if (detected === 'UTF8') {
 }
 ```
 
-##### Available Encodings:
-
-* '**UTF32**'   (detect only)
-* '**UTF16**'
-* '**UTF16BE**'
-* '**UTF16LE**'
-* '**BINARY**'  (detect only)
-* '**ASCII**'   (detect only)
-* '**JIS**'
-* '**UTF8**'
-* '**EUCJP**'
-* '**SJIS**'
-* '**UNICODE**' (JavaScript Unicode Array)
-
-Note: UNICODE is an array that has a value of String.charCodeAt() in JavaScript.  
-(Each value in the array possibly has a number greater than 256.)
-
-
-##### Specify the Object argument
+#### Specify the Object argument
 
 ```javascript
 var sjisArray = Encoding.convert(utf8Array, {
@@ -103,7 +103,7 @@ var sjisArray = Encoding.convert(utf8Array, {
 
 Readability improves by passing an object to the second argument.
 
-##### Specify the string argument and 'type' option
+#### Specify the string argument and 'type' option
 
 ```javascript
 var utf8String = 'ã\u0081\u0093ã\u0082\u0093ã\u0081«ã\u0081¡ã\u0081¯';
@@ -121,7 +121,7 @@ Following '*type*' options are available:
 * '**arraybuffer**': Return as ArrayBuffer.
 * '**array**': Return as Array (default).
 
-##### Replace to HTML entity (Numeric character reference) when cannot be represented
+#### Replace to HTML entity (Numeric character reference) when cannot be represented
 
 Characters that cannot be represented in the target character set are replaced with '?' (U+003F) by default but can be replaced with HTML entities by specifying the `fallback` option.
 
@@ -162,7 +162,7 @@ var sjisArray = Encoding.convert(unicodeArray, {
 console.log(sjisArray); // Converted to a code array of 'ホッケの漢字は&#x29e3d;'
 ```
 
-##### Specify BOM in UTF-16
+#### Specify BOM in UTF-16
 
 It's possible to add the UTF16 BOM by specifying the bom option for conversion.
 
@@ -197,7 +197,7 @@ var utf16beArray = Encoding.convert(utf8Array, {
 
 Note: UTF16, UTF16BE and UTF16LE are not JavaScript internal encodings, they are a byte arrays.
 
-#### Detect character encoding (detect):
+### Detect character encoding (detect)
 
 * {_string|boolean_} Encoding.**detect** ( data [, encodings ] )  
   Detect character encoding.  
@@ -220,8 +220,7 @@ if (isSJIS) {
 }
 ```
 
-
-##### URL Encode/Decode:
+### URL Encode/Decode
 
 * {_string_} Encoding.**urlEncode** ( data )  
   URL(percent) encode.  
@@ -253,7 +252,7 @@ console.log(decoded);
 // ]
 ```
 
-##### Base64 Encode/Decode:
+### Base64 Encode/Decode
 
 * {_string_} Encoding.**base64Encode** ( data )  
   Base64 encode.  
@@ -278,9 +277,43 @@ console.log(decoded);
 // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 ```
 
-#### Example:
+### Code array to string conversion (codeToString/stringToCode)
 
-##### Example using the XMLHttpRequest and Typed arrays (Uint8Array):
+* {_string_} Encoding.**codeToString** ( {_Array.&lt;number&gt;_|_TypedArray_} data )  
+  Joins a character code array to string.
+
+* {_Array.&lt;number&gt;_} Encoding.**stringToCode** ( {_string_} string )  
+  Splits string to an array of character codes.
+
+### Japanese Zenkaku/Hankaku conversion
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toHankakuCase** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert the ascii symbols and alphanumeric characters to the zenkaku symbols and alphanumeric characters.
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toZenkakuCase** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert to the zenkaku symbols and alphanumeric characters from the ascii symbols and alphanumeric characters.
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toHiraganaCase** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert to the zenkaku hiragana from the zenkaku katakana.
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toKatakanaCase** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert to the zenkaku katakana from the zenkaku hiragana.
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toHankanaCase** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert to the hankaku katakana from the zenkaku katakana.
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toZenkanaCase** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert to the zenkaku katakana from the hankaku katakana.
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toHankakuSpace** ({_Array.&lt;number&gt;|string_} data )  
+  Convert the em space(U+3000) to the single space(U+0020).
+
+* {_Array.&lt;number&gt;|string_} Encoding.**toZenkakuSpace** ( {_Array.&lt;number&gt;|string_} data )  
+  Convert the single space(U+0020) to the em space(U+3000).
+
+## Example
+
+### Example using the XMLHttpRequest and Typed arrays (Uint8Array)
 
 This sample reads the text file written in Shift_JIS as binary data,
 and displays a string that is converted to Unicode by Encoding.convert.
@@ -311,7 +344,7 @@ req.onload = function (event) {
 req.send(null);
 ```
 
-##### Convert encoding for file using the File APIs:
+### Convert encoding for file using the File APIs
 
 Reads file using the File APIs.  
 Detect file encoding and convert to Unicode, and display it.
@@ -349,7 +382,7 @@ document.getElementById('file').addEventListener('change', onFileSelect, false);
 
 [**Demo**](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
-##### Example of the character encoding conversion:
+### Example of the character encoding conversion
 
 ```javascript
 var eucjpArray = [
@@ -371,7 +404,7 @@ console.log( utf8Array );
 //   => 'こんにちは、ほげ☆ぴよ'
 ```
 
-##### Example of converting a character code by automatic detection (Auto detect):
+### Example of converting a character code by automatic detection (Auto detect)
 
 ```javascript
 var sjisArray = [
@@ -387,53 +420,18 @@ console.log( Encoding.codeToString(unicodeArray) );
 // output: 'こんにちは、ほげ☆ぴよ'
 ```
 
-### Utilities
-
-* {_string_} Encoding.**codeToString** ( {_Array.&lt;number&gt;_|_TypedArray_} data )  
-  Joins a character code array to string.
-
-* {_Array.&lt;number&gt;_} Encoding.**stringToCode** ( {_string_} string )  
-  Splits string to an array of character codes.
-
-#### Japanese Zenkaku/Hankaku
-
-* {_Array.&lt;number&gt;|string_} Encoding.**toHankakuCase** ( {_Array.&lt;number&gt;|string_} data )  
-  Convert the ascii symbols and alphanumeric characters to the zenkaku symbols and alphanumeric characters.
-
-* {_Array.&lt;number&gt;|string_} Encoding.**toZenkakuCase** ( {_Array.&lt;number&gt;|string_} data )  
-  Convert to the zenkaku symbols and alphanumeric characters from the ascii symbols and alphanumeric characters.
-
-* {_Array.&lt;number&gt;|string_} Encoding.**toHiraganaCase** ( {_Array.&lt;number&gt;|string_} data )  
-  Convert to the zenkaku hiragana from the zenkaku katakana.
-
-* {_Array.&lt;number&gt;|string_} Encoding.**toKatakanaCase** ( {_Array.&lt;number&gt;|string_} data )  
-  Convert to the zenkaku katakana from the zenkaku hiragana.
-
-* {_Array.&lt;number&gt;|string_} Encoding.**toHankanaCase** ( {_Array.&lt;number&gt;|string_} data )  
-  Convert to the hankaku katakana from the zenkaku katakana.
-
-* {_Array.&lt;number&gt;|string_} Encoding.**toZenkanaCase** ( {_Array.&lt;number&gt;|string_} data )  
-  Convert to the zenkaku katakana from the hankaku katakana.
-
-* {_Array.&lt;number&gt;|string_} Encoding.**toHankakuSpace** ({_Array.&lt;number&gt;|string_} data )  
-  Convert the em space(U+3000) to the single space(U+0020).
-
-* {_Array.&lt;number&gt;|string_} Encoding.**toZenkakuSpace** ( {_Array.&lt;number&gt;|string_} data )  
-  Convert the single space(U+0020) to the em space(U+3000).
-
-
-### Demo
+## Demo
 
 * [Test for character encoding conversion (Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
 * [Detect and Convert encoding from file (Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
-### Contributing
+## Contributing
 
 We're waiting for your pull requests and issues.
 Don't forget to execute `npm run test` before requesting.
 Accepted only requests without errors.
 
-### License
+## License
 
 MIT
 
