@@ -9,9 +9,49 @@ JavaScript で文字コードを変換または判定します。
 
 [**README (English)**](README.md)
 
+## 特徴
+
+encoding.js は、文字コードの変換や判定をする JavaScript ライブラリです。  
+Shift_JIS や EUC-JP、JIS など日本語の文字コードや、 UTF-8、UTF-16 などの Unicode に対応しています。
+
+JavaScript の文字列は内部で UTF-16 コードユニットとして符号化されるため、文字列のままでは他の文字コードを正しく扱えませんが ([参照: ECMAScript® 2019 Language Specification - 6.1.4 The String Type](https://www.ecma-international.org/ecma-262/10.0/index.html#sec-ecmascript-language-types-string-type))、encoding.js では文字列ではなく配列として扱い変換を実現しています。  
+各文字コードは、例えば `[130, 160]` (UTF-8の「あ」) のような文字コード値を持つ数値の配列として扱います。
+
+また、encoding.js の各メソッドに渡す文字コードの配列は、`Uint8Array` などの TypedArray や Node.js の `Buffer` でも使えます。
+
+### 各文字コードを文字列で扱うには？
+
+文字コードの数値配列から文字列には [`Encoding.codeToString`](#配列から文字列の相互変換-codetostring-stringtocode) などのメソッドで変換できますが、上記のような JavaScript の特徴があるため文字列化してしまうと文字コードによっては正しく扱えません。
+
+そのため配列でなく文字列で扱いたい場合は、 [`Encoding.urlEncode`](#url-encode-decode) と [`Encoding.urlDecode`](#url-encode-decode) を通して `'%82%A0'` のようなパーセントでエンコードされた文字列に変換すると、他のリソースに受け渡しが可能です。
+または、[`Encoding.base64Encode`](#base64-encode-decode) と [`Encoding.base64Decode`](#base64-encode-decode) でも同様な方法で文字列として受け渡しができます。
+
 ## インストール
 
+### npm
+
+npm では `encoding-japanese` というパッケージ名で公開されています。
+
+```bash
+$ npm install encoding-japanese --save
+```
+
+#### `import` で読み込む
+
+```javascript
+import Encoding from 'encoding-japanese';
+```
+
+#### `require` で読み込む
+
+```javascript
+const Encoding = require('encoding-japanese');
+```
+
 ### ブラウザ
+
+npm からインストール、または[リリース一覧](https://github.com/polygonplanet/encoding.js/tags)からダウンロードしたパッケージ内の `encoding.js` をご使用ください。  
+※ `git clone` した場合は、masterブランチであっても開発中の状態の可能性がありますのでご注意ください
 
 ```html
 <script src="encoding.js"></script>
@@ -25,40 +65,92 @@ JavaScript で文字コードを変換または判定します。
 
 ブラウザで読み込むと **`Encoding`** というオブジェクトがグローバルに (`window.Encoding` として) 定義されます。
 
-### npm
-
-`encoding-japanese` というモジュール名になっています
-
-```bash
-npm install encoding-japanese
-```
-
-```javascript
-var encoding = require('encoding-japanese');
-```
-
-encoding.js の各メソッドは Node.js の Buffer に対しても使えます
-
 ### CDN
 
-[cdnjs.com](https://cdnjs.com/libraries/encoding-japanese) でCDNが利用できます。
+[cdnjs.com](https://cdnjs.com/libraries/encoding-japanese) で encoding.js (パッケージ名: `encoding-japanese`) の CDN が利用できます。
 
-## 使える文字コード
+## 対応する文字コード
 
-* '**UTF32**'   (detect only)
-* '**UTF16**'
-* '**UTF16BE**'
-* '**UTF16LE**'
-* '**BINARY**'  (detect only)
-* '**ASCII**'   (detect only)
-* '**JIS**'
-* '**UTF8**'
-* '**EUCJP**'
-* '**SJIS**'
-* '**UNICODE**' (JavaScript Unicode Array)
+* **UTF32** (判定のみ)
+* **UTF16**
+* **UTF16BE**
+* **UTF16LE**
+* **BINARY** (判定のみ)
+* **ASCII** (判定のみ)
+* **JIS**
+* **UTF8**
+* **EUCJP**
+* **SJIS**
+* **UNICODE** (JavaScriptの内部文字コード) (※参照: [`UNICODE` について](#unicode-について))
 
-※ UNICODE は JavaScript の String.charCodeAt() の値を持つ配列です  
-　　(配列の各値は 256 を超える数値になり得ます)
+### `UNICODE` について
+
+encoding.js では JavaScript で扱える内部文字コードのことを `UNICODE` と定義しています。
+
+[上記 (特徴)](#特徴) のように、JavaScript の文字列は内部的に UTF-16 コードユニットとして符号化されるため、他の文字コードは正しく扱えません。
+そのため、[Encoding.convert](#文字コードを変換する-convert) によって JavaScript で扱える文字コード配列に変換するには `UNICODE` を指定する必要があります。
+(※仮にHTMLページが UTF-8 だったとしても JavaScript で扱う場合は `UTF8` ではなく `UNICODE` を指定します)
+
+`Encoding.convert` から返される各文字コード配列の値は `UTF8` や `SJIS` などの `UNICODE` 以外を指定した場合は `0-255` までの整数になりますが、 `UNICODE` を指定した場合 `0-65535` までの整数 (`String.charCodeAt()` の値の範囲 = Code Unit) になります。
+
+## 使い方の例
+
+JavaScript の文字列 (UNICODE) から SJIS に文字コードを変換する
+
+```javascript
+const unicodeArray = Encoding.stringToCode('こんにちは'); // 文字列から文字コード値の配列に変換
+const sjisArray = Encoding.convert(unicodeArray, {
+  to: 'SJIS',
+  from: 'UNICODE'
+});
+console.log(sjisArray);
+// [130, 177, 130, 241, 130, 201, 130, 191, 130, 205] (SJISの 'こんにちは' の配列)
+```
+
+SJIS から UNICODE に文字コードを変換する
+
+```javascript
+var sjisArray = [
+  130, 177, 130, 241, 130, 201, 130, 191, 130, 205
+]; // SJISで'こんにちは'の配列
+
+var unicodeArray = Encoding.convert(sjisArray, {
+  to: 'UNICODE',
+  from: 'SJIS'
+});
+var str = Encoding.codeToString(unicodeArray); // 文字コード値の配列から文字列に変換
+console.log(str); // 'こんにちは'
+```
+
+文字コードを判定する
+
+```javascript
+var data = [
+  227, 129, 147, 227, 130, 147, 227, 129, 171, 227, 129, 161, 227, 129, 175
+]; // UTF-8で'こんにちは'の配列
+
+var detectedEncoding = Encoding.detect(data);
+console.log('文字コードは' + detectedEncoding); // '文字コードはUTF8'
+```
+
+(Node.js) SJIS で書かれたテキストを読み込む例
+
+```javascript
+const fs = require('fs');
+const Encoding = require('encoding-japanese');
+
+const sjisBuffer = fs.readFileSync('./sjis.txt');
+const unicodeArray = Encoding.convert(sjisBuffer, {
+  to: 'UNICODE',
+  from: 'SJIS'
+});
+console.log(Encoding.codeToString(unicodeArray));
+```
+
+## Demo
+
+* [文字コード変換テスト(Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+* [ファイルから文字コードの判定・変換(Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ----
 
@@ -73,21 +165,30 @@ encoding.js の各メソッドは Node.js の Buffer に対しても使えます
   @param {_(string|Array.&lt;string&gt;)=_} [_from\_encoding_] 変換元の文字コード。または 'AUTO'
   @return {_Array|string_}  変換した配列または(文字列を渡した場合)文字列が返ります
 
+UTF-8 の文字コード配列を Shift_JIS に変換する例
+
 ```javascript
-// UTF-8のデータをShift_JISに変換
-var utf8Array = new Uint8Array(...) or [...] or Array(...) or Buffer(...);
+var utf8Array = [227, 129, 130]; // UTF-8 の「あ」
 var sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
+console.log(sjisArray); // [130, 160] (SJISの「あ」)
+```
 
-// 自動判別で変換 (AUTO detect)
+`Uint8Array` などの TypedArray や、Node.js の `Buffer` も同様に扱えます。
+
+```javascript
+var utf8Array = new Uint8Array([227, 129, 130]);
+Encoding.convert(utf8Array, 'SJIS', 'UTF8');
+```
+
+変換元の文字コードを自動判定して変換。
+
+```javascript
+// 引数 from_encoding を省略すると文字コードを自動判定します
+var utf8Array = [227, 129, 130];
 var sjisArray = Encoding.convert(utf8Array, 'SJIS');
-// or  
-var sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 
-// 文字コード判別 (戻り値は上記の「使える文字コード」のいずれか)
-var detected = Encoding.detect(utf8Array);
-if (detected === 'UTF8') {
-  console.log('Encoding is UTF-8');
-}
+// または明示的に 'AUTO' と指定できます
+sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 ```
 
 #### 引数に Object を指定する
@@ -113,13 +214,13 @@ var unicodeString = Encoding.convert(utf8String, {
 console.log(unicodeString); // こんにちは
 ```
 
-'*type*' オプションは以下が利用可能です:
+以下の `type` オプションが指定できます。
 
-* '**string**': 文字列として返ります
-* '**arraybuffer**': ArrayBuffer として返ります
-* '**array**': Array として返ります (デフォルト)
+* **string** : 文字列として返ります
+* **arraybuffer** : ArrayBuffer として返ります
+* **array** : Array として返ります (デフォルト)
 
-#### 変換できない文字を HTML エンティティ（HTML 数値文字参照）に置き換える
+#### 変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える
 
 変換先の文字コードで表現できない文字はデフォルトで「?」 (U+003F) に置き換えられますが、`fallback` オプションを指定すると HTML エンティティに置き換えることができます。
 
@@ -160,9 +261,10 @@ var sjisArray = Encoding.convert(unicodeArray, {
 console.log(sjisArray); // 'ホッケの漢字は&#x29e3d;' の数値配列に変換されます
 ```
 
-#### UTF16 に BOM をつける
+#### UTF-16 に BOM をつける
 
-UTF16 に変換する際に `bom` オプションを指定すると BOM が付加できます
+UTF-16 に変換する際に `bom` オプションを指定すると BOM (byte order mark) の付加を指定できます。
+デフォルトは BOM なしになります。
 
 ```javascript
 var utf16Array = Encoding.convert(utf8Array, {
@@ -172,9 +274,8 @@ var utf16Array = Encoding.convert(utf8Array, {
 });
 ```
 
-UTF16 のバイトオーダーはデフォルトで big-endian になります
-
-little-endian として変換したい場合は bom オプションに 'LE' を指定します  
+UTF-16 のバイトオーダーはデフォルトで big-endian になります。
+little-endian として変換したい場合は `bom` オプションに `LE` を指定します。
 
 ```javascript
 var utf16leArray = Encoding.convert(utf8Array, {
@@ -184,7 +285,10 @@ var utf16leArray = Encoding.convert(utf8Array, {
 });
 ```
 
-BOM が不要な場合は UTF16LE または UTF16BE を使用します
+BOM が不要な場合は `UTF16BE` または `UTF16LE` を使用します。
+
+`UTF16BE` は、上位バイトが先頭側になるように並べる方式 (big-endian) で、
+`UTF16LE` は上位バイトが末尾側になるように並べる方式 (little-endian) になり、どちらも BOM は付きません。
 
 ```javascript
 var utf16beArray = Encoding.convert(utf8Array, {
@@ -193,8 +297,6 @@ var utf16beArray = Encoding.convert(utf8Array, {
 });
 ```
 
-※ UTF16, UTF16BE, UTF16LE は、JavaScript の内部コードではなく各バイトを持つ配列です
-
 ### 文字コードを判定する (detect)
 
 * {_string|boolean_} Encoding.**detect** ( data [, encodings ] )  
@@ -202,6 +304,8 @@ var utf16beArray = Encoding.convert(utf8Array, {
   @param {_Array.&lt;number&gt;|TypedArray|string_} _data_ 対象のデータ  
   @param {_(string|Array.&lt;string&gt;)_} [_encodings_] 判定を絞り込む際の文字コード  
   @return {_string|boolean_}  判定された文字コード、または false が返ります
+
+戻り値は、上記の「[対応する文字コード](#対応する文字コード)」のいずれかになり、判定できなかった場合は false が返ります。
 
 ```javascript
 // 自動判定 (AUTO detect)
@@ -274,7 +378,7 @@ console.log(decoded);
 // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 ```
 
-### 配列から文字列の相互変換（codeToString/stringToCode）
+### 配列から文字列の相互変換 (codeToString/stringToCode)
 
 * {_string_} Encoding.**codeToString** ( {_Array.&lt;number&gt;_|_TypedArray_} data )  
   文字コード配列を文字列に変換(連結)して返します
@@ -418,15 +522,14 @@ console.log( Encoding.codeToString(unicodeArray) );
 // output: 'こんにちは、ほげ☆ぴよ'
 ```
 
-## Demo
-
-* [文字コード変換テスト(Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
-* [ファイルから文字コードの検出・変換(Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
-
 ## Contributing
 
-pull request や issues を歓迎しています。
-pull request の際は、 `$ npm run test` を実行してエラーがないことを確認してください。
+Pull requests や issues を歓迎しています。
+バグ報告や機能要望などは [GitHub の Issues](https://github.com/polygonplanet/encoding.js/issues) をご利用ください。
+
+### Pull requests
+
+Pull requests をする前に、 `$ npm run test` を実行してエラーがないことをご確認ください。
 
 ## License
 

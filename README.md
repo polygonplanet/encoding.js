@@ -9,15 +9,58 @@ Convert or detect character encoding in JavaScript.
 
 **[README(Japanese)](https://github.com/polygonplanet/encoding.js/blob/master/README_ja.md)**
 
+## Features
+
+encoding.js is a JavaScript library for converting and detecting character encodings
+that support Japanese character encodings such as `Shift_JIS`, `EUC-JP`, `JIS`, and `Unicode` such as `UTF-8` and `UTF-16`.
+
+Since JavaScript string values are internally encoded as UTF-16 code units ([ref: ECMAScript® 2019 Language Specification - 6.1.4 The String Type](https://www.ecma-international.org/ecma-262/10.0/index.html#sec-ecmascript-language-types-string-type)),
+they cannot properly handle other character encodings as they are, but encoding.js enables conversion by handling them as arrays instead of strings.
+
+Each character encoding is handled as an array of numbers with character code values, for example `[130, 160]` ("あ" in UTF-8).
+
+The array of character codes passed to each method of encoding.js can also be used with TypedArray such as `Uint8Array`, and `Buffer` in Node.js.
+
+### How to use character encoding in strings?
+
+Numeric arrays of character codes can be converted to strings with methods such as [`Encoding.codeToString`](#code array-to-string-conversion-codetostring-stringtocode),
+but because of the above JavaScript specifications, some character encodings cannot be handled properly when converted to strings.
+
+So if you want to use strings instead of arrays, convert it to percent-encoded strings like `'%82%A0'` by using [`Encoding.urlEncode`](#url-encode-decode) and [`Encoding.urlDecode`](#url-encode-decode) to passed to other resources.
+Or, [`Encoding.base64Encode`](#base64-encode-decode) and [`Encoding.base64Decode`](#base64-encode-decode) can be passed as strings in the same way.
+
 ## Installation
 
+### npm
+
+encoding.js is available under the package name of `encoding-japanese` on npm.
+
+```bash
+$ npm install encoding-japanese --save
+```
+
+#### using `import`
+
+```javascript
+import Encoding from 'encoding-japanese';
+```
+
+#### using `require`
+
+```javascript
+const Encoding = require('encoding-japanese');
+```
+
 ### browser (standalone)
+
+Install from npm or download from the [release list](https://github.com/polygonplanet/encoding.js/tags) and use `encoding.js` or `encoding.min.js` in the package.  
+\*Please note that if you `git clone`, even the *master* branch may be under development.
 
 ```html
 <script src="encoding.js"></script>
 ```
 
-or
+Or use the minified `encoding.min.js`
 
 ```html
 <script src="encoding.min.js"></script>
@@ -25,25 +68,11 @@ or
 
 When the script is loaded, the object `Encoding` is defined in the global scope (ie `window.Encoding`).
 
-### npm
-
-encoding.js is published by module name of `encoding-japanese` in npm.
-
-```bash
-npm install encoding-japanese
-```
-
-```javascript
-var encoding = require('encoding-japanese');
-```
-
-Each methods are also available for the *Buffer* in Node.js.
-
 ### CDN
 
-encoding.js is available on [cdnjs.com](https://cdnjs.com/libraries/encoding-japanese).
+You can use the encoding.js (package name: `encoding-japanese`) CDN on [cdnjs.com](https://cdnjs.com/libraries/encoding-japanese).
 
-## Available Encodings
+## Supported encodings
 
 * **UTF32** (detect only)
 * **UTF16**
@@ -55,10 +84,78 @@ encoding.js is available on [cdnjs.com](https://cdnjs.com/libraries/encoding-jap
 * **UTF8**
 * **EUCJP**
 * **SJIS**
-* **UNICODE** (JavaScript's internal encoding)
+* **UNICODE** (JavaScript's internal encoding) (*See [About `UNICODE`](#about-unicode) below)
 
-Note: UNICODE is an array that has a value of String.charCodeAt() in JavaScript.  
-(Each value in the array possibly has a number greater than 256.)
+### About `UNICODE`
+
+In encoding.js, the internal character encoding that can be handled in JavaScript is defined as `UNICODE`.
+
+As mentioned above ([Features](#features)), JavaScript strings are internally encoded in UTF-16 code units, and other character encodings cannot be handled properly.
+Therefore, to convert to a character encoding properly represented in JavaScript, specify `UNICODE`.
+
+(*Even if the HTML file encoding is UTF-8, specify `UNICODE` instead of `UTF8` when handling it in JavaScript.)
+
+The value of each character code array returned from `Encoding.convert` is a number of 0-255 if you specify a character code other than `UNICODE` such as `UTF8` or `SJIS`,
+or a number of `0-65535` (range of [`String.charCodeAt()`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String/fromCharCode) values = Code Unit) if you specify `UNICODE`.
+
+## Example usage
+
+Convert character encoding from JavaScript string (`UNICODE`) to `SJIS`.
+
+```javascript
+const unicodeArray = Encoding.stringToCode('こんにちは'); // Convert string to code array
+const sjisArray = Encoding.convert(unicodeArray, {
+  to: 'SJIS',
+  from: 'UNICODE'
+});
+console.log(sjisArray);
+// [130, 177, 130, 241, 130, 201, 130, 191, 130, 205] ('こんにちは' array in SJIS)
+```
+
+Convert character encoding from `SJIS` to `UNICODE`.
+
+```javascript
+var sjisArray = [
+  130, 177, 130, 241, 130, 201, 130, 191, 130, 205
+]; // 'こんにちは' (Japanese) array in SJIS
+
+var unicodeArray = Encoding.convert(sjisArray, {
+  to: 'UNICODE',
+  from: 'SJIS'
+});
+var str = Encoding.codeToString(unicodeArray); // Convert code array to string
+console.log(str); // 'こんにちは'
+```
+
+Detect character encoding.
+
+```javascript
+var data = [
+  227, 129, 147, 227, 130, 147, 227, 129, 171, 227, 129, 161, 227, 129, 175
+]; // 'こんにちは' array in UTF-8
+
+var detectedEncoding = Encoding.detect(data);
+console.log('Character encoding is ' + detectedEncoding); // 'Character encoding is UTF8'
+```
+
+(Node.js) Example of reading a text file written in `SJIS`.
+
+```javascript
+const fs = require('fs');
+const Encoding = require('encoding-japanese');
+
+const sjisBuffer = fs.readFileSync('./sjis.txt');
+const unicodeArray = Encoding.convert(sjisBuffer, {
+  to: 'UNICODE',
+  from: 'SJIS'
+});
+console.log(Encoding.codeToString(unicodeArray));
+```
+
+## Demo
+
+* [Test for character encoding conversion (Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+* [Detect and Convert encoding from file (Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ----
 
@@ -69,27 +166,34 @@ Note: UNICODE is an array that has a value of String.charCodeAt() in JavaScript.
 * {_Array.&lt;number&gt;|string_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
   Converts character encoding.  
   @param {_Array.&lt;number&gt;|TypedArray|Buffer|string_} _data_ The target data.  
-  @param {_(string|Object)_} _to\_encoding_ The encoding name of conversion destination.  
-  @param {_(string|Array.&lt;string&gt;)=_} [_from\_encoding_] The encoding name of source or 'AUTO'.  
+  @param {_(string|Object)_} _to\_encoding_ The encoding name of conversion destination, or option to convert as an object.  
+  @param {_(string|Array.&lt;string&gt;)=_} [_from\_encoding_] The encoding name of the source or 'AUTO'.  
   @return {_Array|string_}  Return the converted array/string.
 
+Example of converting a character code array to Shift_JIS from UTF-8.
 
 ```javascript
-// Convert character encoding to Shift_JIS from UTF-8.
-var utf8Array = new Uint8Array(...) or [...] or Array(...) or Buffer(...);
+var utf8Array = [227, 129, 130]; // "あ" (Japanese) in UTF-8
 var sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
+console.log(sjisArray); // [130, 160] ("あ" in SJIS)
+```
 
-// Convert character encoding by automatic detection (AUTO detect).
+TypedArray such as `Uint8Array`, and `Buffer` of Node.js can be converted in the same usage.
+
+```javascript
+var utf8Array = new Uint8Array([227, 129, 130]);
+Encoding.convert(utf8Array, 'SJIS', 'UTF8');
+```
+
+Converts character encoding by auto-detecting the encoding name of the source.
+
+```javascript
+// The character encoding is automatically detected when the from_encoding argument is omitted
+var utf8Array = [227, 129, 130];
 var sjisArray = Encoding.convert(utf8Array, 'SJIS');
-// or  
-var sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 
-// Detect the character encoding.
-// The return value be one of the "Available Encodings" below.
-var detected = Encoding.detect(utf8Array);
-if (detected === 'UTF8') {
-  console.log('Encoding is UTF-8');
-}
+// Or explicitly specify 'AUTO' to auto-detecting
+sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 ```
 
 #### Specify the Object argument
@@ -115,11 +219,11 @@ var unicodeString = Encoding.convert(utf8String, {
 console.log(unicodeString); // こんにちは
 ```
 
-Following '*type*' options are available:
+The following `type` options are supported
 
-* '**string**': Return as string.
-* '**arraybuffer**': Return as ArrayBuffer.
-* '**array**': Return as Array (default).
+* **string** : Return as a string
+* **arraybuffer** : Return as an ArrayBuffer
+* **array** :  Return as an Array (default)
 
 #### Replace to HTML entity (Numeric character reference) when cannot be represented
 
@@ -164,19 +268,19 @@ console.log(sjisArray); // Converted to a code array of 'ホッケの漢字は&#
 
 #### Specify BOM in UTF-16
 
-It's possible to add the UTF16 BOM by specifying the bom option for conversion.
+You can add a BOM (byte order mark) by specifying the `bom` option when converting to UTF-16.
+The default is no BOM.
 
 ```javascript
 var utf16Array = Encoding.convert(utf8Array, {
   to: 'UTF16', // to_encoding
   from: 'UTF8', // from_encoding
-  bom: true // With BOM
+  bom: true // Add BOM
 });
 ```
 
-The byte order of UTF16 is big-endian by default.
-
-Specify the 'LE' for the bom option if you want to convert as little-endian.  
+UTF-16 byte order is big-endian by default.
+If you want to convert as little-endian, specify the `{ bom: 'LE' }` option.
 
 ```javascript
 var utf16leArray = Encoding.convert(utf8Array, {
@@ -186,7 +290,8 @@ var utf16leArray = Encoding.convert(utf8Array, {
 });
 ```
 
-You can specify UTF16LE or UTF16BE if the BOM is not required.
+If you do not need BOM, use `UTF16BE` or `UTF16LE`.
+`UTF16BE` is big-endian, and `UTF16LE` is little-endian, and both have no BOM.
 
 ```javascript
 var utf16beArray = Encoding.convert(utf8Array, {
@@ -194,8 +299,6 @@ var utf16beArray = Encoding.convert(utf8Array, {
   from: 'UTF8'
 });
 ```
-
-Note: UTF16, UTF16BE and UTF16LE are not JavaScript internal encodings, they are a byte arrays.
 
 ### Detect character encoding (detect)
 
@@ -205,6 +308,7 @@ Note: UTF16, UTF16BE and UTF16LE are not JavaScript internal encodings, they are
   @param {_(string|Array.&lt;string&gt;)_} [_encodings_] The encoding name that to specify the detection.  
   @return {_string|boolean_} Return the detected character encoding, or false.
 
+The return value is one of the above "[**Supported encodings**](#supported-encodings)" or false if it cannot be detected.
 
 ```javascript
 // Detect character encoding automatically. (AUTO detect).
@@ -420,16 +524,15 @@ console.log( Encoding.codeToString(unicodeArray) );
 // output: 'こんにちは、ほげ☆ぴよ'
 ```
 
-## Demo
-
-* [Test for character encoding conversion (Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
-* [Detect and Convert encoding from file (Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
-
 ## Contributing
 
-We're waiting for your pull requests and issues.
-Don't forget to execute `npm run test` before requesting.
-Accepted only requests without errors.
+We welcome contributions from everyone.
+For bug reports and feature requests, please [create an issue on GitHub](https://github.com/polygonplanet/encoding.js/issues).
+
+### Pull requests
+
+Please run `$ npm run test` before the pull request to confirm there are no errors.
+We only accept requests without errors.
 
 ## License
 
