@@ -161,8 +161,8 @@ console.log(Encoding.codeToString(unicodeArray));
 * {_Array.&lt;number&gt;|string_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
   文字コードを変換します  
   @param {_Array.&lt;number&gt;|TypedArray|Buffer|string_} _data_ 対象のデータ  
-  @param {_(string|Object)_} _to\_encoding_ 変換先の文字コード、またはオブジェクト指定でオプション
-  @param {_(string|Array.&lt;string&gt;)=_} [_from\_encoding_] 変換元の文字コード。または 'AUTO'
+  @param {_(string|Object)_} _to\_encoding_ 変換先の文字コード、またはオブジェクト指定でオプション  
+  @param {_(string|Array.&lt;string&gt;)=_} [_from\_encoding_] 変換元の文字コード。または 'AUTO'  
   @return {_Array|string_}  変換した配列または(文字列を渡した場合)文字列が返ります
 
 UTF-8 の文字コード配列を Shift_JIS に変換する例
@@ -300,7 +300,7 @@ var utf16beArray = Encoding.convert(utf8Array, {
 ### 文字コードを判定する (detect)
 
 * {_string|boolean_} Encoding.**detect** ( data [, encodings ] )  
-  文字コードを判定します
+  文字コードを判定します  
   @param {_Array.&lt;number&gt;|TypedArray|string_} _data_ 対象のデータ  
   @param {_(string|Array.&lt;string&gt;)_} [_encodings_] 判定を絞り込む際の文字コード  
   @return {_string|boolean_}  判定された文字コード、または false が返ります
