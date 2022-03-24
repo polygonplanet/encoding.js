@@ -21,10 +21,10 @@ JavaScript の文字列は内部で UTF-16 コードユニットとして符号�
 
 ### 各文字コードを文字列で扱うには？
 
-文字コードの数値配列から文字列には [`Encoding.codeToString`](#配列から文字列の相互変換-codetostring-stringtocode) などのメソッドで変換できますが、上記のような JavaScript の特徴があるため文字列化してしまうと文字コードによっては正しく扱えません。
+文字コードの数値配列から文字列には [`Encoding.codeToString`](配列から文字列の相互変換-codetostringstringtocode) などのメソッドで変換できますが、上記のような JavaScript の特徴があるため文字列化してしまうと文字コードによっては正しく扱えません。
 
-そのため配列でなく文字列で扱いたい場合は、 [`Encoding.urlEncode`](#url-encode-decode) と [`Encoding.urlDecode`](#url-encode-decode) を通して `'%82%A0'` のようなパーセントでエンコードされた文字列に変換すると、他のリソースに受け渡しが可能です。
-または、[`Encoding.base64Encode`](#base64-encode-decode) と [`Encoding.base64Decode`](#base64-encode-decode) でも同様な方法で文字列として受け渡しができます。
+そのため配列でなく文字列で扱いたい場合は、 [`Encoding.urlEncode`](#url-encodedecode) と [`Encoding.urlDecode`](#url-encodedecode) を通して `'%82%A0'` のようなパーセントでエンコードされた文字列に変換すると、他のリソースに受け渡しが可能です。
+または、[`Encoding.base64Encode`](#base64-encodedecode) と [`Encoding.base64Decode`](#base64-encodedecode) でも同様な方法で文字列として受け渡しができます。
 
 ## インストール
 

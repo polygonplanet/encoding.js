@@ -23,11 +23,11 @@ The array of character codes passed to each method of encoding.js can also be us
 
 ### How to use character encoding in strings?
 
-Numeric arrays of character codes can be converted to strings with methods such as [`Encoding.codeToString`](#code array-to-string-conversion-codetostring-stringtocode),
+Numeric arrays of character codes can be converted to strings with methods such as [`Encoding.codeToString`](#code-array-to-string-conversion-codetostringstringtocode) ,
 but because of the above JavaScript specifications, some character encodings cannot be handled properly when converted to strings.
 
-So if you want to use strings instead of arrays, convert it to percent-encoded strings like `'%82%A0'` by using [`Encoding.urlEncode`](#url-encode-decode) and [`Encoding.urlDecode`](#url-encode-decode) to passed to other resources.
-Or, [`Encoding.base64Encode`](#base64-encode-decode) and [`Encoding.base64Decode`](#base64-encode-decode) can be passed as strings in the same way.
+So if you want to use strings instead of arrays, convert it to percent-encoded strings like `'%82%A0'` by using [`Encoding.urlEncode`](#url-encodedecode) and [`Encoding.urlDecode`](#url-encodedecode) to passed to other resources.
+Or, [`Encoding.base64Encode`](#base64-encodedecode) and [`Encoding.base64Decode`](#base64-encodedecode) can be passed as strings in the same way.
 
 ## Installation
 
