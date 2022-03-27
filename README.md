@@ -33,10 +33,10 @@ Or, [`Encoding.base64Encode`](#base64-encodedecode) and [`Encoding.base64Decode`
 
 ### npm
 
-encoding.js is available under the package name of `encoding-japanese` on npm.
+encoding.js is published under the package name `encoding-japanese` on npm.
 
 ```bash
-$ npm install encoding-japanese --save
+$ npm install --save encoding-japanese
 ```
 
 #### using `import`
@@ -49,6 +49,14 @@ import Encoding from 'encoding-japanese';
 
 ```javascript
 const Encoding = require('encoding-japanese');
+```
+
+#### TypeScript
+
+TypeScript type definitions for encoding.js are available at [@types/encoding-japanese](https://www.npmjs.com/package/@types/encoding-japanese) (thanks [@rhysd](https://github.com/rhysd)).
+
+```bash
+$ npm install --save @types/encoding-japanese
 ```
 
 ### browser (standalone)
@@ -74,17 +82,19 @@ You can use the encoding.js (package name: `encoding-japanese`) CDN on [cdnjs.co
 
 ## Supported encodings
 
-* **UTF32** (detect only)
-* **UTF16**
-* **UTF16BE**
-* **UTF16LE**
-* **BINARY** (detect only)
-* **ASCII** (detect only)
-* **JIS**
-* **UTF8**
-* **EUCJP**
-* **SJIS**
-* **UNICODE** (JavaScript's internal encoding) (*See [About `UNICODE`](#about-unicode) below)
+|Value in encoding.js|[`detect()`](#detect-character-encoding-detect)|[`convert()`](#convert-character-encoding-convert)|MIME Name (Note)|
+|:------:|:----:|:-----:|:---|
+|ASCII   |✓     |      |US-ASCII (Code point range: `0-127`)|
+|BINARY  |✓     |      |(Binary strings, Code point range: `0-255`)|
+|EUCJP   |✓     |✓     |EUC-JP|
+|JIS     |✓     |✓     |ISO-2022-JP|
+|SJIS    |✓     |✓     |Shift_JIS|
+|UTF8    |✓     |✓     |UTF-8|
+|UTF16   |✓     |✓     |UTF-16|
+|UTF16BE |✓     |✓     |UTF-16BE (big-endian)|
+|UTF16LE |✓     |✓     |UTF-16LE (little-endian)|
+|UTF32   |✓     |      |UTF-32|
+|UNICODE |✓     |✓     |(JavaScript's internal encoding. *See [About `UNICODE`](#about-unicode) below) |
 
 ### About `UNICODE`
 
@@ -96,7 +106,7 @@ Therefore, to convert to a character encoding properly represented in JavaScript
 (*Even if the HTML file encoding is UTF-8, specify `UNICODE` instead of `UTF8` when handling it in JavaScript.)
 
 The value of each character code array returned from `Encoding.convert` is a number of 0-255 if you specify a character code other than `UNICODE` such as `UTF8` or `SJIS`,
-or a number of `0-65535` (range of [`String.charCodeAt()`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String/fromCharCode) values = Code Unit) if you specify `UNICODE`.
+or a number of `0-65535` (range of `String.prototype.charCodeAt()` values = Code Unit) if you specify `UNICODE`.
 
 ## Example usage
 
@@ -117,7 +127,7 @@ Convert character encoding from `SJIS` to `UNICODE`.
 ```javascript
 var sjisArray = [
   130, 177, 130, 241, 130, 201, 130, 191, 130, 205
-]; // 'こんにちは' (Japanese) array in SJIS
+]; // 'こんにちは' array in SJIS
 
 var unicodeArray = Encoding.convert(sjisArray, {
   to: 'UNICODE',
@@ -173,7 +183,7 @@ console.log(Encoding.codeToString(unicodeArray));
 Example of converting a character code array to Shift_JIS from UTF-8.
 
 ```javascript
-var utf8Array = [227, 129, 130]; // "あ" (Japanese) in UTF-8
+var utf8Array = [227, 129, 130]; // "あ" in UTF-8
 var sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
 console.log(sjisArray); // [130, 160] ("あ" in SJIS)
 ```
@@ -196,7 +206,9 @@ var sjisArray = Encoding.convert(utf8Array, 'SJIS');
 sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 ```
 
-#### Specify the Object argument
+#### Specify the argument `to_encoding` as an object
+
+You can specify the second argument `to_encoding` as an object for improving readability.
 
 ```javascript
 var sjisArray = Encoding.convert(utf8Array, {
@@ -204,8 +216,6 @@ var sjisArray = Encoding.convert(utf8Array, {
   from: 'UTF8' // from_encoding
 });
 ```
-
-Readability improves by passing an object to the second argument.
 
 #### Specify the string argument and 'type' option
 
@@ -268,7 +278,7 @@ console.log(sjisArray); // Converted to a code array of 'ホッケの漢字は&#
 
 #### Specify BOM in UTF-16
 
-You can add a BOM (byte order mark) by specifying the `bom` option when converting to UTF-16.
+You can add a BOM (byte order mark) by specifying the `bom` option when converting to `UTF16`.
 The default is no BOM.
 
 ```javascript
@@ -279,7 +289,7 @@ var utf16Array = Encoding.convert(utf8Array, {
 });
 ```
 
-UTF-16 byte order is big-endian by default.
+`UTF16` byte order is big-endian by default.
 If you want to convert as little-endian, specify the `{ bom: 'LE' }` option.
 
 ```javascript
