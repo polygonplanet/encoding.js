@@ -1,17 +1,19 @@
 /*!
- * encoding-japanese v1.0.30 - Convert or detect character encoding in JavaScript
- * Copyright (c) 2013-2018 polygon planet <polygon.planet.aqua@gmail.com>
+ * encoding-japanese v2.0.0 - Convert or detect character encoding in JavaScript
+ * Copyright (c) 2012 polygonplanet <polygon.planet.aqua@gmail.com>
  * https://github.com/polygonplanet/encoding.js
  * @license MIT
  */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Encoding = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+module.exports={
+  "version": "2.0.0"
+}
+},{}],2:[function(require,module,exports){
 var util = require('./util');
 var EncodingTable = require('./encoding-table');
 
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-// Alternate character when can't detect
-exports.UNKNOWN_CHARACTER = 63; // '?'
+// Fallback character when a character can't be represented
+exports.FALLBACK_CHARACTER = 63; // '?'
 
 var HAS_TYPED = exports.HAS_TYPED = typeof Uint8Array !== 'undefined' && typeof Uint16Array !== 'undefined';
 
@@ -39,7 +41,6 @@ exports.CAN_CHARCODE_APPLY_TYPED = CAN_CHARCODE_APPLY_TYPED;
 // Function.prototype.apply stack max range
 exports.APPLY_BUFFER_SIZE = 65533;
 exports.APPLY_BUFFER_SIZE_OK = null;
-
 
 var EncodingNames = exports.EncodingNames = {
   UTF32: {
@@ -83,11 +84,12 @@ var EncodingNames = exports.EncodingNames = {
 };
 
 var EncodingAliases = {};
+exports.EncodingAliases = EncodingAliases;
 
 exports.EncodingOrders = (function() {
   var aliases = EncodingAliases;
 
-  var names = util.getKeys(EncodingNames);
+  var names = util.objectKeys(EncodingNames);
   var orders = [];
   var name, encoding, j, l;
 
@@ -97,7 +99,7 @@ exports.EncodingOrders = (function() {
 
     encoding = EncodingNames[name];
     if (encoding != null) {
-      if (typeof encoding.order !== 'undefined') {
+      if (encoding.order != null) {
         orders[orders.length] = name;
       }
 
@@ -117,12 +119,11 @@ exports.EncodingOrders = (function() {
   return orders;
 }());
 
-
 function init_JIS_TO_UTF8_TABLE() {
   if (EncodingTable.JIS_TO_UTF8_TABLE === null) {
     EncodingTable.JIS_TO_UTF8_TABLE = {};
 
-    var keys = util.getKeys(EncodingTable.UTF8_TO_JIS_TABLE);
+    var keys = util.objectKeys(EncodingTable.UTF8_TO_JIS_TABLE);
     var i = 0;
     var len = keys.length;
     var key, value;
@@ -136,7 +137,7 @@ function init_JIS_TO_UTF8_TABLE() {
     }
 
     EncodingTable.JISX0212_TO_UTF8_TABLE = {};
-    keys = util.getKeys(EncodingTable.UTF8_TO_JISX0212_TABLE);
+    keys = util.objectKeys(EncodingTable.UTF8_TO_JISX0212_TABLE);
     len = keys.length;
 
     for (i = 0; i < len; i++) {
@@ -148,43 +149,7 @@ function init_JIS_TO_UTF8_TABLE() {
 }
 exports.init_JIS_TO_UTF8_TABLE = init_JIS_TO_UTF8_TABLE;
 
-/**
- * Assign the internal encoding name from the argument encoding name
- */
-function assignEncodingName(target) {
-  var name = '';
-  var expect = ('' + target).toUpperCase().replace(/[^A-Z0-9]+/g, '');
-  var aliasNames = util.getKeys(EncodingAliases);
-  var len = aliasNames.length;
-  var hit = 0;
-  var encoding, encodingLen, j;
-
-  for (var i = 0; i < len; i++) {
-    encoding = aliasNames[i];
-    if (encoding === expect) {
-      name = encoding;
-      break;
-    }
-
-    encodingLen = encoding.length;
-    for (j = hit; j < encodingLen; j++) {
-      if (encoding.slice(0, j) === expect.slice(0, j) ||
-          encoding.slice(-j) === expect.slice(-j)) {
-        name = encoding;
-        hit = j;
-      }
-    }
-  }
-
-  if (hasOwnProperty.call(EncodingAliases, name)) {
-    return EncodingAliases[name];
-  }
-
-  return name;
-}
-exports.assignEncodingName = assignEncodingName;
-
-},{"./encoding-table":4,"./util":11}],2:[function(require,module,exports){
+},{"./encoding-table":5,"./util":12}],3:[function(require,module,exports){
 var config = require('./config');
 var util = require('./util');
 var EncodingDetect = require('./encoding-detect');
@@ -252,7 +217,7 @@ function JISToSJIS(data) {
       results[results.length] = data[i] + 0x80 & 0xFF;
     } else if (index === 3) {
       // Shift_JIS cannot convert JIS X 0212:1990.
-      results[results.length] = config.UNKNOWN_CHARACTER;
+      results[results.length] = config.FALLBACK_CHARACTER;
     } else {
       results[results.length] = data[i] & 0xFF;
     }
@@ -519,7 +484,7 @@ function EUCJPToSJIS(data) {
   for (; i < len; i++) {
     b1 = data[i];
     if (b1 === 0x8F) {
-      results[results.length] = config.UNKNOWN_CHARACTER;
+      results[results.length] = config.FALLBACK_CHARACTER;
       i += 2;
     } else if (b1 > 0x8E) {
       b2 = data[++i];
@@ -609,7 +574,7 @@ function SJISToUTF8(data) {
 
       utf8 = EncodingTable.JIS_TO_UTF8_TABLE[jis];
       if (utf8 === void 0) {
-        results[results.length] = config.UNKNOWN_CHARACTER;
+        results[results.length] = config.FALLBACK_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
           results[results.length] = utf8 >> 8 & 0xFF;
@@ -657,7 +622,7 @@ function EUCJPToUTF8(data) {
 
       utf8 = EncodingTable.JISX0212_TO_UTF8_TABLE[jis];
       if (utf8 === void 0) {
-        results[results.length] = config.UNKNOWN_CHARACTER;
+        results[results.length] = config.FALLBACK_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
           results[results.length] = utf8 >> 8 & 0xFF;
@@ -673,7 +638,7 @@ function EUCJPToUTF8(data) {
 
       utf8 = EncodingTable.JIS_TO_UTF8_TABLE[jis];
       if (utf8 === void 0) {
-        results[results.length] = config.UNKNOWN_CHARACTER;
+        results[results.length] = config.FALLBACK_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
           results[results.length] = utf8 >> 8 & 0xFF;
@@ -731,7 +696,7 @@ function JISToUTF8(data) {
 
       utf8 = EncodingTable.JIS_TO_UTF8_TABLE[jis];
       if (utf8 === void 0) {
-        results[results.length] = config.UNKNOWN_CHARACTER;
+        results[results.length] = config.FALLBACK_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
           results[results.length] = utf8 >> 8 & 0xFF;
@@ -755,7 +720,7 @@ function JISToUTF8(data) {
 
       utf8 = EncodingTable.JISX0212_TO_UTF8_TABLE[jis];
       if (utf8 === void 0) {
-        results[results.length] = config.UNKNOWN_CHARACTER;
+        results[results.length] = config.FALLBACK_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
           results[results.length] = utf8 >> 8 & 0xFF;
@@ -780,60 +745,40 @@ exports.JISToUTF8 = JISToUTF8;
  */
 function UTF8ToSJIS(data, options) {
   var results = [];
-  var i = 0, j = 0;
+  var i = 0;
   var len = data && data.length;
   var b, b1, b2, bytes, utf8, jis;
-  var codePoints;
+  var fallbackOption = options && options.fallback;
 
   for (; i < len; i++) {
     b = data[i];
+
     if (b >= 0x80) {
       if (b <= 0xDF) {
         // 2 bytes
-        bytes = data.slice(i, i+2)
+        bytes = [b, data[i + 1]];
+        utf8 = (b << 8) + data[++i];
       } else if (b <= 0xEF) {
         // 3 bytes
-        bytes = data.slice(i, i+3)
+        bytes = [b, data[i + 1], data[i + 2]];
+        utf8 = (b << 16) +
+               (data[++i] << 8) +
+               (data[++i] & 0xFF);
       } else {
         // 4 bytes
-        bytes = data.slice(i, i+4)
-      }
-
-      i += bytes.length - 1
-      utf8 = 0
-      for (j = 0; j < bytes.length; j++) {
-        utf8 += (bytes[bytes.length - 1 - j] << (j * 8));
+        bytes = [b, data[i + 1], data[i + 2], data[i + 3]];
+        utf8 = (b << 24) +
+               (data[++i] << 16) +
+               (data[++i] << 8) +
+               (data[++i] & 0xFF);
       }
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
-      if (jis === void 0) {
-        if (util.isObject(options)) {
-          switch (options.unknown) {
-            case 'hex':
-              results[results.length] = 0x26; // &
-              results[results.length] = 0x23; // #
-              results[results.length] = 0x78; // x
-              codePoints = util.bufferToCode(UNICODEToSJIS(util.stringToBuffer(util.utf8CharBytesToCodePoint(bytes).toString(16))));
-              for (j = 0; j < codePoints.length; j++) {
-                results[results.length] = codePoints[j];
-              }
-              results[results.length] = 0x3B; // ;
-              break;
-            case 'decimal':
-              results[results.length] = 0x26; // &
-              results[results.length] = 0x23; // #
-              codePoints = util.bufferToCode(UNICODEToSJIS(util.stringToBuffer(util.utf8CharBytesToCodePoint(bytes).toString())));
-              for (j = 0; j < codePoints.length; j++) {
-                results[results.length] = codePoints[j];
-              }
-              results[results.length] = 0x3B; // ;
-              break;
-            default:
-              results[results.length] = config.UNKNOWN_CHARACTER;
-              break;
-          }
+      if (jis == null) {
+        if (fallbackOption) {
+          handleFallback(results, bytes, fallbackOption);
         } else {
-          results[results.length] = config.UNKNOWN_CHARACTER;
+          results[results.length] = config.FALLBACK_CHARACTER;
         }
       } else {
         if (jis < 0xFF) {
@@ -885,62 +830,41 @@ exports.UTF8ToSJIS = UTF8ToSJIS;
  */
 function UTF8ToEUCJP(data, options) {
   var results = [];
-  var i = 0, j = 0;
+  var i = 0;
   var len = data && data.length;
   var b, bytes, utf8, jis;
-  var codePoints;
+  var fallbackOption = options && options.fallback;
 
   for (; i < len; i++) {
     b = data[i];
     if (b >= 0x80) {
       if (b <= 0xDF) {
         // 2 bytes
-        bytes = data.slice(i, i+2)
+        bytes = [b, data[i + 1]];
+        utf8 = (b << 8) + data[++i];
       } else if (b <= 0xEF) {
         // 3 bytes
-        bytes = data.slice(i, i+3)
+        bytes = [b, data[i + 1], data[i + 2]];
+        utf8 = (b << 16) +
+               (data[++i] << 8) +
+               (data[++i] & 0xFF);
       } else {
         // 4 bytes
-        bytes = data.slice(i, i+4)
-      }
-
-      i += bytes.length - 1
-      utf8 = 0
-      for (j = 0; j < bytes.length; j++) {
-        utf8 += (bytes[bytes.length - 1 - j] << (j * 8));
+        bytes = [b, data[i + 1], data[i + 2], data[i + 3]];
+        utf8 = (b << 24) +
+               (data[++i] << 16) +
+               (data[++i] << 8) +
+               (data[++i] & 0xFF);
       }
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
-      if (jis === void 0) {
+      if (jis == null) {
         jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
-        if (jis === void 0) {
-          if (util.isObject(options)) {
-            switch (options.unknown) {
-              case 'hex':
-                results[results.length] = 0x26; // &
-                results[results.length] = 0x23; // #
-                results[results.length] = 0x78; // x
-                codePoints = util.bufferToCode(UNICODEToEUCJP(util.stringToBuffer(util.utf8CharBytesToCodePoint(bytes).toString(16))));
-                for (j = 0; j < codePoints.length; j++) {
-                  results[results.length] = codePoints[j];
-                }
-                results[results.length] = 0x3B; // ;
-                break;
-              case 'decimal':
-                results[results.length] = 0x26; // &
-                results[results.length] = 0x23; // #
-                codePoints = util.bufferToCode(UNICODEToEUCJP(util.stringToBuffer(util.utf8CharBytesToCodePoint(bytes).toString())));
-                for (j = 0; j < codePoints.length; j++) {
-                  results[results.length] = codePoints[j];
-                }
-                results[results.length] = 0x3B; // ;
-                break;
-              default:
-                results[results.length] = config.UNKNOWN_CHARACTER;
-                break;
-            }
+        if (jis == null) {
+          if (fallbackOption) {
+            handleFallback(results, bytes, fallbackOption);
           } else {
-            results[results.length] = config.UNKNOWN_CHARACTER;
+            results[results.length] = config.FALLBACK_CHARACTER;
           }
         } else {
           results[results.length] = 0x8F;
@@ -975,15 +899,16 @@ function UTF8ToJIS(data, options) {
   var results = [];
   var index = 0;
   var len = data && data.length;
-  var i = 0, j = 0;
+  var i = 0;
   var b, bytes, utf8, jis;
+  var fallbackOption = options && options.fallback;
+
   var esc = [
     0x1B, 0x28, 0x42,
     0x1B, 0x24, 0x42,
     0x1B, 0x28, 0x49,
     0x1B, 0x24, 0x28, 0x44
   ];
-  var codePoints;
 
   for (; i < len; i++) {
     b = data[i];
@@ -998,58 +923,38 @@ function UTF8ToJIS(data, options) {
     } else {
       if (b <= 0xDF) {
         // 2 bytes
-        bytes = data.slice(i, i+2)
+        bytes = [b, data[i + 1]];
+        utf8 = (b << 8) + data[++i];
       } else if (b <= 0xEF) {
         // 3 bytes
-        bytes = data.slice(i, i+3)
+        bytes = [b, data[i + 1], data[i + 2]];
+        utf8 = (b << 16) +
+               (data[++i] << 8) +
+               (data[++i] & 0xFF);
       } else {
         // 4 bytes
-        bytes = data.slice(i, i+4)
-      }
-
-      i += bytes.length - 1
-      utf8 = 0
-      for (j = 0; j < bytes.length; j++) {
-        utf8 += (bytes[bytes.length - 1 - j] << (j * 8));
+        bytes = [b, data[i + 1], data[i + 2], data[i + 3]];
+        utf8 = (b << 24) +
+               (data[++i] << 16) +
+               (data[++i] << 8) +
+               (data[++i] & 0xFF);
       }
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
-      if (jis === void 0) {
+      if (jis == null) {
         jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
-        if (jis === void 0) {
+        if (jis == null) {
           if (index !== 0) {
             index = 0;
             results[results.length] = esc[0];
             results[results.length] = esc[1];
             results[results.length] = esc[2];
           }
-          if (util.isObject(options)) {
-            switch (options.unknown) {
-              case 'hex':
-                results[results.length] = 0x26; // &
-                results[results.length] = 0x23; // #
-                results[results.length] = 0x78; // x
-                codePoints = util.bufferToCode(UNICODEToJIS(util.stringToBuffer(util.utf8CharBytesToCodePoint(bytes).toString(16))));
-                for (j = 0; j < codePoints.length; j++) {
-                  results[results.length] = codePoints[j];
-                }
-                results[results.length] = 0x3B; // ;
-                break;
-              case 'decimal':
-                results[results.length] = 0x26; // &
-                results[results.length] = 0x23; // #
-                codePoints = util.bufferToCode(UNICODEToJIS(util.stringToBuffer(util.utf8CharBytesToCodePoint(bytes).toString())));
-                for (j = 0; j < codePoints.length; j++) {
-                  results[results.length] = codePoints[j];
-                }
-                results[results.length] = 0x3B; // ;
-                break;
-              default:
-                results[results.length] = config.UNKNOWN_CHARACTER;
-                break;
-            }
+
+          if (fallbackOption) {
+            handleFallback(results, bytes, fallbackOption);
           } else {
-            results[results.length] = config.UNKNOWN_CHARACTER;
+            results[results.length] = config.FALLBACK_CHARACTER;
           }
         } else {
           // JIS X 0212:1990
@@ -1146,11 +1051,13 @@ exports.UNICODEToUTF8 = UNICODEToUTF8;
 /**
  * UTF-8 to UTF-16 (JavaScript Unicode array)
  */
-function UTF8ToUNICODE(data) {
+function UTF8ToUNICODE(data, options) {
   var results = [];
   var i = 0;
   var len = data && data.length;
   var n, c, c2, c3, c4, code;
+  // For internal usage only
+  var ignoreSurrogatePair = options && options.ignoreSurrogatePair;
 
   while (i < len) {
     c = data[i++];
@@ -1186,7 +1093,7 @@ function UTF8ToUNICODE(data) {
               (c4 & 0x3F);
     }
 
-    if (code <= 0xFFFF) {
+    if (code <= 0xFFFF || ignoreSurrogatePair) {
       results[results.length] = code;
     } else {
       // Split in surrogate halves
@@ -1242,7 +1149,7 @@ function UNICODEToUTF16(data, options) {
       results[results.length] = utf16[i];
     }
   } else {
-    // Without BOM: Convert as BE (SHOULD).
+    // Should be interpreted as being big-endian when text has no BOM
     results = UNICODEToUTF16BE(data);
   }
 
@@ -1894,7 +1801,33 @@ function UTF16LEToSJIS(data, options) {
 }
 exports.UTF16LEToSJIS = UTF16LEToSJIS;
 
-},{"./config":1,"./encoding-detect":3,"./encoding-table":4,"./util":11}],3:[function(require,module,exports){
+/**
+ * Fallback handler when a character can't be represented
+ */
+function handleFallback(results, bytes, fallbackOption) {
+  switch (fallbackOption) {
+    case 'html-entity':
+    case 'html-entity-hex':
+      var unicode = UTF8ToUNICODE(bytes, { ignoreSurrogatePair: true })[0];
+      if (unicode) {
+        results[results.length] = 0x26; // &
+        results[results.length] = 0x23; // #
+
+        var radix = fallbackOption.slice(-3) === 'hex' ? 16 : 10;
+        if (radix === 16) {
+          results[results.length] = 0x78; // x
+        }
+
+        var entity = unicode.toString(radix);
+        for (var i = 0, len = entity.length; i < len; i++) {
+          results[results.length] = entity.charCodeAt(i);
+        }
+        results[results.length] = 0x3B; // ;
+      }
+  }
+}
+
+},{"./config":2,"./encoding-detect":4,"./encoding-table":5,"./util":12}],4:[function(require,module,exports){
 /**
  * Binary (exe, images and so, etc.)
  *
@@ -2398,22 +2331,24 @@ function isUNICODE(data) {
 }
 exports.isUNICODE = isUNICODE;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 exports.UTF8_TO_JIS_TABLE = require('./utf8-to-jis-table');
 exports.UTF8_TO_JISX0212_TABLE = require('./utf8-to-jisx0212-table');
 exports.JIS_TO_UTF8_TABLE = require('./jis-to-utf8-table');
 exports.JISX0212_TO_UTF8_TABLE = require('./jisx0212-to-utf8-table');
 
-},{"./jis-to-utf8-table":6,"./jisx0212-to-utf8-table":7,"./utf8-to-jis-table":9,"./utf8-to-jisx0212-table":10}],5:[function(require,module,exports){
+},{"./jis-to-utf8-table":7,"./jisx0212-to-utf8-table":8,"./utf8-to-jis-table":10,"./utf8-to-jisx0212-table":11}],6:[function(require,module,exports){
 var config = require('./config');
 var util = require('./util');
 var EncodingDetect = require('./encoding-detect');
 var EncodingConvert = require('./encoding-convert');
 var KanaCaseTable = require('./kana-case-table');
+var version = require('../package.json').version;
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 var Encoding = {
+  version: version,
 
   /**
    * Encoding orders
@@ -2463,7 +2398,7 @@ var Encoding = {
     var e, encoding, method;
     for (var i = 0; i < len; i++) {
       e = encodings[i];
-      encoding = config.assignEncodingName(e);
+      encoding = util.canonicalizeEncodingName(e);
       if (!encoding) {
         continue;
       }
@@ -2494,14 +2429,15 @@ var Encoding = {
    * @return {Array|TypedArray|string} The converted data
    */
   convert: function(data, to, from) {
-    var result;
-    var type;
-    var options = {};
+    var result, type, options;
 
-    if (util.isObject(to)) {
+    if (!util.isObject(to)) {
+      options = {};
+    } else {
       options = to;
       from = options.from;
       to = options.to;
+
       if (options.type) {
         type = options.type;
       }
@@ -2517,18 +2453,18 @@ var Encoding = {
     var encodingFrom;
     if (from != null && util.isString(from) &&
         from.toUpperCase() !== 'AUTO' && !~from.indexOf(',')) {
-      encodingFrom = config.assignEncodingName(from);
+      encodingFrom = util.canonicalizeEncodingName(from);
     } else {
       encodingFrom = Encoding.detect(data);
     }
 
-    var encodingTo = config.assignEncodingName(to);
+    var encodingTo = util.canonicalizeEncodingName(to);
     var method = encodingFrom + 'To' + encodingTo;
 
     if (hasOwnProperty.call(EncodingConvert, method)) {
       result = EncodingConvert[method](data, options);
     } else {
-      // Returns the raw data if the method is undefined.
+      // Returns the raw data if the method is undefined
       result = data;
     }
 
@@ -2537,9 +2473,7 @@ var Encoding = {
         return util.codeToString_fast(result);
       case 'arraybuffer':
         return util.codeToBuffer(result);
-      case 'array':
-        /* falls through */
-      default:
+      default: // array
         return util.bufferToCode(result);
     }
   },
@@ -2564,7 +2498,9 @@ var Encoding = {
     for (; i < len; i++) {
       b = data[i];
 
-      //FIXME: JavaScript UTF-16 encoding
+      // urlEncode is for an array of numbers in the range 0-255 (Uint8Array), but if an array
+      // of numbers greater than 255 is passed (Unicode code unit i.e. charCodeAt range),
+      // it will be tentatively encoded as UTF-8 using encodeURIComponent.
       if (b > 0xFF) {
         return encodeURIComponent(util.codeToString_fast(data));
       }
@@ -2996,21 +2932,22 @@ var Encoding = {
 
 module.exports = Encoding;
 
-},{"./config":1,"./encoding-convert":2,"./encoding-detect":3,"./kana-case-table":8,"./util":11}],6:[function(require,module,exports){
+},{"../package.json":1,"./config":2,"./encoding-convert":3,"./encoding-detect":4,"./kana-case-table":9,"./util":12}],7:[function(require,module,exports){
 /**
  * Encoding conversion table for JIS to UTF-8
  */
 var JIS_TO_UTF8_TABLE = null;
 module.exports = JIS_TO_UTF8_TABLE;
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /**
  * Encoding conversion table for JIS X 0212:1990 (Hojo-Kanji) to UTF-8
  */
 var JISX0212_TO_UTF8_TABLE = null;
 module.exports = JISX0212_TO_UTF8_TABLE;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
+/* eslint-disable key-spacing */
 /**
  * Katakana table
  */
@@ -3052,7 +2989,8 @@ exports.ZENKANA_TABLE = [
   0x30EB, 0x30EC, 0x30ED, 0x30EF, 0x30F3, 0x309B, 0x309C
 ];
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
+/* eslint-disable indent,key-spacing */
 /**
  * Encoding conversion table for UTF-8 to JIS
  */
@@ -4546,7 +4484,8 @@ module.exports = {
 0xE28892:0x1215D
 };
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
+/* eslint-disable indent,key-spacing */
 /**
  * Encoding conversion table for UTF-8 to JIS X 0212:1990 (Hojo-Kanji)
  */
@@ -5771,12 +5710,14 @@ module.exports = {
 0xE3809C:0x2141
 };
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var config = require('./config');
 var fromCharCode = String.fromCharCode;
 var slice = Array.prototype.slice;
 var toString = Object.prototype.toString;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
+var nativeIsArray = Array.isArray;
+var nativeObjectKeys = Object.keys;
 
 
 function isObject(x) {
@@ -5787,7 +5728,7 @@ exports.isObject = isObject;
 
 
 function isArray(x) {
-  return Array.isArray ? Array.isArray(x) : toString.call(x) === '[object Array]';
+  return nativeIsArray ? nativeIsArray(x) : toString.call(x) === '[object Array]';
 }
 exports.isArray = isArray;
 
@@ -5798,9 +5739,9 @@ function isString(x) {
 exports.isString = isString;
 
 
-function getKeys(object) {
-  if (Object.keys) {
-    return Object.keys(object);
+function objectKeys(object) {
+  if (nativeObjectKeys) {
+    return nativeObjectKeys(object);
   }
 
   var keys = [];
@@ -5812,18 +5753,17 @@ function getKeys(object) {
 
   return keys;
 }
-exports.getKeys = getKeys;
+exports.objectKeys = objectKeys;
 
 
 function createBuffer(bits, size) {
-  if (!config.HAS_TYPED) {
-    return new Array(size);
+  if (config.HAS_TYPED) {
+    switch (bits) {
+      case 8: return new Uint8Array(size);
+      case 16: return new Uint16Array(size);
+    }
   }
-
-  switch (bits) {
-    case 8: return new Uint8Array(size);
-    case 16: return new Uint16Array(size);
-  }
+  return new Array(size);
 }
 exports.createBuffer = createBuffer;
 
@@ -5856,7 +5796,7 @@ function codeToString_fast(code) {
         }
         return s;
       } catch (e) {
-        // Ignore RangeError: arguments too large
+        // Ignore the RangeError "arguments too large"
         config.APPLY_BUFFER_SIZE_OK = false;
       }
     }
@@ -5934,12 +5874,12 @@ exports.stringToCode = stringToCode;
 
 function codeToBuffer(code) {
   if (config.HAS_TYPED) {
-    // Use Uint16Array for Unicode codepoint.
+    // Unicode code point (charCodeAt range) values have a range of 0-0xFFFF, so use Uint16Array
     return new Uint16Array(code);
-  } else {
-    if (isArray(code)) {
-      return code;
-    }
+  }
+
+  if (isArray(code)) {
+    return code;
   }
 
   var length = code && code.length;
@@ -5963,20 +5903,41 @@ function bufferToCode(buffer) {
 }
 exports.bufferToCode = bufferToCode;
 
-function utf8CharBytesToCodePoint(charBytes) {
-  var i = 1;
-  var d = [0x0, 0xC0, 0xE0, 0xF0];
-  var codePoint = charBytes[0] - d[charBytes.length-1];
+/**
+ * Canonicalize the passed encoding name to the internal encoding name
+ */
+function canonicalizeEncodingName(target) {
+  var name = '';
+  var expect = ('' + target).toUpperCase().replace(/[^A-Z0-9]+/g, '');
+  var aliasNames = objectKeys(config.EncodingAliases);
+  var len = aliasNames.length;
+  var hit = 0;
+  var encoding, encodingLen, j;
 
-  for (; i < charBytes.length; i++) {
-    codePoint <<= 6;
-    codePoint += charBytes[i] - 0x80;
+  for (var i = 0; i < len; i++) {
+    encoding = aliasNames[i];
+    if (encoding === expect) {
+      name = encoding;
+      break;
+    }
+
+    encodingLen = encoding.length;
+    for (j = hit; j < encodingLen; j++) {
+      if (encoding.slice(0, j) === expect.slice(0, j) ||
+          encoding.slice(-j) === expect.slice(-j)) {
+        name = encoding;
+        hit = j;
+      }
+    }
   }
 
-  return codePoint;
-}
-exports.utf8CharBytesToCodePoint = utf8CharBytesToCodePoint;
+  if (hasOwnProperty.call(config.EncodingAliases, name)) {
+    return config.EncodingAliases[name];
+  }
 
+  return name;
+}
+exports.canonicalizeEncodingName = canonicalizeEncodingName;
 
 // Base64
 /* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
@@ -5985,13 +5946,13 @@ exports.utf8CharBytesToCodePoint = utf8CharBytesToCodePoint;
  * This library is free.  You can redistribute it and/or modify it.
  */
 // -- Masanao Izumo Copyright 1999 "free"
-// Modified to add support for Binary Array for Encoding.js
+// Added binary array support for the Encoding.js
 
 var base64EncodeChars = [
   65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,
   78,  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,
   97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109,
- 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122,
+  110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122,
   48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  43,  47
 ];
 
@@ -6112,6 +6073,5 @@ function base64decode(str) {
 }
 exports.base64decode = base64decode;
 
-
-},{"./config":1}]},{},[5])(5)
+},{"./config":2}]},{},[6])(6)
 });

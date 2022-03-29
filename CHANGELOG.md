@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased](https://github.com/polygonplanet/encoding.js/compare/1.0.30...master)
+## [2.0.0](https://github.com/polygonplanet/encoding.js/compare/1.0.30...2.0.0) (2022-03-29)
 
 ### Added
 
