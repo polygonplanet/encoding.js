@@ -42,6 +42,8 @@
   </p>
   <p>
     適当なファイルを選択してみてください。
+    <br>
+    ※ファイルはサーバー等にアップロードされません (このページ内JavaScriptのみで実行されます)
   </p>
 
   <input type="file" id="file">
@@ -51,18 +53,18 @@
   <fieldset>
     <legend>ファイル内容そのまま表示:</legend>
     <div>
-      <textarea id="raw-result" rows="5" cols="80"></textarea>
+      <textarea id="raw-result" rows="7" cols="80"></textarea>
     </div>
   </fieldset>
 
   <fieldset>
     <legend>encoding.js で文字コードを変換して表示:</legend>
     <div>
-      <textarea id="result" rows="5" cols="80"></textarea>
+      <textarea id="result" rows="7" cols="80"></textarea>
     </div>
   </fieldset>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/1.0.29/encoding.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/2.0.0/encoding.min.js"></script>
   <script>
   function onFileSelect(event) {
     var file = event.target.files[0];

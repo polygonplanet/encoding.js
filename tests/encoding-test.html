@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>Converts character encoding in JavaScript - encoding.js</title>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script type="text/javascript" src="js/encoding.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/2.0.0/encoding.min.js"></script>
 <script>
 (function() {
   'use strict';
@@ -12,7 +12,6 @@
   var ENCODINGS = ['SJIS', 'JIS', 'EUCJP', 'UTF8'];
 
   $(document).ready(doit);
-
 
   function doit() {
     var run = document.getElementById('run');
@@ -22,7 +21,6 @@
       convert();
     }, false);
   }
-
 
   function convert() {
     var d = $.Deferred();
@@ -66,7 +64,6 @@
     d.resolve();
   }
 
-
   function readFile(url) {
     var d = $.Deferred();
     var req = new XMLHttpRequest();
@@ -98,7 +95,6 @@
     return d;
   }
 
-
   function appendTitle(title, url) {
     var a = document.createElement('a');
     a.href = url;
@@ -112,7 +108,6 @@
     var result = document.getElementById('result');
     result.appendChild(h3);
   }
-
 
   function appendText(title, text) {
     var div = document.createElement('div');
