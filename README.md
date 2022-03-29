@@ -7,7 +7,37 @@ encoding.js
 
 Convert or detect character encoding in JavaScript.
 
-**[README(Japanese)](https://github.com/polygonplanet/encoding.js/blob/master/README_ja.md)**
+[**README (Japanese)**](README_ja.md)
+
+## Table of contents
+
+- [Features](#features)
+  * [How to use character encoding in strings?](#how-to-use-character-encoding-in-strings)
+- [Installation](#installation)
+  * [npm](#npm)
+    + [TypeScript](#typescript)
+  * [browser (standalone)](#browser-standalone)
+  * [CDN](#cdn)
+- [Supported encodings](#supported-encodings)
+  * [About `UNICODE`](#about-unicode)
+- [Example usage](#example-usage)
+- [Demo](#demo)
+- [API](#api)
+  * [Detect character encoding (detect)](#detect-character-encoding-detect)
+  * [Convert character encoding (convert)](#convert-character-encoding-convert)
+    + [Specify conversion options to the argument `to_encoding` as an object](#specify-conversion-options-to-the-argument-to_encoding-as-an-object)
+    + [Specify the return type by the `type` option](#specify-the-return-type-by-the-type-option)
+    + [Replace to HTML entity (Numeric character reference) when cannot be represented](#replace-to-html-entity-numeric-character-reference-when-cannot-be-represented)
+    + [Specify BOM in UTF-16](#specify-bom-in-utf-16)
+  * [URL Encode/Decode](#url-encodedecode)
+  * [Base64 Encode/Decode](#base64-encodedecode)
+  * [Code array to string conversion (codeToString/stringToCode)](#code-array-to-string-conversion-codetostringstringtocode)
+  * [Japanese Zenkaku/Hankaku conversion](#japanese-zenkakuhankaku-conversion)
+- [Other examples](#other-examples)
+  * [Example using the XMLHttpRequest and Typed arrays (Uint8Array)](#example-using-the-xmlhttprequest-and-typed-arrays-uint8array)
+  * [Convert encoding for file using the File APIs](#convert-encoding-for-file-using-the-file-apis)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
@@ -56,7 +86,7 @@ const Encoding = require('encoding-japanese');
 TypeScript type definitions for encoding.js are available at [@types/encoding-japanese](https://www.npmjs.com/package/@types/encoding-japanese) (thanks [@rhysd](https://github.com/rhysd)).
 
 ```bash
-$ npm install --save @types/encoding-japanese
+$ npm install --save-dev @types/encoding-japanese
 ```
 
 ### browser (standalone)
@@ -85,7 +115,7 @@ You can use the encoding.js (package name: `encoding-japanese`) CDN on [cdnjs.co
 |Value in encoding.js|[`detect()`](#detect-character-encoding-detect)|[`convert()`](#convert-character-encoding-convert)|MIME Name (Note)|
 |:------:|:----:|:-----:|:---|
 |ASCII   |✓     |      |US-ASCII (Code point range: `0-127`)|
-|BINARY  |✓     |      |(Binary strings, Code point range: `0-255`)|
+|BINARY  |✓     |      |(Binary strings. Code point range: `0-255`)|
 |EUCJP   |✓     |✓     |EUC-JP|
 |JIS     |✓     |✓     |ISO-2022-JP|
 |SJIS    |✓     |✓     |Shift_JIS|
@@ -171,14 +201,48 @@ console.log(Encoding.codeToString(unicodeArray));
 
 ## API
 
+* [detect](#detect-character-encoding-detect)
+* [convert](#convert-character-encoding-convert)
+* [urlEncode / urlDecode](#url-encodedecode)
+* [base64Encode / base64Decode](#base64-encodedecode)
+* [codeToString / stringToCode](#code-array-to-string-conversion-codetostringstringtocode)
+* [Japanese Zenkaku / Hankaku conversion](#japanese-zenkakuhankaku-conversion)
+
+### Detect character encoding (detect)
+
+* {_string|boolean_} Encoding.**detect** ( data [, encodings ] )  
+  Detect character encoding.  
+  @param {_Array|TypedArray|string_} _data_ Target data  
+  @param {_string|Array_} [_encodings_] (Optional) The encoding name that to specify the detection (value of [Supported encodings](#supported-encodings))  
+  @return {_string|boolean_} Return the detected character encoding, or false.
+
+The return value is one of the above "[Supported encodings](#supported-encodings)" or false if it cannot be detected.
+
+```javascript
+var sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
+var detectedEncoding = Encoding.detect(sjisArray);
+console.log('Encoding is ' + detectedEncoding); // 'Encoding is SJIS'
+```
+
+Example of specifying the character encoding to be detected. 
+If the second argument `encodings` is specified, returns true when it is the specified character encoding, false otherwise.
+
+```javascript
+var sjisArray = [130, 168, 130, 205, 130, 230];
+var isSJIS = Encoding.detect(sjisArray, 'SJIS');
+if (isSJIS) {
+  console.log('Encoding is SJIS');
+}
+```
+
 ### Convert character encoding (convert)
 
-* {_Array.&lt;number&gt;|string_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
+* {_Array|TypedArray|string_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
   Converts character encoding.  
-  @param {_Array.&lt;number&gt;|TypedArray|Buffer|string_} _data_ The target data.  
-  @param {_(string|Object)_} _to\_encoding_ The encoding name of conversion destination, or option to convert as an object.  
-  @param {_(string|Array.&lt;string&gt;)=_} [_from\_encoding_] The encoding name of the source or 'AUTO'.  
-  @return {_Array|string_}  Return the converted array/string.
+  @param {_Array|TypedArray|Buffer|string_} _data_ The target data.  
+  @param {_string|Object_} _to\_encoding_ The encoding name of conversion destination, or option to convert as an object.  
+  @param {_string|Array_} [_from\_encoding_] (Optional) The encoding name of the source or 'AUTO'.  
+  @return {_Array|TypedArray|string_}  Return the converted array/string.
 
 Example of converting a character code array to Shift_JIS from UTF-8.
 
@@ -206,7 +270,7 @@ var sjisArray = Encoding.convert(utf8Array, 'SJIS');
 sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 ```
 
-#### Specify the argument `to_encoding` as an object
+#### Specify conversion options to the argument `to_encoding` as an object
 
 You can specify the second argument `to_encoding` as an object for improving readability.
 
@@ -217,23 +281,26 @@ var sjisArray = Encoding.convert(utf8Array, {
 });
 ```
 
-#### Specify the string argument and 'type' option
+#### Specify the return type by the `type` option
+
+`convert` returns an array by default, but you can change the return type by specifying the `type` option.
+Also, if the argument `data` is passed as a string and the` type` option is not specified, then `type` ='string' is assumed (returns as a string).
 
 ```javascript
-var utf8String = 'ã\u0081\u0093ã\u0082\u0093ã\u0081«ã\u0081¡ã\u0081¯';
-var unicodeString = Encoding.convert(utf8String, {
+var sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
+var unicodeString = Encoding.convert(sjisArray, {
   to: 'UNICODE',
-  from: 'UTF8',
-  type: 'string' // Specify 'string' type. (Return as string)
+  from: 'SJIS',
+  type: 'string' // Specify 'string' to return as string
 });
-console.log(unicodeString); // こんにちは
+console.log(unicodeString); // 'おはよ'
 ```
 
 The following `type` options are supported
 
 * **string** : Return as a string
-* **arraybuffer** : Return as an ArrayBuffer
-* **array** :  Return as an Array (default)
+* **arraybuffer** : Return as an ArrayBuffer (`Uint16Array`)
+* **array** :  Return as an Array (*default*)
 
 #### Replace to HTML entity (Numeric character reference) when cannot be represented
 
@@ -310,122 +377,83 @@ var utf16beArray = Encoding.convert(utf8Array, {
 });
 ```
 
-### Detect character encoding (detect)
-
-* {_string|boolean_} Encoding.**detect** ( data [, encodings ] )  
-  Detect character encoding.  
-  @param {_Array.&lt;number&gt;|TypedArray|string_} _data_ Target data  
-  @param {_(string|Array.&lt;string&gt;)_} [_encodings_] The encoding name that to specify the detection.  
-  @return {_string|boolean_} Return the detected character encoding, or false.
-
-The return value is one of the above "[**Supported encodings**](#supported-encodings)" or false if it cannot be detected.
-
-```javascript
-// Detect character encoding automatically. (AUTO detect).
-var detected = Encoding.detect(utf8Array);
-if (detected === 'UTF8') {
-  console.log('Encoding is UTF-8');
-}
-
-// Detect character encoding by specific encoding name.
-var isSJIS = Encoding.detect(sjisArray, 'SJIS');
-if (isSJIS) {
-  console.log('Encoding is SJIS');
-}
-```
-
 ### URL Encode/Decode
 
 * {_string_} Encoding.**urlEncode** ( data )  
   URL(percent) encode.  
-  @param {_Array.&lt;number&gt;_|_TypedArray_} _data_ Target data.  
+  @param {_Array_|_TypedArray_} _data_ Target data.  
   @return {_string_}  Return the encoded string.
 
-* {_Array.&lt;number&gt;_} Encoding.**urlDecode** ( string )  
+* {_Array_} Encoding.**urlDecode** ( string )  
   URL(percent) decode.  
   @param {_string_} _string_ Target data.  
-  @return {_Array.&lt;number&gt;_} Return the decoded array.
+  @return {_Array_} Return the decoded array.
 
 ```javascript
-// URL encode to an array that has character code.
-var sjisArray = [
-  130, 177, 130, 241, 130, 201, 130, 191, 130, 205, 129,
-  65, 130, 217, 130, 176, 129, 153, 130, 210, 130, 230
-];
-
+var sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
 var encoded = Encoding.urlEncode(sjisArray);
-console.log(encoded);
-// output:
-// '%82%B1%82%F1%82%C9%82%BF%82%CD%81A%82%D9%82%B0%81%99%82%D2%82%E6'
+console.log(encoded); // '%82%B1%82%F1%82%C9%82%BF%82%CD'
 
 var decoded = Encoding.urlDecode(encoded);
-console.log(decoded);
-// output: [
-//   130, 177, 130, 241, 130, 201, 130, 191, 130, 205, 129,
-//    65, 130, 217, 130, 176, 129, 153, 130, 210, 130, 230
-// ]
+console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 ```
 
 ### Base64 Encode/Decode
 
 * {_string_} Encoding.**base64Encode** ( data )  
   Base64 encode.  
-  @param {_Array.&lt;number&gt;_|_TypedArray_} _data_ Target data.  
+  @param {_Array_|_TypedArray_} _data_ Target data.  
   @return {_string_}  Return the Base64 encoded string.
 
-* {_Array.&lt;number&gt;_} Encoding.**base64Decode** ( string )  
+* {_Array_} Encoding.**base64Decode** ( string )  
   Base64 decode.  
   @param {_string_} _string_ Target data.  
-  @return {_Array.&lt;number&gt;_} Return the Base64 decoded array.
-
+  @return {_Array_} Return the Base64 decoded array.
 
 ```javascript
-var sjisArray = [
-  130, 177, 130, 241, 130, 201, 130, 191, 130, 205
-];
+var sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
 var encoded = Encoding.base64Encode(sjisArray);
 console.log(encoded); // 'grGC8YLJgr+CzQ=='
 
 var decoded = Encoding.base64Decode(encoded);
-console.log(decoded);
-// [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
+console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 ```
 
 ### Code array to string conversion (codeToString/stringToCode)
 
-* {_string_} Encoding.**codeToString** ( {_Array.&lt;number&gt;_|_TypedArray_} data )  
+* {_string_} Encoding.**codeToString** ( {_Array_|_TypedArray_} data )  
   Joins a character code array to string.
 
-* {_Array.&lt;number&gt;_} Encoding.**stringToCode** ( {_string_} string )  
+* {_Array_} Encoding.**stringToCode** ( {_string_} string )  
   Splits string to an array of character codes.
 
 ### Japanese Zenkaku/Hankaku conversion
 
-* {_Array.&lt;number&gt;|string_} Encoding.**toHankakuCase** ( {_Array.&lt;number&gt;|string_} data )  
+* {_Array|string_} Encoding.**toHankakuCase** ( {_Array|string_} data )  
   Convert the ascii symbols and alphanumeric characters to the zenkaku symbols and alphanumeric characters.
 
-* {_Array.&lt;number&gt;|string_} Encoding.**toZenkakuCase** ( {_Array.&lt;number&gt;|string_} data )  
+* {_Array|string_} Encoding.**toZenkakuCase** ( {_Array|string_} data )  
   Convert to the zenkaku symbols and alphanumeric characters from the ascii symbols and alphanumeric characters.
 
-* {_Array.&lt;number&gt;|string_} Encoding.**toHiraganaCase** ( {_Array.&lt;number&gt;|string_} data )  
+* {_Array|string_} Encoding.**toHiraganaCase** ( {_Array|string_} data )  
   Convert to the zenkaku hiragana from the zenkaku katakana.
 
-* {_Array.&lt;number&gt;|string_} Encoding.**toKatakanaCase** ( {_Array.&lt;number&gt;|string_} data )  
+* {_Array|string_} Encoding.**toKatakanaCase** ( {_Array|string_} data )  
   Convert to the zenkaku katakana from the zenkaku hiragana.
 
-* {_Array.&lt;number&gt;|string_} Encoding.**toHankanaCase** ( {_Array.&lt;number&gt;|string_} data )  
+* {_Array|string_} Encoding.**toHankanaCase** ( {_Array|string_} data )  
   Convert to the hankaku katakana from the zenkaku katakana.
 
-* {_Array.&lt;number&gt;|string_} Encoding.**toZenkanaCase** ( {_Array.&lt;number&gt;|string_} data )  
+* {_Array|string_} Encoding.**toZenkanaCase** ( {_Array|string_} data )  
   Convert to the zenkaku katakana from the hankaku katakana.
 
-* {_Array.&lt;number&gt;|string_} Encoding.**toHankakuSpace** ({_Array.&lt;number&gt;|string_} data )  
+* {_Array|string_} Encoding.**toHankakuSpace** ({_Array|string_} data )  
   Convert the em space(U+3000) to the single space(U+0020).
 
-* {_Array.&lt;number&gt;|string_} Encoding.**toZenkakuSpace** ( {_Array.&lt;number&gt;|string_} data )  
+* {_Array|string_} Encoding.**toZenkakuSpace** ( {_Array|string_} data )  
   Convert the single space(U+0020) to the em space(U+3000).
 
-## Example
+## Other examples
 
 ### Example using the XMLHttpRequest and Typed arrays (Uint8Array)
 
@@ -495,44 +523,6 @@ document.getElementById('file').addEventListener('change', onFileSelect, false);
 ```
 
 [**Demo**](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
-
-### Example of the character encoding conversion
-
-```javascript
-var eucjpArray = [
-  164, 179, 164, 243, 164, 203, 164, 193, 164, 207, 161,
-  162, 164, 219, 164, 178, 161, 249, 164, 212, 164, 232
-];
-
-var utf8Array = Encoding.convert(eucjpArray, {
-  to: 'UTF8',
-  from: 'EUCJP'
-});
-console.log( utf8Array );
-// output: [
-//   227, 129, 147, 227, 130, 147, 227, 129, 171,
-//   227, 129, 161, 227, 129, 175, 227, 128, 129,
-//   227, 129, 187, 227, 129, 146, 226, 152, 134,
-//   227, 129, 180, 227, 130, 136
-// ]
-//   => 'こんにちは、ほげ☆ぴよ'
-```
-
-### Example of converting a character code by automatic detection (Auto detect)
-
-```javascript
-var sjisArray = [
-  130, 177, 130, 241, 130, 201, 130, 191, 130, 205, 129,
-   65, 130, 217, 130, 176, 129, 153, 130, 210, 130, 230
-];
-var unicodeArray = Encoding.convert(sjisArray, {
-  to: 'UNICODE',
-  from: 'AUTO'
-});
-// codeToString is a utility method that Joins a character code array to string.
-console.log( Encoding.codeToString(unicodeArray) );
-// output: 'こんにちは、ほげ☆ぴよ'
-```
 
 ## Contributing
 
