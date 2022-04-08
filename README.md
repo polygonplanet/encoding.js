@@ -5,7 +5,7 @@ encoding.js
 [![Build Status](https://app.travis-ci.com/polygonplanet/encoding.js.svg?branch=master)](https://app.travis-ci.com/polygonplanet/encoding.js)
 [![GitHub License](https://img.shields.io/github/license/polygonplanet/encoding.js.svg)](https://github.com/polygonplanet/encoding.js/blob/master/LICENSE)
 
-Convert or detect character encoding in JavaScript.
+Convert and detect character encoding in JavaScript.
 
 [**README (Japanese)**](README_ja.md)
 
@@ -115,7 +115,7 @@ You can use the encoding.js (package name: `encoding-japanese`) CDN on [cdnjs.co
 |Value in encoding.js|[`detect()`](#detect-character-encoding-detect)|[`convert()`](#convert-character-encoding-convert)|MIME Name (Note)|
 |:------:|:----:|:-----:|:---|
 |ASCII   |✓     |      |US-ASCII (Code point range: `0-127`)|
-|BINARY  |✓     |      |(Binary strings. Code point range: `0-255`)|
+|BINARY  |✓     |      |(Binary string. Code point range: `0-255`)|
 |EUCJP   |✓     |✓     |EUC-JP|
 |JIS     |✓     |✓     |ISO-2022-JP|
 |SJIS    |✓     |✓     |Shift_JIS|
@@ -124,18 +124,18 @@ You can use the encoding.js (package name: `encoding-japanese`) CDN on [cdnjs.co
 |UTF16BE |✓     |✓     |UTF-16BE (big-endian)|
 |UTF16LE |✓     |✓     |UTF-16LE (little-endian)|
 |UTF32   |✓     |      |UTF-32|
-|UNICODE |✓     |✓     |(JavaScript's internal encoding. *See [About `UNICODE`](#about-unicode) below) |
+|UNICODE |✓     |✓     |(JavaScript string. *See [About `UNICODE`](#about-unicode) below) |
 
 ### About `UNICODE`
 
-In encoding.js, the internal character encoding that can be handled in JavaScript is defined as `UNICODE`.
+In encoding.js, the internal character encoding that can be handled in JavaScript (JavaScript string) is defined as `UNICODE`.
 
 As mentioned above ([Features](#features)), JavaScript strings are internally encoded in UTF-16 code units, and other character encodings cannot be handled properly.
 Therefore, to convert to a character encoding properly represented in JavaScript, specify `UNICODE`.
 
 (*Even if the HTML file encoding is UTF-8, specify `UNICODE` instead of `UTF8` when handling it in JavaScript.)
 
-The value of each character code array returned from `Encoding.convert` is a number of 0-255 if you specify a character code other than `UNICODE` such as `UTF8` or `SJIS`,
+The value of each character code array returned from [`Encoding.convert`]((#convert-character-encoding-convert) is a number of 0-255 if you specify a character code other than `UNICODE` such as `UTF8` or `SJIS`,
 or a number of `0-65535` (range of `String.prototype.charCodeAt()` values = Code Unit) if you specify `UNICODE`.
 
 ## Example usage
@@ -194,8 +194,8 @@ console.log(Encoding.codeToString(unicodeArray));
 
 ## Demo
 
-* [Test for character encoding conversion (Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
-* [Detect and Convert encoding from file (Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
+* [Test for character encoding conversion (Demo)](https://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+* [Detect and Convert encoding from file (Demo)](https://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ----
 
@@ -225,7 +225,7 @@ console.log('Encoding is ' + detectedEncoding); // 'Encoding is SJIS'
 ```
 
 Example of specifying the character encoding to be detected. 
-If the second argument `encodings` is specified, returns true when it is the specified character encoding, false otherwise.
+If the second argument `encodings` is specified, returns `true` when it is the specified character encoding, `false` otherwise.
 
 ```javascript
 var sjisArray = [130, 168, 130, 205, 130, 230];
@@ -272,9 +272,11 @@ sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 
 #### Specify conversion options to the argument `to_encoding` as an object
 
-You can specify the second argument `to_encoding` as an object for improving readability.
+You can pass the second argument `to` as an object for improving readability.
+Also, the following options such as `type`, `fallback`, and `bom` need to be specified with an object.
 
 ```javascript
+var utf8Array = [227, 129, 130];
 var sjisArray = Encoding.convert(utf8Array, {
   to: 'SJIS', // to_encoding
   from: 'UTF8' // from_encoding
@@ -296,11 +298,11 @@ var unicodeString = Encoding.convert(sjisArray, {
 console.log(unicodeString); // 'おはよ'
 ```
 
-The following `type` options are supported
+The following `type` options are supported.
 
-* **string** : Return as a string
-* **arraybuffer** : Return as an ArrayBuffer (`Uint16Array`)
-* **array** :  Return as an Array (*default*)
+* **string** : Return as a string.
+* **arraybuffer** : Return as an ArrayBuffer (`Uint16Array`).
+* **array** :  Return as an Array. (*default*)
 
 #### Replace to HTML entity (Numeric character reference) when cannot be represented
 
@@ -308,10 +310,10 @@ Characters that cannot be represented in the target character set are replaced w
 
 The `fallback` option supports the following values.
 
-* **html-entity** : Replace to HTML entity (decimal HTML numeric character reference)
-* **html-entity-hex** : Replace to HTML entity (hexadecimal HTML numeric character reference)
+* **html-entity** : Replace to HTML entity (decimal HTML numeric character reference).
+* **html-entity-hex** : Replace to HTML entity (hexadecimal HTML numeric character reference).
 
-Example of specifying `{ fallback: 'html-entity' }` option
+Example of specifying `{ fallback: 'html-entity' }` option.
 
 ```javascript
 var unicodeArray = Encoding.stringToCode('寿司🍣ビール🍺');
@@ -522,7 +524,7 @@ document.getElementById('file').addEventListener('change', onFileSelect, false);
 </script>
 ```
 
-[**Demo**](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
+[**Demo**](https://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ## Contributing
 

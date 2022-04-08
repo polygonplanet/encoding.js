@@ -5,7 +5,7 @@ encoding.js
 [![Build Status](https://app.travis-ci.com/polygonplanet/encoding.js.svg?branch=master)](https://app.travis-ci.com/polygonplanet/encoding.js)
 [![GitHub License](https://img.shields.io/github/license/polygonplanet/encoding.js.svg)](https://github.com/polygonplanet/encoding.js/blob/master/LICENSE)
 
-JavaScript で文字コードを変換または判定します。
+JavaScript で文字コードの変換や判定をします。
 
 [**README (English)**](README.md)
 
@@ -45,13 +45,13 @@ encoding.js は、文字コードの変換や判定をする JavaScript ライ�
 Shift_JIS や EUC-JP、JIS など日本語の文字コードや、 UTF-8、UTF-16 などの Unicode に対応しています。
 
 JavaScript の文字列は内部で UTF-16 コードユニットとして符号化されるため、文字列のままでは他の文字コードを正しく扱えませんが ([参照: ECMAScript® 2019 Language Specification - 6.1.4 The String Type](https://www.ecma-international.org/ecma-262/10.0/index.html#sec-ecmascript-language-types-string-type))、encoding.js では文字列ではなく配列として扱い変換を実現しています。  
-各文字コードは、例えば `[130, 160]` (UTF-8の「あ」) のような文字コード値を持つ数値の配列として扱います。
+各文字コードは、例えば `[130, 160]` (UTF-8の「あ」) などの文字コード値を持つ数値の配列として扱います。
 
 また、encoding.js の各メソッドに渡す文字コードの配列は、`Uint8Array` などの TypedArray や Node.js の `Buffer` でも使えます。
 
 ### 各文字コードを文字列で扱うには？
 
-文字コードの数値配列から文字列には [`Encoding.codeToString`](#配列から文字列の相互変換-codetostringstringtocode) などのメソッドで変換できますが、上記のような JavaScript の特徴があるため文字列化してしまうと文字コードによっては正しく扱えません。
+文字コードの数値配列から文字列には [`Encoding.codeToString`](#配列から文字列の相互変換-codetostringstringtocode) などのメソッドで変換できますが、JavaScript は上記の特徴があるため文字列化してしまうと文字コードによっては正しく扱えません。
 
 そのため配列でなく文字列で扱いたい場合は、 [`Encoding.urlEncode`](#url-encodedecode) と [`Encoding.urlDecode`](#url-encodedecode) を通して `'%82%A0'` のようなパーセントでエンコードされた文字列に変換すると、他のリソースに受け渡しが可能です。
 または、[`Encoding.base64Encode`](#base64-encodedecode) と [`Encoding.base64Decode`](#base64-encodedecode) でも同様な方法で文字列として受け渡しができます。
@@ -121,14 +121,14 @@ npm からインストール、または[リリース一覧](https://github.com/
 |UTF16BE |✓     |✓     |UTF-16BE (big-endian)|
 |UTF16LE |✓     |✓     |UTF-16LE (little-endian)|
 |UTF32   |✓     |      |UTF-32|
-|UNICODE |✓     |✓     |(JavaScriptで扱える文字コード。※以下の [`UNICODE` について](#unicode-について) 参照) |
+|UNICODE |✓     |✓     |(JavaScript の文字列。※以下の [`UNICODE` について](#unicode-について) 参照) |
 
 ### `UNICODE` について
 
-encoding.js では JavaScript で扱える内部文字コードのことを `UNICODE` と定義しています。
+encoding.js では JavaScript で扱える内部文字コード (JavaScript の文字列) のことを `UNICODE` と定義しています。
 
 [上記 (特徴)](#特徴) のように、JavaScript の文字列は内部的に UTF-16 コードユニットとして符号化されるため、他の文字コードは正しく扱えません。
-そのため、[Encoding.convert](#文字コードを変換する-convert) によって JavaScript で扱える文字コード配列に変換するには `UNICODE` を指定する必要があります。
+そのため、[`Encoding.convert`](#文字コードを変換する-convert) によって JavaScript で扱える文字コード配列に変換するには `UNICODE` を指定する必要があります。
 (※仮にHTMLページが UTF-8 だったとしても JavaScript で扱う場合は `UTF8` ではなく `UNICODE` を指定します)
 
 `Encoding.convert` から返される各文字コード配列の値は `UTF8` や `SJIS` などの `UNICODE` 以外を指定した場合は `0-255` までの整数になりますが、 `UNICODE` を指定した場合 `0-65535` までの整数 (`String.prototype.charCodeAt()` の値の範囲 = Code Unit) になります。
@@ -189,8 +189,8 @@ console.log(Encoding.codeToString(unicodeArray));
 
 ## Demo
 
-* [文字コード変換テスト(Demo)](http://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
-* [ファイルから文字コードの判定・変換(Demo)](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
+* [文字コード変換テスト(Demo)](https://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+* [ファイルから文字コードの判定・変換(Demo)](https://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ----
 
@@ -239,7 +239,7 @@ if (isSJIS) {
   @param {_string|Array_} [_from\_encoding_] (省略可) 変換元の文字コード (省略または `AUTO` を指定すると自動判定)  
   @return {_Array|TypedArray|string_}  変換した文字コードの数値配列、または(文字列を渡した場合)文字列が返ります
 
-UTF-8 の文字コード配列を Shift_JIS に変換する例
+UTF-8 の文字コード配列を Shift_JIS に変換する
 
 ```javascript
 var utf8Array = [227, 129, 130]; // UTF-8 の「あ」
@@ -267,14 +267,16 @@ sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 
 #### 引数 `to` にオブジェクトで変換オプションを指定する
 
+第二引数 `to` に変換オプションとしてオブジェクトを渡すことで、わかりやすく記述することができます。
+また、下記の `type`、 `fallback`、 `bom` などのオプションを指定する際は、オブジェクトでの指定が必要になります。
+
 ```javascript
+var utf8Array = [227, 129, 130];
 var sjisArray = Encoding.convert(utf8Array, {
   to: 'SJIS', // to_encoding
   from: 'UTF8' // from_encoding
 });
 ```
-
-第二引数にオブジェクトで渡すことで可読性が上がります
 
 #### `type` オプションで戻り値の型を指定する
 
@@ -293,9 +295,9 @@ console.log(unicodeString); // 'おはよ'
 
 以下の `type` オプションが指定できます。
 
-* **string** : 文字列として返ります
-* **arraybuffer** : ArrayBuffer (`Uint16Array`) として返ります
-* **array** : 配列として返ります (デフォルト)
+* **string** : 文字列として返ります。
+* **arraybuffer** : ArrayBuffer (`Uint16Array`) として返ります。
+* **array** : 配列として返ります。 (デフォルト)
 
 #### 変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える
 
@@ -521,7 +523,7 @@ document.getElementById('file').addEventListener('change', onFileSelect, false);
 </script>
 ```
 
-[**この例のデモ**](http://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
+[**この例のデモ**](https://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ## Contributing
 
