@@ -54,11 +54,11 @@
   "devDependencies": {
     "bannerify": "^1.0.1",
     "browserify": "^17.0.0",
-    "eslint": "^8.12.0",
-    "mocha": "^9.2.2",
+    "eslint": "^8.42.0",
+    "mocha": "^10.2.0",
     "package-json-versionify": "^1.0.4",
     "power-assert": "^1.6.1",
-    "uglify-js": "^3.15.3",
+    "uglify-js": "^3.17.4",
     "uglifyify": "^5.0.2",
     "watchify": "^4.0.0"
   },
