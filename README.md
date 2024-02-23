@@ -12,7 +12,7 @@ Convert and detect character encoding in JavaScript.
 ## Table of contents
 
 - [Features](#features)
-  * [How to use character encoding in strings?](#how-to-use-character-encoding-in-strings)
+  * [How to Use Character Encoding in Strings?](#how-to-use-character-encoding-in-strings)
 - [Installation](#installation)
   * [npm](#npm)
     + [TypeScript](#typescript)
@@ -41,23 +41,27 @@ Convert and detect character encoding in JavaScript.
 
 ## Features
 
-encoding.js is a JavaScript library for converting and detecting character encodings
-that support Japanese character encodings such as `Shift_JIS`, `EUC-JP`, `JIS`, and `Unicode` such as `UTF-8` and `UTF-16`.
+encoding.js is a JavaScript library for converting and detecting character encodings,
+supporting both Japanese character encodings (`Shift_JIS`, `EUC-JP`, `ISO-2022-JP`) and Unicode formats (`UTF-8`, `UTF-16`).
 
-Since JavaScript string values are internally encoded as UTF-16 code units ([ref: ECMAScript® 2019 Language Specification - 6.1.4 The String Type](https://www.ecma-international.org/ecma-262/10.0/index.html#sec-ecmascript-language-types-string-type)),
-they cannot properly handle other character encodings as they are, but encoding.js enables conversion by handling them as arrays instead of strings.
+Since JavaScript string values are internally encoded as UTF-16 code units
+([ref: ECMAScript® 2019 Language Specification - 6.1.4 The String Type](https://www.ecma-international.org/ecma-262/10.0/index.html#sec-ecmascript-language-types-string-type)),
+they cannot directly handle other character encodings as strings. However, encoding.js overcomes this limitation by treating these encodings as arrays instead of strings,
+enabling the conversion between different character sets.
 
-Each character encoding is handled as an array of numbers with character code values, for example `[130, 160]` ("あ" in UTF-8).
+Each character encoding is represented as an array of numbers corresponding to character code values, for example, `[130, 160]` represents "あ" in UTF-8.
 
-The array of character codes passed to each method of encoding.js can also be used with TypedArray such as `Uint8Array`, and `Buffer` in Node.js.
+The array of character codes used in its methods can also be utilized with TypedArray objects, such as `Uint8Array`, or with `Buffer` in Node.js.
 
-### How to use character encoding in strings?
+### How to Use Character Encoding in Strings?
 
-Numeric arrays of character codes can be converted to strings with methods such as [`Encoding.codeToString`](#code-array-to-string-conversion-codetostringstringtocode) ,
-but because of the above JavaScript specifications, some character encodings cannot be handled properly when converted to strings.
+Numeric arrays of character codes can be converted to strings using methods such as [`Encoding.codeToString`](#code-array-to-string-conversion-codetostringstringtocode).
+However, due to the JavaScript specifications mentioned above, some character encodings may not be handled properly when converted directly to strings.
 
-So if you want to use strings instead of arrays, convert it to percent-encoded strings like `'%82%A0'` by using [`Encoding.urlEncode`](#url-encodedecode) and [`Encoding.urlDecode`](#url-encodedecode) to passed to other resources.
-Or, [`Encoding.base64Encode`](#base64-encodedecode) and [`Encoding.base64Decode`](#base64-encodedecode) can be passed as strings in the same way.
+If you prefer to use strings instead of numeric arrays, you can convert them to percent-encoded strings,
+such as `'%82%A0'`, using [`Encoding.urlEncode`](#url-encodedecode) and [`Encoding.urlDecode`](#url-encodedecode) for passing to other resources.
+Similarly, [`Encoding.base64Encode`](#base64-encodedecode) and [`Encoding.base64Decode`](#base64-encodedecode) allow for encoding and decoding to and from base64,
+which can then be passed as strings.
 
 ## Installation
 
