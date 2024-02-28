@@ -16,7 +16,7 @@ Convert and detect character encoding in JavaScript.
 - [Installation](#installation)
   * [npm](#npm)
     + [TypeScript](#typescript)
-  * [browser (standalone)](#browser-standalone)
+  * [Browser (standalone)](#browser-standalone)
   * [CDN](#cdn)
 - [Supported encodings](#supported-encodings)
   * [About `UNICODE`](#about-unicode)
@@ -70,16 +70,16 @@ which can then be passed as strings.
 encoding.js is published under the package name `encoding-japanese` on npm.
 
 ```bash
-$ npm install --save encoding-japanese
+npm install --save encoding-japanese
 ```
 
-#### using `import`
+#### Using ES6 `import`
 
 ```javascript
 import Encoding from 'encoding-japanese';
 ```
 
-#### using `require`
+#### Using CommonJS `require`
 
 ```javascript
 const Encoding = require('encoding-japanese');
@@ -87,28 +87,28 @@ const Encoding = require('encoding-japanese');
 
 #### TypeScript
 
-TypeScript type definitions for encoding.js are available at [@types/encoding-japanese](https://www.npmjs.com/package/@types/encoding-japanese) (thanks [@rhysd](https://github.com/rhysd)).
+TypeScript type definitions for encoding.js are available at [@types/encoding-japanese](https://www.npmjs.com/package/@types/encoding-japanese) (thanks to [@rhysd](https://github.com/rhysd)).
 
 ```bash
-$ npm install --save-dev @types/encoding-japanese
+npm install --save-dev @types/encoding-japanese
 ```
 
-### browser (standalone)
+### Browser (standalone)
 
-Install from npm or download from the [release list](https://github.com/polygonplanet/encoding.js/tags) and use `encoding.js` or `encoding.min.js` in the package.  
-\*Please note that if you `git clone`, even the *master* branch may be under development.
+To use encoding.js in a browser environment, you can either install it via npm or download it directly from the [release list](https://github.com/polygonplanet/encoding.js/tags).
+The package includes both `encoding.js` and `encoding.min.js`.
+
+Note: Cloning the repository via `git clone` might give you access to the *master* (or *main*) branch, which could still be in a development state.
 
 ```html
+<!-- To include the full version -->
 <script src="encoding.js"></script>
-```
 
-Or use the minified `encoding.min.js`
-
-```html
+<!-- Or, to include the minified version for production -->
 <script src="encoding.min.js"></script>
 ```
 
-When the script is loaded, the object `Encoding` is defined in the global scope (ie `window.Encoding`).
+When the script is loaded, the object `Encoding` is defined in the global scope (i.e., `window.Encoding`).
 
 ### CDN
 
