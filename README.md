@@ -34,7 +34,7 @@ Convert and detect character encoding in JavaScript.
   * [Code array to string conversion (codeToString/stringToCode)](#code-array-to-string-conversion-codetostringstringtocode)
   * [Japanese Zenkaku/Hankaku conversion](#japanese-zenkakuhankaku-conversion)
 - [Other examples](#other-examples)
-  * [Example using the XMLHttpRequest and Typed arrays (Uint8Array)](#example-using-the-xmlhttprequest-and-typed-arrays-uint8array)
+  * [Example using the `fetch API` and Typed Arrays (Uint8Array)](#example-using-the-fetch-api-and-typed-arrays-uint8array)
   * [Convert encoding for file using the File APIs](#convert-encoding-for-file-using-the-file-apis)
 - [Contributing](#contributing)
 - [License](#license)
@@ -461,36 +461,64 @@ console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 
 ## Other examples
 
-### Example using the XMLHttpRequest and Typed arrays (Uint8Array)
+### Example using the `fetch API` and Typed Arrays (Uint8Array)
 
-This sample reads the text file written in Shift_JIS as binary data,
-and displays a string that is converted to Unicode by Encoding.convert.
+This example reads a text file encoded in Shift_JIS as binary data,
+and display it as a string after converting it to Unicode using [Encoding.convert](#convert-character-encoding-convert).
 
 ```javascript
-var req = new XMLHttpRequest();
-req.open('GET', '/my-shift_jis.txt', true);
-req.responseType = 'arraybuffer';
+(async () => {
+  try {
+    const response = await fetch('shift_jis.txt');
+    const buffer = await response.arrayBuffer();
 
-req.onload = function (event) {
-  var buffer = req.response;
-  if (buffer) {
-    // Shift_JIS Array
-    var sjisArray = new Uint8Array(buffer);
+    // Code array with Shift_JIS file contents
+    const sjisArray = new Uint8Array(buffer);
 
-    // Convert encoding to UNICODE (JavaScript Unicode Array).
-    var unicodeArray = Encoding.convert(sjisArray, {
+    // Convert encoding to UNICODE (JavaScript Code Units) from Shift_JIS
+    const unicodeArray = Encoding.convert(sjisArray, {
       to: 'UNICODE',
       from: 'SJIS'
     });
 
-    // Join to string.
-    var unicodeString = Encoding.codeToString(unicodeArray);
+    // Convert to string from code array for display
+    const unicodeString = Encoding.codeToString(unicodeArray);
+    console.log(unicodeString);
+  } catch (error) {
+    console.error('Error loading the file:', error);
+  }
+})();
+```
+
+<details>
+<summary>XMLHttpRequest version of this example</summary>
+
+```javascript
+const req = new XMLHttpRequest();
+req.open('GET', 'shift_jis.txt', true);
+req.responseType = 'arraybuffer';
+
+req.onload = (event) => {
+  const buffer = req.response;
+  if (buffer) {
+    // Code array with Shift_JIS file contents
+    const sjisArray = new Uint8Array(buffer);
+
+    // Convert encoding to UNICODE (JavaScript Code Units) from Shift_JIS
+    const unicodeArray = Encoding.convert(sjisArray, {
+      to: 'UNICODE',
+      from: 'SJIS'
+    });
+
+    // JConvert to string from code array for display
+    const unicodeString = Encoding.codeToString(unicodeArray);
     console.log(unicodeString);
   }
 };
 
 req.send(null);
 ```
+</details>
 
 ### Convert encoding for file using the File APIs
 
