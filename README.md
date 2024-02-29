@@ -464,7 +464,7 @@ console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 ### Example using the `fetch API` and Typed Arrays (Uint8Array)
 
 This example reads a text file encoded in Shift_JIS as binary data,
-and display it as a string after converting it to Unicode using [Encoding.convert](#convert-character-encoding-convert).
+and displays it as a string after converting it to Unicode using [Encoding.convert](#convert-character-encoding-convert).
 
 ```javascript
 (async () => {
@@ -510,7 +510,7 @@ req.onload = (event) => {
       from: 'SJIS'
     });
 
-    // JConvert to string from code array for display
+    // Convert to string from code array for display
     const unicodeString = Encoding.codeToString(unicodeArray);
     console.log(unicodeString);
   }
@@ -532,17 +532,17 @@ Detect file encoding and convert to Unicode, and display it.
 
 <script>
 function onFileSelect(event) {
-  var file = event.target.files[0];
+  const file = event.target.files[0];
 
-  var reader = new FileReader();
+  const reader = new FileReader();
   reader.onload = function(e) {
-    var codes = new Uint8Array(e.target.result);
-    var encoding = Encoding.detect(codes);
+    const codes = new Uint8Array(e.target.result);
+    const encoding = Encoding.detect(codes);
     document.getElementById('encoding').textContent = encoding;
 
-    // Convert encoding to unicode
-    var unicodeString = Encoding.convert(codes, {
-      to: 'unicode',
+    // Convert encoding to UNICODE
+    const unicodeString = Encoding.convert(codes, {
+      to: 'UNICODE',
       from: encoding,
       type: 'string'
     });
