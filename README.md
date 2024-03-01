@@ -132,15 +132,16 @@ You can use the encoding.js (package name: `encoding-japanese`) CDN on [cdnjs.co
 
 ### About `UNICODE`
 
-In encoding.js, the internal character encoding that can be handled in JavaScript (JavaScript string) is defined as `UNICODE`.
+In encoding.js, `UNICODE` is defined as the internal character encoding that JavaScript strings (JavaScript string objects) can handle directly.
 
-As mentioned above ([Features](#features)), JavaScript strings are internally encoded in UTF-16 code units, and other character encodings cannot be handled properly.
-Therefore, to convert to a character encoding properly represented in JavaScript, specify `UNICODE`.
+As mentioned in the [Features](#features) section, JavaScript strings are internally encoded using UTF-16 code units.
+This means that other character encodings cannot be directly handled without conversion.
+Therefore, when converting to a character encoding that is properly representable in JavaScript, you should specify `UNICODE`.
 
-(*Even if the HTML file encoding is UTF-8, specify `UNICODE` instead of `UTF8` when handling it in JavaScript.)
+(Note: Even if the HTML file's encoding is UTF-8, you should specify `UNICODE` instead of `UTF8` when processing the encoding in JavaScript.)
 
-The value of each character code array returned from [`Encoding.convert`]((#convert-character-encoding-convert) is a number of 0-255 if you specify a character code other than `UNICODE` such as `UTF8` or `SJIS`,
-or a number of `0-65535` (range of `String.prototype.charCodeAt()` values = Code Unit) if you specify `UNICODE`.
+When using [`Encoding.convert`](#convert-character-encoding-convert), if you specify a character encoding other than `UNICODE` (such as `UTF8` or `SJIS`), the values in the returned character code array will range from `0-255`.
+However, if you specify `UNICODE`, the values will range from `0-65535`, which corresponds to the range of values returned by `String.prototype.charCodeAt()` (Code Units).
 
 ## Example usage
 
