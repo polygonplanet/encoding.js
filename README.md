@@ -568,12 +568,10 @@ For bug reports and feature requests, please [create an issue on GitHub](https:/
 
 ### Pull requests
 
-Please run `$ npm run test` before the pull request to confirm there are no errors.
-We only accept requests without errors.
+Before submitting a pull request, please run `npm run test` to ensure there are no errors.
+We only accept pull requests that pass all tests.
 
 ## License
 
-MIT
-
-
-
+This project is licensed under the terms of the MIT license.
+See the [LICENSE](LICENSE) file for details.
