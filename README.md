@@ -522,13 +522,14 @@ req.send(null);
 
 ### Convert encoding for file using the File APIs
 
-Reads file using the File APIs.  
-Detect file encoding and convert to Unicode, and display it.
+This example uses the File API to read the content of a selected file, detects its character encoding,
+and converts the file content to UNICODE from any character encoding such as `Shift_JIS` or `EUC-JP`.
+The converted content is then displayed in a textarea.
 
 ```html
 <input type="file" id="file">
 <div id="encoding"></div>
-<textarea id="result" rows="5" cols="80"></textarea>
+<textarea id="content" rows="5" cols="80"></textarea>
 
 <script>
 function onFileSelect(event) {
@@ -537,22 +538,24 @@ function onFileSelect(event) {
   const reader = new FileReader();
   reader.onload = function(e) {
     const codes = new Uint8Array(e.target.result);
-    const encoding = Encoding.detect(codes);
-    document.getElementById('encoding').textContent = encoding;
+
+    const detectedEncoding = Encoding.detect(codes);
+    const encoding = document.getElementById('encoding');
+    encoding.textContent = `Detected encoding: ${detectedEncoding}`;
 
     // Convert encoding to UNICODE
     const unicodeString = Encoding.convert(codes, {
       to: 'UNICODE',
-      from: encoding,
+      from: detectedEncoding,
       type: 'string'
     });
-    document.getElementById('result').value = unicodeString;
+    document.getElementById('content').value = unicodeString;
   };
 
   reader.readAsArrayBuffer(file);
 }
 
-document.getElementById('file').addEventListener('change', onFileSelect, false);
+document.getElementById('file').addEventListener('change', onFileSelect);
 </script>
 ```
 
