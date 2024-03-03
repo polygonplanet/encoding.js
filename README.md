@@ -118,17 +118,17 @@ You can use the encoding.js (package name: `encoding-japanese`) CDN on [cdnjs.co
 
 |Value in encoding.js|[`detect()`](#detect-character-encoding-detect)|[`convert()`](#convert-character-encoding-convert)|MIME Name (Note)|
 |:------:|:----:|:-----:|:---|
-|ASCII   |✓     |      |US-ASCII (Code point range: `0-127`)|
-|BINARY  |✓     |      |(Binary string. Code point range: `0-255`)|
-|EUCJP   |✓     |✓     |EUC-JP|
-|JIS     |✓     |✓     |ISO-2022-JP|
-|SJIS    |✓     |✓     |Shift_JIS|
-|UTF8    |✓     |✓     |UTF-8|
-|UTF16   |✓     |✓     |UTF-16|
-|UTF16BE |✓     |✓     |UTF-16BE (big-endian)|
-|UTF16LE |✓     |✓     |UTF-16LE (little-endian)|
-|UTF32   |✓     |      |UTF-32|
-|UNICODE |✓     |✓     |(JavaScript string. *See [About `UNICODE`](#about-unicode) below) |
+|ASCII   |✓    |       |US-ASCII (Code point range: `0-127`)|
+|BINARY  |✓    |       |(Binary string. Code point range: `0-255`)|
+|EUCJP   |✓    |✓     |EUC-JP|
+|JIS     |✓    |✓     |ISO-2022-JP|
+|SJIS    |✓    |✓     |Shift_JIS|
+|UTF8    |✓    |✓     |UTF-8|
+|UTF16   |✓    |✓     |UTF-16|
+|UTF16BE |✓    |✓     |UTF-16BE (big-endian)|
+|UTF16LE |✓    |✓     |UTF-16LE (little-endian)|
+|UTF32   |✓    |       |UTF-32|
+|UNICODE |✓    |✓     |(JavaScript string. *See [About `UNICODE`](#about-unicode) below) |
 
 ### About `UNICODE`
 
@@ -160,26 +160,26 @@ console.log(sjisArray);
 Convert character encoding from `SJIS` to `UNICODE`.
 
 ```javascript
-var sjisArray = [
+const sjisArray = [
   130, 177, 130, 241, 130, 201, 130, 191, 130, 205
 ]; // 'こんにちは' array in SJIS
 
-var unicodeArray = Encoding.convert(sjisArray, {
+const unicodeArray = Encoding.convert(sjisArray, {
   to: 'UNICODE',
   from: 'SJIS'
 });
-var str = Encoding.codeToString(unicodeArray); // Convert code array to string
+const str = Encoding.codeToString(unicodeArray); // Convert code array to string
 console.log(str); // 'こんにちは'
 ```
 
 Detect character encoding.
 
 ```javascript
-var data = [
+const data = [
   227, 129, 147, 227, 130, 147, 227, 129, 171, 227, 129, 161, 227, 129, 175
 ]; // 'こんにちは' array in UTF-8
 
-var detectedEncoding = Encoding.detect(data);
+const detectedEncoding = Encoding.detect(data);
 console.log('Character encoding is ' + detectedEncoding); // 'Character encoding is UTF8'
 ```
 
@@ -224,8 +224,8 @@ console.log(Encoding.codeToString(unicodeArray));
 The return value is one of the above "[Supported encodings](#supported-encodings)" or false if it cannot be detected.
 
 ```javascript
-var sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
-var detectedEncoding = Encoding.detect(sjisArray);
+const sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
+const detectedEncoding = Encoding.detect(sjisArray);
 console.log('Encoding is ' + detectedEncoding); // 'Encoding is SJIS'
 ```
 
@@ -233,8 +233,8 @@ Example of specifying the character encoding to be detected.
 If the second argument `encodings` is specified, returns `true` when it is the specified character encoding, `false` otherwise.
 
 ```javascript
-var sjisArray = [130, 168, 130, 205, 130, 230];
-var isSJIS = Encoding.detect(sjisArray, 'SJIS');
+const sjisArray = [130, 168, 130, 205, 130, 230];
+const isSJIS = Encoding.detect(sjisArray, 'SJIS');
 if (isSJIS) {
   console.log('Encoding is SJIS');
 }
@@ -252,15 +252,15 @@ if (isSJIS) {
 Example of converting a character code array to Shift_JIS from UTF-8.
 
 ```javascript
-var utf8Array = [227, 129, 130]; // "あ" in UTF-8
-var sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
+const utf8Array = [227, 129, 130]; // "あ" in UTF-8
+const sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
 console.log(sjisArray); // [130, 160] ("あ" in SJIS)
 ```
 
 TypedArray such as `Uint8Array`, and `Buffer` of Node.js can be converted in the same usage.
 
 ```javascript
-var utf8Array = new Uint8Array([227, 129, 130]);
+const utf8Array = new Uint8Array([227, 129, 130]);
 Encoding.convert(utf8Array, 'SJIS', 'UTF8');
 ```
 
@@ -268,8 +268,8 @@ Converts character encoding by auto-detecting the encoding name of the source.
 
 ```javascript
 // The character encoding is automatically detected when the from_encoding argument is omitted
-var utf8Array = [227, 129, 130];
-var sjisArray = Encoding.convert(utf8Array, 'SJIS');
+const utf8Array = [227, 129, 130];
+let sjisArray = Encoding.convert(utf8Array, 'SJIS');
 
 // Or explicitly specify 'AUTO' to auto-detecting
 sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
@@ -281,8 +281,8 @@ You can pass the second argument `to` as an object for improving readability.
 Also, the following options such as `type`, `fallback`, and `bom` need to be specified with an object.
 
 ```javascript
-var utf8Array = [227, 129, 130];
-var sjisArray = Encoding.convert(utf8Array, {
+const utf8Array = [227, 129, 130];
+const sjisArray = Encoding.convert(utf8Array, {
   to: 'SJIS',
   from: 'UTF8'
 });
@@ -294,8 +294,8 @@ var sjisArray = Encoding.convert(utf8Array, {
 Also, if the argument `data` is passed as a string and the` type` option is not specified, then `type` ='string' is assumed (returns as a string).
 
 ```javascript
-var sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
-var unicodeString = Encoding.convert(sjisArray, {
+const sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
+const unicodeString = Encoding.convert(sjisArray, {
   to: 'UNICODE',
   from: 'SJIS',
   type: 'string' // Specify 'string' to return as string
@@ -321,9 +321,9 @@ The `fallback` option supports the following values.
 Example of specifying `{ fallback: 'html-entity' }` option.
 
 ```javascript
-var unicodeArray = Encoding.stringToCode('寿司🍣ビール🍺');
+const unicodeArray = Encoding.stringToCode('寿司🍣ビール🍺');
 // No fallback specified
-var sjisArray = Encoding.convert(unicodeArray, {
+let sjisArray = Encoding.convert(unicodeArray, {
   to: 'SJIS',
   from: 'UNICODE'
 });
@@ -341,8 +341,8 @@ console.log(sjisArray); // Converted to a code array of '寿司&#127843;ビー�
 Example of specifying `{ fallback: 'html-entity-hex' }` option
 
 ```javascript
-var unicodeArray = Encoding.stringToCode('ホッケの漢字は𩸽');
-var sjisArray = Encoding.convert(unicodeArray, {
+const unicodeArray = Encoding.stringToCode('ホッケの漢字は𩸽');
+const sjisArray = Encoding.convert(unicodeArray, {
   to: 'SJIS',
   from: 'UNICODE',
   fallback: 'html-entity-hex'
@@ -356,7 +356,7 @@ You can add a BOM (byte order mark) by specifying the `bom` option when converti
 The default is no BOM.
 
 ```javascript
-var utf16Array = Encoding.convert(utf8Array, {
+const utf16Array = Encoding.convert(utf8Array, {
   to: 'UTF16', // to_encoding
   from: 'UTF8', // from_encoding
   bom: true // Add BOM
@@ -367,7 +367,7 @@ var utf16Array = Encoding.convert(utf8Array, {
 If you want to convert as little-endian, specify the `{ bom: 'LE' }` option.
 
 ```javascript
-var utf16leArray = Encoding.convert(utf8Array, {
+const utf16leArray = Encoding.convert(utf8Array, {
   to: 'UTF16', // to_encoding
   from: 'UTF8', // from_encoding
   bom: 'LE' // With BOM (little-endian)
@@ -378,7 +378,7 @@ If you do not need BOM, use `UTF16BE` or `UTF16LE`.
 `UTF16BE` is big-endian, and `UTF16LE` is little-endian, and both have no BOM.
 
 ```javascript
-var utf16beArray = Encoding.convert(utf8Array, {
+const utf16beArray = Encoding.convert(utf8Array, {
   to: 'UTF16BE',
   from: 'UTF8'
 });
@@ -397,11 +397,11 @@ var utf16beArray = Encoding.convert(utf8Array, {
   @return {_Array_} Return the decoded array.
 
 ```javascript
-var sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
-var encoded = Encoding.urlEncode(sjisArray);
+const sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
+const encoded = Encoding.urlEncode(sjisArray);
 console.log(encoded); // '%82%B1%82%F1%82%C9%82%BF%82%CD'
 
-var decoded = Encoding.urlDecode(encoded);
+const decoded = Encoding.urlDecode(encoded);
 console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 ```
 
@@ -418,11 +418,11 @@ console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
   @return {_Array_} Return the Base64 decoded array.
 
 ```javascript
-var sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
-var encoded = Encoding.base64Encode(sjisArray);
+const sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
+const encoded = Encoding.base64Encode(sjisArray);
 console.log(encoded); // 'grGC8YLJgr+CzQ=='
 
-var decoded = Encoding.base64Decode(encoded);
+const decoded = Encoding.base64Decode(encoded);
 console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 ```
 

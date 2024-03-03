@@ -111,17 +111,17 @@ minify された `encoding.min.js` も使用できます。
 
 |encoding.js での値|[`detect()`](#文字コードを判定する-detect)|[`convert()`](#文字コードを変換する-convert)|MIME名 (備考)|
 |:------:|:----:|:-----:|:---|
-|ASCII   |✓     |      |US-ASCII (コードポイントの範囲: `0-127`)|
-|BINARY  |✓     |      |(バイナリー文字列。コードポイントの範囲: `0-255`)|
-|EUCJP   |✓     |✓     |EUC-JP|
-|JIS     |✓     |✓     |ISO-2022-JP|
-|SJIS    |✓     |✓     |Shift_JIS|
-|UTF8    |✓     |✓     |UTF-8|
-|UTF16   |✓     |✓     |UTF-16|
-|UTF16BE |✓     |✓     |UTF-16BE (big-endian)|
-|UTF16LE |✓     |✓     |UTF-16LE (little-endian)|
-|UTF32   |✓     |      |UTF-32|
-|UNICODE |✓     |✓     |(JavaScript の文字列。※以下の [`UNICODE` について](#unicode-について) 参照) |
+|ASCII   |✓    |       |US-ASCII (コードポイントの範囲: `0-127`)|
+|BINARY  |✓    |       |(バイナリー文字列。コードポイントの範囲: `0-255`)|
+|EUCJP   |✓    |✓     |EUC-JP|
+|JIS     |✓    |✓     |ISO-2022-JP|
+|SJIS    |✓    |✓     |Shift_JIS|
+|UTF8    |✓    |✓     |UTF-8|
+|UTF16   |✓    |✓     |UTF-16|
+|UTF16BE |✓    |✓     |UTF-16BE (big-endian)|
+|UTF16LE |✓    |✓     |UTF-16LE (little-endian)|
+|UTF32   |✓    |       |UTF-32|
+|UNICODE |✓    |✓     |(JavaScript の文字列。※以下の [`UNICODE` について](#unicode-について) 参照) |
 
 ### `UNICODE` について
 
@@ -150,26 +150,26 @@ console.log(sjisArray);
 `SJIS` から `UNICODE` に文字コードを変換する
 
 ```javascript
-var sjisArray = [
+const sjisArray = [
   130, 177, 130, 241, 130, 201, 130, 191, 130, 205
 ]; // SJISで'こんにちは'の配列
 
-var unicodeArray = Encoding.convert(sjisArray, {
+const unicodeArray = Encoding.convert(sjisArray, {
   to: 'UNICODE',
   from: 'SJIS'
 });
-var str = Encoding.codeToString(unicodeArray); // 文字コード値の配列から文字列に変換
+const str = Encoding.codeToString(unicodeArray); // 文字コード値の配列から文字列に変換
 console.log(str); // 'こんにちは'
 ```
 
 文字コードを判定する
 
 ```javascript
-var data = [
+const data = [
   227, 129, 147, 227, 130, 147, 227, 129, 171, 227, 129, 161, 227, 129, 175
 ]; // UTF-8で'こんにちは'の配列
 
-var detectedEncoding = Encoding.detect(data);
+const detectedEncoding = Encoding.detect(data);
 console.log('文字コードは' + detectedEncoding); // '文字コードはUTF8'
 ```
 
@@ -214,8 +214,8 @@ console.log(Encoding.codeToString(unicodeArray));
 戻り値は、上記の「[対応する文字コード](#対応する文字コード)」のいずれかになり、判定できなかった場合は false が返ります。
 
 ```javascript
-var sjisArray = [130, 168, 130, 205, 130, 230]; // SJISで「おはよ」の配列
-var detectedEncoding = Encoding.detect(sjisArray);
+const sjisArray = [130, 168, 130, 205, 130, 230]; // SJISで「おはよ」の配列
+const detectedEncoding = Encoding.detect(sjisArray);
 console.log('文字コードは' + detectedEncoding); // '文字コードはSJIS'
 ```
 
@@ -223,8 +223,8 @@ console.log('文字コードは' + detectedEncoding); // '文字コードはSJIS
 第二引数 `encodings` を指定すると、指定した文字コードであれば true、そうでない場合は false が返ります。
 
 ```javascript
-var sjisArray = [130, 168, 130, 205, 130, 230];
-var isSJIS = Encoding.detect(sjisArray, 'SJIS');
+const sjisArray = [130, 168, 130, 205, 130, 230];
+const isSJIS = Encoding.detect(sjisArray, 'SJIS');
 if (isSJIS) {
   console.log('文字コードはSJISです');
 }
@@ -242,15 +242,15 @@ if (isSJIS) {
 UTF-8 の文字コード配列を Shift_JIS に変換する
 
 ```javascript
-var utf8Array = [227, 129, 130]; // UTF-8 の「あ」
-var sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
+const utf8Array = [227, 129, 130]; // UTF-8 の「あ」
+const sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
 console.log(sjisArray); // [130, 160] (SJISの「あ」)
 ```
 
 `Uint8Array` などの TypedArray や、Node.js の `Buffer` も同様に扱えます。
 
 ```javascript
-var utf8Array = new Uint8Array([227, 129, 130]);
+const utf8Array = new Uint8Array([227, 129, 130]);
 Encoding.convert(utf8Array, 'SJIS', 'UTF8');
 ```
 
@@ -258,8 +258,8 @@ Encoding.convert(utf8Array, 'SJIS', 'UTF8');
 
 ```javascript
 // 引数 from_encoding を省略すると文字コードを自動判定します
-var utf8Array = [227, 129, 130];
-var sjisArray = Encoding.convert(utf8Array, 'SJIS');
+const utf8Array = [227, 129, 130];
+let sjisArray = Encoding.convert(utf8Array, 'SJIS');
 
 // または明示的に 'AUTO' と指定できます
 sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
@@ -271,8 +271,8 @@ sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 また、下記の `type`、 `fallback`、 `bom` などのオプションを指定する際は、オブジェクトでの指定が必要になります。
 
 ```javascript
-var utf8Array = [227, 129, 130];
-var sjisArray = Encoding.convert(utf8Array, {
+const utf8Array = [227, 129, 130];
+const sjisArray = Encoding.convert(utf8Array, {
   to: 'SJIS',
   from: 'UTF8'
 });
@@ -284,8 +284,8 @@ var sjisArray = Encoding.convert(utf8Array, {
 また、引数 `data` が文字列で、 `type` オプションが指定されなかった場合は `type` = 'string' とみなされます (文字列で返ります)。
 
 ```javascript
-var sjisArray = [130, 168, 130, 205, 130, 230]; // SJISで「おはよ」の配列
-var unicodeString = Encoding.convert(sjisArray, {
+const sjisArray = [130, 168, 130, 205, 130, 230]; // SJISで「おはよ」の配列
+const unicodeString = Encoding.convert(sjisArray, {
   to: 'UNICODE',
   from: 'SJIS',
   type: 'string' // 文字列で返るよう 'string' を指定
@@ -314,9 +314,9 @@ console.log(unicodeString); // 'おはよ'
 `{ fallback: 'html-entity' }` オプションを指定する例
 
 ```javascript
-var unicodeArray = Encoding.stringToCode('寿司🍣ビール🍺');
+const unicodeArray = Encoding.stringToCode('寿司🍣ビール🍺');
 // fallback指定なし
-var sjisArray = Encoding.convert(unicodeArray, {
+let sjisArray = Encoding.convert(unicodeArray, {
   to: 'SJIS',
   from: 'UNICODE'
 });
@@ -334,8 +334,8 @@ console.log(sjisArray); // '寿司&#127843;ビール&#127866;' の数値配列�
 `{ fallback: 'html-entity-hex' }` オプションを指定する例
 
 ```javascript
-var unicodeArray = Encoding.stringToCode('ホッケの漢字は𩸽');
-var sjisArray = Encoding.convert(unicodeArray, {
+const unicodeArray = Encoding.stringToCode('ホッケの漢字は𩸽');
+const sjisArray = Encoding.convert(unicodeArray, {
   to: 'SJIS',
   from: 'UNICODE',
   fallback: 'html-entity-hex'
@@ -349,7 +349,7 @@ console.log(sjisArray); // 'ホッケの漢字は&#x29e3d;' の数値配列に�
 デフォルトは BOM なしになります。
 
 ```javascript
-var utf16Array = Encoding.convert(utf8Array, {
+const utf16Array = Encoding.convert(utf8Array, {
   to: 'UTF16', // to_encoding
   from: 'UTF8', // from_encoding
   bom: true // BOMをつける
@@ -360,7 +360,7 @@ var utf16Array = Encoding.convert(utf8Array, {
 little-endian として変換したい場合は `bom` オプションに `LE` を指定します。
 
 ```javascript
-var utf16leArray = Encoding.convert(utf8Array, {
+const utf16leArray = Encoding.convert(utf8Array, {
   to: 'UTF16', // to_encoding
   from: 'UTF8', // from_encoding
   bom: 'LE' // BOM (little-endian) をつける
@@ -373,7 +373,7 @@ BOM が不要な場合は `UTF16BE` または `UTF16LE` を使用します。
 `UTF16LE` は上位バイトが末尾側になるように並べる方式 (little-endian) になり、どちらも BOM は付きません。
 
 ```javascript
-var utf16beArray = Encoding.convert(utf8Array, {
+const utf16beArray = Encoding.convert(utf8Array, {
   to: 'UTF16BE',
   from: 'UTF8'
 });
@@ -393,11 +393,11 @@ var utf16beArray = Encoding.convert(utf8Array, {
 
 ```javascript
 // 文字コードの配列をURLエンコード/デコード
-var sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
-var encoded = Encoding.urlEncode(sjisArray);
+const sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
+const encoded = Encoding.urlEncode(sjisArray);
 console.log(encoded); // '%82%B1%82%F1%82%C9%82%BF%82%CD'
 
-var decoded = Encoding.urlDecode(encoded);
+const decoded = Encoding.urlDecode(encoded);
 console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 ```
 
@@ -414,11 +414,11 @@ console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
   @return {_Array_} Base64デコードされた文字コード配列が返ります
 
 ```javascript
-var sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
-var encoded = Encoding.base64Encode(sjisArray);
+const sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]; // SJISの'こんにちは'
+const encoded = Encoding.base64Encode(sjisArray);
 console.log(encoded); // 'grGC8YLJgr+CzQ=='
 
-var decoded = Encoding.base64Decode(encoded);
+const decoded = Encoding.base64Decode(encoded);
 console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 ```
 
@@ -463,7 +463,7 @@ console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 ### `Fetch API` と Typed Arrays (Uint8Array) を使用した例
 
 この例では Shift_JIS で書かれたテキストファイルをバイナリデータとして読み込み、
-[Encoding.convert](#convert-character-encoding-convert) によって `UNICODE` に変換して表示します。
+[Encoding.convert](#文字コードを変換する-convert) によって `UNICODE` に変換して表示します。
 
 ```javascript
 (async () => {
