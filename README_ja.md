@@ -34,7 +34,7 @@ JavaScript で文字コードの変換や判定をします。
   * [配列から文字列の相互変換 (codeToString/stringToCode)](#配列から文字列の相互変換-codetostringstringtocode)
   * [全角・半角変換](#全角半角変換)
 - [その他の例](#その他の例)
-  * [XMLHttpRequest と Typed arrays (Uint8Array) を使用した例](#xmlhttprequest-と-typed-arrays-uint8array-を使用した例)
+  * [`Fetch API` と Typed Arrays (Uint8Array) を使用した例](#fetch-api-と-typed-arrays-uint8array-を使用した例)
   * [File API を使用したファイルの文字コード判定・変換例](#file-api-を使用したファイルの文字コード判定変換例)
 - [Contributing](#contributing)
 - [License](#license)
@@ -63,7 +63,7 @@ JavaScript の文字列は内部で UTF-16 コードユニットとして符号�
 npm では `encoding-japanese` というパッケージ名で公開されています。
 
 ```bash
-$ npm install --save encoding-japanese
+npm install --save encoding-japanese
 ```
 
 #### `import` で読み込む
@@ -83,19 +83,19 @@ const Encoding = require('encoding-japanese');
 encoding.js の TypeScript 型定義は [@types/encoding-japanese](https://www.npmjs.com/package/@types/encoding-japanese) から利用できます ([@rhysd](https://github.com/rhysd) さんありがとうございます)。
 
 ```bash
-$ npm install --save-dev @types/encoding-japanese
+npm install --save-dev @types/encoding-japanese
 ```
 
 ### ブラウザ
 
-npm からインストール、または[リリース一覧](https://github.com/polygonplanet/encoding.js/tags)からダウンロードしたパッケージ内の `encoding.js` をご使用ください。  
-※ `git clone` した場合は、masterブランチであっても開発中の状態の可能性がありますのでご注意ください
+npm経由でインストールするか、または[リリース一覧](https://github.com/polygonplanet/encoding.js/tags)からダウンロードしたパッケージ内の `encoding.js` をご使用ください。  
+※ `git clone` した場合は、*master* (または *main*) ブランチであっても開発中の状態の可能性がありますのでご注意ください。
 
 ```html
 <script src="encoding.js"></script>
 ```
 
-または minify された `encoding.min.js` を使用します。
+minify された `encoding.min.js` も使用できます。
 
 ```html
 <script src="encoding.min.js"></script>
@@ -273,8 +273,8 @@ sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 ```javascript
 var utf8Array = [227, 129, 130];
 var sjisArray = Encoding.convert(utf8Array, {
-  to: 'SJIS', // to_encoding
-  from: 'UTF8' // from_encoding
+  to: 'SJIS',
+  from: 'UTF8'
 });
 ```
 
@@ -296,8 +296,11 @@ console.log(unicodeString); // 'おはよ'
 以下の `type` オプションが指定できます。
 
 * **string** : 文字列として返ります。
-* **arraybuffer** : ArrayBuffer (`Uint16Array`) として返ります。
+* **arraybuffer** : ArrayBuffer として (歴史的な理由で実際には `Uint16Array` が) 返ります。
 * **array** : 配列として返ります。 (デフォルト)
+
+`type: 'string'` は、配列から文字列に変換する [Encoding.codeToString](#配列から文字列の相互変換-codetostringstringtocode) のショートハンドとして使用することができます。  
+※ `UNICODE` への変換以外は `type: 'string'` を指定しても正しく扱えない可能性がありますのでご注意ください
 
 #### 変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える
 
@@ -457,69 +460,100 @@ console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 
 ## その他の例
 
-### XMLHttpRequest と Typed arrays (Uint8Array) を使用した例
+### `Fetch API` と Typed Arrays (Uint8Array) を使用した例
 
-このサンプルでは Shift_JIS で書かれたテキストファイルをバイナリデータとして読み込み、Encoding.convert によって `UNICODE` に変換して表示します。
+この例では Shift_JIS で書かれたテキストファイルをバイナリデータとして読み込み、
+[Encoding.convert](#convert-character-encoding-convert) によって `UNICODE` に変換して表示します。
 
 ```javascript
-var req = new XMLHttpRequest();
-req.open('GET', '/my-shift_jis.txt', true);
-req.responseType = 'arraybuffer';
+(async () => {
+  try {
+    const response = await fetch('shift_jis.txt');
+    const buffer = await response.arrayBuffer();
 
-req.onload = function (event) {
-  var buffer = req.response;
-  if (buffer) {
-    // Shift_JIS Array
-    var sjisArray = new Uint8Array(buffer);
+    // ファイルから読み込んだSJISの文字コード配列
+    const sjisArray = new Uint8Array(buffer);
 
-    // Convert encoding to UNICODE (JavaScript Unicode Array).
-    var unicodeArray = Encoding.convert(sjisArray, {
+    // SJISからUNICODE(JavaScriptコードユニット)に文字コードを変換
+    const unicodeArray = Encoding.convert(sjisArray, {
       to: 'UNICODE',
       from: 'SJIS'
     });
 
-    // Join to string.
-    var unicodeString = Encoding.codeToString(unicodeArray);
+    // 表示用に文字コード配列を文字列に変換
+    const unicodeString = Encoding.codeToString(unicodeArray);
+    console.log(unicodeString);
+  } catch (error) {
+    console.error('Error loading the file:', error);
+  }
+})();
+```
+
+<details>
+<summary>この例の XMLHttpRequest を使ったバージョン</summary>
+
+```javascript
+const req = new XMLHttpRequest();
+req.open('GET', 'shift_jis.txt', true);
+req.responseType = 'arraybuffer';
+
+req.onload = (event) => {
+  const buffer = req.response;
+  if (buffer) {
+    // ファイルから読み込んだSJISの文字コード配列
+    const sjisArray = new Uint8Array(buffer);
+
+    // SJISからUNICODE(JavaScriptコードユニット)に文字コードを変換
+    const unicodeArray = Encoding.convert(sjisArray, {
+      to: 'UNICODE',
+      from: 'SJIS'
+    });
+
+    // 表示用に文字コード配列を文字列に変換
+    const unicodeString = Encoding.codeToString(unicodeArray);
     console.log(unicodeString);
   }
 };
 
 req.send(null);
 ```
+</details>
 
 ### File API を使用したファイルの文字コード判定・変換例
 
-File API を使用してファイルを読み込みます。  
-その際にファイルの文字コードを判定し、正しく表示されるよう `UNICODE` に変換して表示します。
+この例では、File API を使って選択されたファイルの内容を読み込みます。その際にファイルの文字コードを判定し、
+`Shift_JIS` や `EUC-JP` などで書かれたファイルも文字化けなく表示されるように `UNICODE` に変換して表示します。
 
 ```html
 <input type="file" id="file">
 <div id="encoding"></div>
-<textarea id="result" rows="5" cols="80"></textarea>
+<textarea id="content" rows="5" cols="80"></textarea>
 
 <script>
 function onFileSelect(event) {
-  var file = event.target.files[0];
+  const file = event.target.files[0];
 
-  var reader = new FileReader();
+  const reader = new FileReader();
   reader.onload = function(e) {
-    var codes = new Uint8Array(e.target.result);
-    var encoding = Encoding.detect(codes);
-    document.getElementById('encoding').textContent = encoding;
+    const codes = new Uint8Array(e.target.result);
 
-    // Convert encoding to unicode
-    var unicodeString = Encoding.convert(codes, {
-      to: 'unicode',
-      from: encoding,
+    const detectedEncoding = Encoding.detect(codes);
+    const encoding = document.getElementById('encoding');
+    encoding.textContent = `Detected encoding: ${detectedEncoding}`;
+
+    // UNICODE(JavaScriptコードユニット)に文字コードを変換
+    const unicodeString = Encoding.convert(codes, {
+      to: 'UNICODE',
+      from: detectedEncoding,
       type: 'string'
     });
-    document.getElementById('result').value = unicodeString;
+    document.getElementById('content').value = unicodeString;
   };
 
   reader.readAsArrayBuffer(file);
 }
 
-document.getElementById('file').addEventListener('change', onFileSelect, false);
+document.getElementById('file').addEventListener('change', onFileSelect);
 </script>
 ```
 
@@ -532,8 +566,9 @@ Pull requests や Issues を歓迎しています。
 
 ### Pull requests
 
-Pull requests をする前に、 `$ npm run test` を実行してエラーがないことをご確認ください。
+Pull requests をする前に、 `npm run test` を実行してエラーがないことをご確認ください。
 
 ## License
 
-MIT
+このプロジェクトは MIT ライセンスです。
+詳しくは [LICENSE](LICENSE) ファイルを参照してください。

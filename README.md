@@ -283,8 +283,8 @@ Also, the following options such as `type`, `fallback`, and `bom` need to be spe
 ```javascript
 var utf8Array = [227, 129, 130];
 var sjisArray = Encoding.convert(utf8Array, {
-  to: 'SJIS', // to_encoding
-  from: 'UTF8' // from_encoding
+  to: 'SJIS',
+  from: 'UTF8'
 });
 ```
 
@@ -306,7 +306,7 @@ console.log(unicodeString); // 'おはよ'
 The following `type` options are supported.
 
 * **string** : Return as a string.
-* **arraybuffer** : Return as an ArrayBuffer (`Uint16Array`).
+* **arraybuffer** : Return as an ArrayBuffer (Actually returns a `Uint16Array` due to historical reasons).
 * **array** :  Return as an Array. (*default*)
 
 #### Replace to HTML entity (Numeric character reference) when cannot be represented
@@ -462,7 +462,7 @@ console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 
 ## Other examples
 
-### Example using the `fetch API` and Typed Arrays (Uint8Array)
+### Example using the `Fetch API` and Typed Arrays (Uint8Array)
 
 This example reads a text file encoded in Shift_JIS as binary data,
 and displays it as a string after converting it to Unicode using [Encoding.convert](#convert-character-encoding-convert).
