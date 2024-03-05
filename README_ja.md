@@ -105,7 +105,15 @@ minify された `encoding.min.js` も使用できます。
 
 ### CDN
 
-[cdnjs.com](https://cdnjs.com/libraries/encoding-japanese) で encoding.js (パッケージ名: `encoding-japanese`) の CDN が利用できます。
+`<script>` タグで CDN から直接 encoding.js (パッケージ名: `encoding-japanese`) を利用できます。
+
+```html
+<script src="https://unpkg.com/encoding-japanese@2.0.0/encoding.min.js"></script>
+```
+
+この例では [unpkg](https://unpkg.com/encoding-japanese/) を使用していますが、
+[cdnjs](https://cdnjs.com/libraries/encoding-japanese) や [jsDelivr](https://www.jsdelivr.com/package/npm/encoding-japanese) など
+npm パッケージを提供する他の CDN も利用できます。
 
 ## 対応する文字コード
 
