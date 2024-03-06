@@ -54,8 +54,8 @@
   "devDependencies": {
     "bannerify": "^1.0.1",
     "browserify": "^17.0.0",
-    "eslint": "^8.42.0",
-    "mocha": "^10.2.0",
+    "eslint": "^8.57.0",
+    "mocha": "^10.3.0",
     "package-json-versionify": "^1.0.4",
     "power-assert": "^1.6.1",
     "uglify-js": "^3.17.4",
