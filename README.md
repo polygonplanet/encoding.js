@@ -23,7 +23,7 @@ Convert and detect character encoding in JavaScript.
 - [Example usage](#example-usage)
 - [Demo](#demo)
 - [API](#api)
-  * [Detect character encoding (detect)](#detect-character-encoding-detect)
+  * [Detect character encoding (detect)](#encoding-detect-data-encodings)
   * [Convert character encoding (convert)](#convert-character-encoding-convert)
     + [Specify conversion options to the argument `to_encoding` as an object](#specify-conversion-options-to-the-argument-to_encoding-as-an-object)
     + [Specify the return type by the `type` option](#specify-the-return-type-by-the-type-option)
@@ -123,7 +123,7 @@ for example [cdnjs](https://cdnjs.com/libraries/encoding-japanese) or [jsDelivr]
 
 ## Supported encodings
 
-|Value in encoding.js|[`detect()`](#detect-character-encoding-detect)|[`convert()`](#convert-character-encoding-convert)|MIME Name (Note)|
+|Value in encoding.js|[`detect()`](#encoding-detect-data-encodings)|[`convert()`](#convert-character-encoding-convert)|MIME Name (Note)|
 |:------:|:----:|:-----:|:---|
 |ASCII   |✓    |       |US-ASCII (Code point range: `0-127`)|
 |BINARY  |✓    |       |(Binary string. Code point range: `0-255`)|
@@ -187,7 +187,7 @@ const data = [
 ]; // 'こんにちは' array in UTF-8
 
 const detectedEncoding = Encoding.detect(data);
-console.log('Character encoding is ' + detectedEncoding); // 'Character encoding is UTF8'
+console.log(`Character encoding is ${detectedEncoding}`); // 'Character encoding is UTF8'
 ```
 
 (Node.js) Example of reading a text file written in `SJIS`.
@@ -213,39 +213,66 @@ console.log(Encoding.codeToString(unicodeArray));
 
 ## API
 
-* [detect](#detect-character-encoding-detect)
+* [detect](#encoding-detect-data-encodings)
 * [convert](#convert-character-encoding-convert)
 * [urlEncode / urlDecode](#url-encodedecode)
 * [base64Encode / base64Decode](#base64-encodedecode)
 * [codeToString / stringToCode](#code-array-to-string-conversion-codetostringstringtocode)
 * [Japanese Zenkaku / Hankaku conversion](#japanese-zenkakuhankaku-conversion)
 
-### Detect character encoding (detect)
+----
 
-* {_string|boolean_} Encoding.**detect** ( data [, encodings ] )  
-  Detect character encoding.  
-  @param {_Array|TypedArray|string_} _data_ Target data  
-  @param {_string|Array_} [_encodings_] (Optional) The encoding name that to specify the detection (value of [Supported encodings](#supported-encodings))  
-  @return {_string|boolean_} Return the detected character encoding, or false.
+### Encoding.detect (data, [encodings])
 
-The return value is one of the above "[Supported encodings](#supported-encodings)" or false if it cannot be detected.
+Detects the character encoding of the given data.
+
+#### Parameters
+
+* **data** *(Array|TypedArray|Buffer|string)* : The code array or string to detect character encoding.
+* **[encodings]** *(string|Array<string>|Object)* : (Optional) A specific character encoding, or an array of encodings to limit the detection to.
+  Supported encoding values can be found in the "[Supported encodings](#supported-encodings)" section.
+
+#### Return value
+
+*(string|boolean)*: Returns a string representing the detected encoding (e.g., `SJIS`, `UTF8`) listed in the "[Supported encodings](#supported-encodings)" section, or `false` if the encoding cannot be detected.
+If the `encodings` argument is provided, it returns the name of the detected encoding if the `data` matches any of the specified encodings, or `false` otherwise.
+
+#### Examples
+
+Example of detecting character encoding.
 
 ```javascript
 const sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
 const detectedEncoding = Encoding.detect(sjisArray);
-console.log('Encoding is ' + detectedEncoding); // 'Encoding is SJIS'
+console.log(`Encoding is ${detectedEncoding}`); // 'Encoding is SJIS'
 ```
 
-Example of specifying the character encoding to be detected. 
-If the second argument `encodings` is specified, returns `true` when it is the specified character encoding, `false` otherwise.
+Example of using the `encodings` argument to specify the character encoding to be detected.
+This returns a string detected encoding if the specified encoding matches, or `false` otherwise:
 
 ```javascript
-const sjisArray = [130, 168, 130, 205, 130, 230];
-const isSJIS = Encoding.detect(sjisArray, 'SJIS');
-if (isSJIS) {
+const sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
+const detectedEncoding = Encoding.detect(sjisArray, 'SJIS');
+if (detectedEncoding) {
   console.log('Encoding is SJIS');
+} else {
+  console.log('Encoding does not match SJIS');
 }
 ```
+
+Example of specifying multiple encodings:
+
+```javascript
+const sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
+const detectedEncoding = Encoding.detect(sjisArray, ['UTF8', 'SJIS']);
+if (detectedEncoding) {
+  console.log(`Encoding is ${detectedEncoding}`); // 'Encoding is SJIS'
+} else {
+  console.log('Encoding does not match UTF8 and SJIS');
+}
+```
+
+----
 
 ### Convert character encoding (convert)
 

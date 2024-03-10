@@ -23,7 +23,7 @@ JavaScript で文字コードの変換や判定をします。
 - [使い方の例](#使い方の例)
 - [Demo](#demo)
 - [API](#api)
-  * [文字コードを判定する (detect)](#文字コードを判定する-detect)
+  * [文字コードを判定する (detect)](#encoding-detect-data-encodings)
   * [文字コードを変換する (convert)](#文字コードを変換する-convert)
     + [引数 `to` にオブジェクトで変換オプションを指定する](#引数-to-にオブジェクトで変換オプションを指定する)
     + [`type` オプションで戻り値の型を指定する](#type-オプションで戻り値の型を指定する)
@@ -117,7 +117,7 @@ npm パッケージを提供する他の CDN も利用できます。
 
 ## 対応する文字コード
 
-|encoding.js での値|[`detect()`](#文字コードを判定する-detect)|[`convert()`](#文字コードを変換する-convert)|MIME名 (備考)|
+|encoding.js での値|[`detect()`](#encoding-detect-data-encodings)|[`convert()`](#文字コードを変換する-convert)|MIME名 (備考)|
 |:------:|:----:|:-----:|:---|
 |ASCII   |✓    |       |US-ASCII (コードポイントの範囲: `0-127`)|
 |BINARY  |✓    |       |(バイナリー文字列。コードポイントの範囲: `0-255`)|
@@ -178,7 +178,7 @@ const data = [
 ]; // UTF-8で'こんにちは'の配列
 
 const detectedEncoding = Encoding.detect(data);
-console.log('文字コードは' + detectedEncoding); // '文字コードはUTF8'
+console.log(`文字コードは${detectedEncoding}`); // '文字コードはUTF8'
 ```
 
 (Node.js) `SJIS` で書かれたテキストを読み込む例
@@ -204,39 +204,66 @@ console.log(Encoding.codeToString(unicodeArray));
 
 ## API
 
-* [detect](#文字コードを判定する-detect)
+* [detect](#encoding-detect-data-encodings)
 * [convert](#文字コードを変換する-convert)
 * [urlEncode / urlDecode](#url-encodedecode)
 * [base64Encode / base64Decode](#base64-encodedecode)
 * [codeToString / stringToCode](#配列から文字列の相互変換-codetostringstringtocode)
 * [全角・半角変換](#全角半角変換)
 
-### 文字コードを判定する (detect)
+----
 
-* {_string|boolean_} Encoding.**detect** ( data [, encodings ] )  
-  文字コードを判定します  
-  @param {_Array|TypedArray|string_} _data_ 対象のデータ  
-  @param {_string|Array_} [_encodings_] (省略可) 判定を絞り込む際の文字コード (「[対応する文字コード](#対応する文字コード)」の値)  
-  @return {_string|boolean_}  判定された文字コード、または false が返ります
+### Encoding.detect (data, [encodings])
 
-戻り値は、上記の「[対応する文字コード](#対応する文字コード)」のいずれかになり、判定できなかった場合は false が返ります。
+指定されたデータの文字コードを判定します。
+
+#### パラメータ
+
+* **data** *(Array|TypedArray|Buffer|string)* : 文字コードを判定する対象の配列または文字列。
+* **[encodings]** *(string|Array<string>|Object)* : (省略可) 判定を限定する文字コードを文字列または配列で指定します。
+  `SJIS`, `UTF8` などの [対応する文字コード](#対応する文字コード) に記載されている値を参照してください。
+
+#### 戻り値
+
+*(string|boolean)* : 判定された文字コード (`SJIS` や `UTF8` など「[対応する文字コード](#対応する文字コード)」のいずれか)、または判定できなかった場合は `false` を返します。
+引数 `encodings` を指定した場合、`data` が指定された文字コードに一致すればその文字コード名を返し、そうでなければ `false` を返します。
+
+#### 例
+
+文字コードを判定する例:
 
 ```javascript
 const sjisArray = [130, 168, 130, 205, 130, 230]; // SJISで「おはよ」の配列
 const detectedEncoding = Encoding.detect(sjisArray);
-console.log('文字コードは' + detectedEncoding); // '文字コードはSJIS'
+console.log(`文字コードは${detectedEncoding}`); // '文字コードはSJIS'
 ```
 
-判定する文字コードを指定する例。  
-第二引数 `encodings` を指定すると、指定した文字コードであれば true、そうでない場合は false が返ります。
+第二引数 `encodings` を使用して判定する文字コードを指定する例。
+指定した文字コードが一致する場合はその文字コードを文字列で返し、そうでない場合は `false` が返ります:
 
 ```javascript
-const sjisArray = [130, 168, 130, 205, 130, 230];
-const isSJIS = Encoding.detect(sjisArray, 'SJIS');
-if (isSJIS) {
+const sjisArray = [130, 168, 130, 205, 130, 230]; // SJISで「おはよ」の配列
+const detectedEncoding = Encoding.detect(sjisArray, 'SJIS');
+if (detectedEncoding) {
   console.log('文字コードはSJISです');
+} else {
+  console.log('SJISとして判定できませんでした');
 }
 ```
+
+複数の文字コードを指定して判定を限定する例:
+
+```javascript
+const sjisArray = [130, 168, 130, 205, 130, 230]; // SJISで「おはよ」の配列
+const detectedEncoding = Encoding.detect(sjisArray, ['UTF8', 'SJIS']);
+if (detectedEncoding) {
+  console.log(`文字コードは${detectedEncoding}`); // '文字コードはSJIS'
+} else {
+  console.log('UTF8またはSJISとして判定できませんでした');
+}
+```
+
+----
 
 ### 文字コードを変換する (convert)
 
