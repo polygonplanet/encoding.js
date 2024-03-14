@@ -7,7 +7,7 @@ encoding.js
 
 Convert and detect character encoding in JavaScript.
 
-[**README (Japanese)**](README_ja.md)
+[**README (日本語)**](README_ja.md)
 
 ## Table of contents
 
@@ -23,16 +23,16 @@ Convert and detect character encoding in JavaScript.
 - [Example usage](#example-usage)
 - [Demo](#demo)
 - [API](#api)
-  * [Detect character encoding (detect)](#encoding-detect-data-encodings)
-  * [Convert character encoding (convert)](#convert-character-encoding-convert)
-    + [Specify conversion options to the argument `to_encoding` as an object](#specify-conversion-options-to-the-argument-to_encoding-as-an-object)
+  * [detect : Detects character encoding](#encodingdetect-data-encodings)
+  * [convert : Converts character encoding](#encodingconvert-data-to-from)
+    + [Specify conversion options to the argument `to` as an object](#specify-conversion-options-to-the-argument-to-as-an-object)
     + [Specify the return type by the `type` option](#specify-the-return-type-by-the-type-option)
-    + [Replace to HTML entity (Numeric character reference) when cannot be represented](#replace-to-html-entity-numeric-character-reference-when-cannot-be-represented)
+    + [Replacing characters with HTML entities when they cannot be represented](#replacing-characters-with-html-entities-when-they-cannot-be-represented)
     + [Specify BOM in UTF-16](#specify-bom-in-utf-16)
-  * [URL Encode/Decode](#url-encodedecode)
-  * [Base64 Encode/Decode](#base64-encodedecode)
-  * [Code array to string conversion (codeToString/stringToCode)](#code-array-to-string-conversion-codetostringstringtocode)
-  * [Japanese Zenkaku/Hankaku conversion](#japanese-zenkakuhankaku-conversion)
+  * [urlEncode / urlDecode : URL encoding and decoding](#url-encodedecode)
+  * [base64Encode / base64Decode : Base64 encoding and decoding](#base64-encodedecode)
+  * [codeToString / stringToCode : Code array to string conversion](#code-array-to-string-conversion-codetostringstringtocode)
+  * [Japanese Zenkaku / Hankaku conversion](#japanese-zenkakuhankaku-conversion)
 - [Other examples](#other-examples)
   * [Example using the `fetch API` and Typed Arrays (Uint8Array)](#example-using-the-fetch-api-and-typed-arrays-uint8array)
   * [Convert encoding for file using the File APIs](#convert-encoding-for-file-using-the-file-apis)
@@ -147,7 +147,7 @@ Therefore, when converting to a character encoding that is properly representabl
 
 (Note: Even if the HTML file's encoding is UTF-8, you should specify `UNICODE` instead of `UTF8` when processing the encoding in JavaScript.)
 
-When using [`Encoding.convert`](#convert-character-encoding-convert), if you specify a character encoding other than `UNICODE` (such as `UTF8` or `SJIS`), the values in the returned character code array will range from `0-255`.
+When using [`Encoding.convert`](#encodingconvert-data-to-from), if you specify a character encoding other than `UNICODE` (such as `UTF8` or `SJIS`), the values in the returned character code array will range from `0-255`.
 However, if you specify `UNICODE`, the values will range from `0-65535`, which corresponds to the range of values returned by `String.prototype.charCodeAt()` (Code Units).
 
 ## Example usage
@@ -213,8 +213,8 @@ console.log(Encoding.codeToString(unicodeArray));
 
 ## API
 
-* [detect](#encoding-detect-data-encodings)
-* [convert](#convert-character-encoding-convert)
+* [detect](#encodingdetect-data-encodings)
+* [convert](#encodingconvert-data-to-from)
 * [urlEncode / urlDecode](#url-encodedecode)
 * [base64Encode / base64Decode](#base64-encodedecode)
 * [codeToString / stringToCode](#code-array-to-string-conversion-codetostringstringtocode)
@@ -228,8 +228,9 @@ Detects the character encoding of the given data.
 
 #### Parameters
 
-* **data** *(Array|TypedArray|Buffer|string)* : The code array or string to detect character encoding.
-* **[encodings]** *(string|Array<string>|Object)* : (Optional) A specific character encoding, or an array of encodings to limit the detection to.
+* **data** *(Array\<number\>|TypedArray|Buffer|string)* : The code array or string to detect character encoding.
+* **\[encodings\]** *(string|Array\<string\>|Object)* : (Optional) Specifies a specific character encoding,
+  or an array of encodings to limit the detection. Detects automatically if this argument is omitted or `AUTO` is specified.
   Supported encoding values can be found in the "[Supported encodings](#supported-encodings)" section.
 
 #### Return value
@@ -274,45 +275,54 @@ if (detectedEncoding) {
 
 ----
 
-### Convert character encoding (convert)
+### Encoding.convert (data, to[, from])
 
-* {_Array|TypedArray|string_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
-  Converts character encoding.  
-  @param {_Array|TypedArray|Buffer|string_} _data_ The target data.  
-  @param {_string|Object_} _to\_encoding_ The encoding name of conversion destination, or option to convert as an object.  
-  @param {_string|Array_} [_from\_encoding_] (Optional) The encoding name of the source or 'AUTO'.  
-  @return {_Array|TypedArray|string_}  Return the converted array/string.
+Converts the character encoding of the given data.
 
-Example of converting a character code array to Shift_JIS from UTF-8.
+#### Parameters
+
+* **data** *(Array\<number\>|TypedArray|Buffer|string)* : The code array or string to convert character encoding.
+* **to** *(string|Object)* : The character encoding name of the conversion destination as a string, or conversion options as an object.
+* **\[from\]** *(string|Array\<string\>)* : (Optional) The character encoding name of the conversion source as a string,
+  or an array of encoding names. Detects automatically if this argument is omitted or `AUTO` is specified.
+  Supported encoding values can be found in the "[Supported encodings](#supported-encodings)" section.
+
+#### Return value
+
+*(Array\<number\>|TypedArray|string)* : Returns a numeric character code array of the converted character encoding if `data` is an array or a buffer,
+ or returns the converted string if `data` is a string.
+
+#### Examples
+
+Example of converting a character code array to Shift_JIS from UTF-8:
 
 ```javascript
-const utf8Array = [227, 129, 130]; // "あ" in UTF-8
+const utf8Array = [227, 129, 130]; // 'あ' in UTF-8
 const sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
-console.log(sjisArray); // [130, 160] ("あ" in SJIS)
+console.log(sjisArray); // [130, 160] ('あ' in SJIS)
 ```
 
-TypedArray such as `Uint8Array`, and `Buffer` of Node.js can be converted in the same usage.
+TypedArray such as `Uint8Array`, and `Buffer` of Node.js can be converted in the same usage:
 
 ```javascript
 const utf8Array = new Uint8Array([227, 129, 130]);
-Encoding.convert(utf8Array, 'SJIS', 'UTF8');
+const sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
 ```
 
-Converts character encoding by auto-detecting the encoding name of the source.
+Converts character encoding by auto-detecting the encoding name of the source:
 
 ```javascript
-// The character encoding is automatically detected when the from_encoding argument is omitted
+// The character encoding is automatically detected when the argument `from` is omitted
 const utf8Array = [227, 129, 130];
 let sjisArray = Encoding.convert(utf8Array, 'SJIS');
-
 // Or explicitly specify 'AUTO' to auto-detecting
 sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 ```
 
-#### Specify conversion options to the argument `to_encoding` as an object
+#### Specify conversion options to the argument `to` as an object
 
 You can pass the second argument `to` as an object for improving readability.
-Also, the following options such as `type`, `fallback`, and `bom` need to be specified with an object.
+Also, the following options such as `type`, `fallback`, and `bom` must be specified with an object.
 
 ```javascript
 const utf8Array = [227, 129, 130];
@@ -343,16 +353,21 @@ The following `type` options are supported.
 * **arraybuffer** : Return as an ArrayBuffer (Actually returns a `Uint16Array` due to historical reasons).
 * **array** :  Return as an Array. (*default*)
 
-#### Replace to HTML entity (Numeric character reference) when cannot be represented
+`type: 'string'` can be used as a shorthand for converting a code array to a string,
+as performed by [`Encoding.codeToString`](#code-array-to-string-conversion-codetostringstringtocode).  
+Note: Specifying `type: 'string'` may not handle conversions properly, except when converting to `UNICODE`.
 
-Characters that cannot be represented in the target character set are replaced with '?' (U+003F) by default but can be replaced with HTML entities by specifying the `fallback` option.
+#### Replacing characters with HTML entities when they cannot be represented
+
+Characters that cannot be represented in the target character set are replaced with '?' (U+003F) by default,
+but by specifying the `fallback` option, you can replace them with HTML entities (Numeric character references), such as `&#127843;`.
 
 The `fallback` option supports the following values.
 
 * **html-entity** : Replace to HTML entity (decimal HTML numeric character reference).
 * **html-entity-hex** : Replace to HTML entity (hexadecimal HTML numeric character reference).
 
-Example of specifying `{ fallback: 'html-entity' }` option.
+Example of specifying `{ fallback: 'html-entity' }` option:
 
 ```javascript
 const unicodeArray = Encoding.stringToCode('寿司🍣ビール🍺');
@@ -372,7 +387,7 @@ sjisArray = Encoding.convert(unicodeArray, {
 console.log(sjisArray); // Converted to a code array of '寿司&#127843;ビール&#127866;'
 ```
 
-Example of specifying `{ fallback: 'html-entity-hex' }` option
+Example of specifying `{ fallback: 'html-entity-hex' }` option:
 
 ```javascript
 const unicodeArray = Encoding.stringToCode('ホッケの漢字は𩸽');
@@ -417,6 +432,8 @@ const utf16beArray = Encoding.convert(utf8Array, {
   from: 'UTF8'
 });
 ```
+
+----
 
 ### URL Encode/Decode
 
@@ -499,7 +516,7 @@ console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 ### Example using the `Fetch API` and Typed Arrays (Uint8Array)
 
 This example reads a text file encoded in Shift_JIS as binary data,
-and displays it as a string after converting it to Unicode using [Encoding.convert](#convert-character-encoding-convert).
+and displays it as a string after converting it to Unicode using [Encoding.convert](#encodingconvert-data-to-from).
 
 ```javascript
 (async () => {

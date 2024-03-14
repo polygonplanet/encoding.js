@@ -23,15 +23,15 @@ JavaScript で文字コードの変換や判定をします。
 - [使い方の例](#使い方の例)
 - [Demo](#demo)
 - [API](#api)
-  * [文字コードを判定する (detect)](#encoding-detect-data-encodings)
-  * [文字コードを変換する (convert)](#文字コードを変換する-convert)
+  * [detect : 文字コードを判定する](#encodingdetect-data-encodings)
+  * [convert : 文字コードを変換する](#encodingconvert-data-to-from)
     + [引数 `to` にオブジェクトで変換オプションを指定する](#引数-to-にオブジェクトで変換オプションを指定する)
     + [`type` オプションで戻り値の型を指定する](#type-オプションで戻り値の型を指定する)
     + [変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える](#変換できない文字を-html-エンティティ-html-数値文字参照-に置き換える)
     + [UTF-16 に BOM をつける](#utf-16-に-bom-をつける)
-  * [URL Encode/Decode](#url-encodedecode)
-  * [Base64 Encode/Decode](#base64-encodedecode)
-  * [配列から文字列の相互変換 (codeToString/stringToCode)](#配列から文字列の相互変換-codetostringstringtocode)
+  * [urlEncode / urlDecode : URLエンコード・デコード](#url-encodedecode)
+  * [base64Encode / base64Decode : Base64エンコード・デコード](#base64-encodedecode)
+  * [codeToString / stringToCode : 配列から文字列の相互変換](#配列から文字列の相互変換-codetostringstringtocode)
   * [全角・半角変換](#全角半角変換)
 - [その他の例](#その他の例)
   * [`Fetch API` と Typed Arrays (Uint8Array) を使用した例](#fetch-api-と-typed-arrays-uint8array-を使用した例)
@@ -117,7 +117,7 @@ npm パッケージを提供する他の CDN も利用できます。
 
 ## 対応する文字コード
 
-|encoding.js での値|[`detect()`](#encoding-detect-data-encodings)|[`convert()`](#文字コードを変換する-convert)|MIME名 (備考)|
+|encoding.js での値|[`detect()`](#encodingdetect-data-encodings)|[`convert()`](#encodingconvert-data-to-from)|MIME名 (備考)|
 |:------:|:----:|:-----:|:---|
 |ASCII   |✓    |       |US-ASCII (コードポイントの範囲: `0-127`)|
 |BINARY  |✓    |       |(バイナリー文字列。コードポイントの範囲: `0-255`)|
@@ -136,7 +136,7 @@ npm パッケージを提供する他の CDN も利用できます。
 encoding.js では JavaScript で扱える内部文字コード (JavaScript の文字列) のことを `UNICODE` と定義しています。
 
 [上記 (特徴)](#特徴) のように、JavaScript の文字列は内部的に UTF-16 コードユニットとして符号化されるため、他の文字コードは正しく扱えません。
-そのため、[`Encoding.convert`](#文字コードを変換する-convert) によって JavaScript で扱える文字コード配列に変換するには `UNICODE` を指定する必要があります。
+そのため、[`Encoding.convert`](#encodingconvert-data-to-from) によって JavaScript で扱える文字コード配列に変換するには `UNICODE` を指定する必要があります。
 (※仮にHTMLページが UTF-8 だったとしても JavaScript で扱う場合は `UTF8` ではなく `UNICODE` を指定します)
 
 `Encoding.convert` から返される各文字コード配列の値は `UTF8` や `SJIS` などの `UNICODE` 以外を指定した場合は `0-255` までの整数になりますが、 `UNICODE` を指定した場合 `0-65535` までの整数 (`String.prototype.charCodeAt()` の値の範囲 = Code Unit) になります。
@@ -204,8 +204,8 @@ console.log(Encoding.codeToString(unicodeArray));
 
 ## API
 
-* [detect](#encoding-detect-data-encodings)
-* [convert](#文字コードを変換する-convert)
+* [detect](#encodingdetect-data-encodings)
+* [convert](#encodingconvert-data-to-from)
 * [urlEncode / urlDecode](#url-encodedecode)
 * [base64Encode / base64Decode](#base64-encodedecode)
 * [codeToString / stringToCode](#配列から文字列の相互変換-codetostringstringtocode)
@@ -219,8 +219,9 @@ console.log(Encoding.codeToString(unicodeArray));
 
 #### パラメータ
 
-* **data** *(Array|TypedArray|Buffer|string)* : 文字コードを判定する対象の配列または文字列。
-* **[encodings]** *(string|Array<string>|Object)* : (省略可) 判定を限定する文字コードを文字列または配列で指定します。
+* **data** *(Array\<number\>|TypedArray|Buffer|string)* : 文字コードを判定する対象の配列または文字列。
+* **\[encodings\]** *(string|Array\<string\>|Object)* : (省略可) 判定を限定する文字コードを文字列または配列で指定します。
+  省略または `AUTO` を指定すると自動判定になります。
   `SJIS`, `UTF8` などの [対応する文字コード](#対応する文字コード) に記載されている値を参照してください。
 
 #### 戻り値
@@ -265,16 +266,26 @@ if (detectedEncoding) {
 
 ----
 
-### 文字コードを変換する (convert)
+### Encoding.convert (data, to[, from])
 
-* {_Array|TypedArray|string_} Encoding.**convert** ( data, to\_encoding [, from\_encoding ] )  
-  文字コードを変換します  
-  @param {_Array|TypedArray|Buffer|string_} _data_ 文字コードを変換する対象の配列、または文字列  
-  @param {_string|Object_} _to\_encoding_ 変換先の文字コード、またはオブジェクト指定で変換オプション  
-  @param {_string|Array_} [_from\_encoding_] (省略可) 変換元の文字コード (省略または `AUTO` を指定すると自動判定)  
-  @return {_Array|TypedArray|string_}  変換した文字コードの数値配列、または(文字列を渡した場合)文字列が返ります
+指定されたデータの文字コードを変換します。
 
-UTF-8 の文字コード配列を Shift_JIS に変換する
+#### パラメータ
+
+* **data** *(Array\<number\>|TypedArray|Buffer|string)* : 文字コードを変換する対象の配列または文字列。
+* **to** *(string|Object)* : 変換先の文字コード、またはオブジェクト指定で変換オプション。
+  `SJIS`, `UTF8` などの [対応する文字コード](#対応する文字コード) に記載されている値を参照してください。
+* **\[from\]** *(string|Array\<string\>)* : (省略可) 変換元の文字コードを文字列または配列で指定します。
+  省略または `AUTO` を指定すると自動判定になります。
+
+#### 戻り値
+
+*(Array\<number\>|TypedArray|string)* : 変換した文字コードの数値配列を返します。
+引数 `data` に文字列を渡した場合は、文字列で（変換した文字コードの数値配列を文字列に変換して）返します。
+
+#### 例
+
+UTF-8 の文字コード配列を Shift_JIS に変換する例:
 
 ```javascript
 const utf8Array = [227, 129, 130]; // UTF-8 の「あ」
@@ -286,16 +297,15 @@ console.log(sjisArray); // [130, 160] (SJISの「あ」)
 
 ```javascript
 const utf8Array = new Uint8Array([227, 129, 130]);
-Encoding.convert(utf8Array, 'SJIS', 'UTF8');
+const sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
 ```
 
-変換元の文字コードを自動判定して変換。
+変換元の文字コードを自動判定して変換:
 
 ```javascript
-// 引数 from_encoding を省略すると文字コードを自動判定します
+// 引数 from を省略すると文字コードを自動判定します
 const utf8Array = [227, 129, 130];
 let sjisArray = Encoding.convert(utf8Array, 'SJIS');
-
 // または明示的に 'AUTO' と指定できます
 sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 ```
@@ -334,19 +344,20 @@ console.log(unicodeString); // 'おはよ'
 * **arraybuffer** : ArrayBuffer として (歴史的な理由で実際には `Uint16Array` が) 返ります。
 * **array** : 配列として返ります。 (デフォルト)
 
-`type: 'string'` は、配列から文字列に変換する [Encoding.codeToString](#配列から文字列の相互変換-codetostringstringtocode) のショートハンドとして使用することができます。  
+`type: 'string'` は、配列から文字列に変換する [`Encoding.codeToString`](#配列から文字列の相互変換-codetostringstringtocode) のショートハンドとして使用することができます。  
 ※ `UNICODE` への変換以外は `type: 'string'` を指定しても正しく扱えない可能性がありますのでご注意ください
 
 #### 変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える
 
-変換先の文字コードで表現できない文字はデフォルトで「?」 (U+003F) に置き換えられますが、`fallback` オプションを指定すると HTML エンティティに置き換えることができます。
+変換先の文字コードで表現できない文字はデフォルトで「?」 (U+003F) に置き換えられますが、
+`fallback` オプションを指定すると `&#127843;` 等の HTML エンティティに置き換えることができます。
 
 `fallback` オプションは以下の値が使用できます。
 
 * **html-entity** : HTML エンティティ (10進数の HTML 数値文字参照) に置き換える
 * **html-entity-hex** : HTML エンティティ (16進数の HTML 数値文字参照) に置き換える
 
-`{ fallback: 'html-entity' }` オプションを指定する例
+`{ fallback: 'html-entity' }` オプションを指定する例:
 
 ```javascript
 const unicodeArray = Encoding.stringToCode('寿司🍣ビール🍺');
@@ -366,7 +377,7 @@ sjisArray = Encoding.convert(unicodeArray, {
 console.log(sjisArray); // '寿司&#127843;ビール&#127866;' の数値配列に変換されます
 ```
 
-`{ fallback: 'html-entity-hex' }` オプションを指定する例
+`{ fallback: 'html-entity-hex' }` オプションを指定する例:
 
 ```javascript
 const unicodeArray = Encoding.stringToCode('ホッケの漢字は𩸽');
@@ -402,7 +413,7 @@ const utf16leArray = Encoding.convert(utf8Array, {
 });
 ```
 
-BOM が不要な場合は `UTF16BE` または `UTF16LE` を使用します。
+BOM が不要な場合は `UTF16BE` または `UTF16LE` を指定することができます。
 
 `UTF16BE` は、上位バイトが先頭側になるように並べる方式 (big-endian) で、
 `UTF16LE` は上位バイトが末尾側になるように並べる方式 (little-endian) になり、どちらも BOM は付きません。
@@ -413,6 +424,8 @@ const utf16beArray = Encoding.convert(utf8Array, {
   from: 'UTF8'
 });
 ```
+
+----
 
 ### URL Encode/Decode
 
@@ -498,7 +511,7 @@ console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 ### `Fetch API` と Typed Arrays (Uint8Array) を使用した例
 
 この例では Shift_JIS で書かれたテキストファイルをバイナリデータとして読み込み、
-[Encoding.convert](#文字コードを変換する-convert) によって `UNICODE` に変換して表示します。
+[Encoding.convert](#encodingconvert-data-to-from) によって `UNICODE` に変換して表示します。
 
 ```javascript
 (async () => {
