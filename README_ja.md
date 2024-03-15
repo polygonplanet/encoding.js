@@ -29,7 +29,8 @@ JavaScript で文字コードの変換や判定をします。
     + [`type` オプションで戻り値の型を指定する](#type-オプションで戻り値の型を指定する)
     + [変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える](#変換できない文字を-html-エンティティ-html-数値文字参照-に置き換える)
     + [UTF-16 に BOM をつける](#utf-16-に-bom-をつける)
-  * [urlEncode / urlDecode : URLエンコード・デコード](#url-encodedecode)
+  * [urlEncode : 文字コードの配列をURLエンコードする](#encodingurlencode-data)
+  * [urlDecode : 文字コードの配列にURLデコードする](#encodingurldecode-string)
   * [base64Encode / base64Decode : Base64エンコード・デコード](#base64-encodedecode)
   * [codeToString / stringToCode : 配列から文字列の相互変換](#配列から文字列の相互変換-codetostringstringtocode)
   * [全角・半角変換](#全角半角変換)
@@ -53,7 +54,7 @@ JavaScript の文字列は内部で UTF-16 コードユニットとして符号�
 
 文字コードの数値配列から文字列には [`Encoding.codeToString`](#配列から文字列の相互変換-codetostringstringtocode) などのメソッドで変換できますが、JavaScript は上記の特徴があるため文字列化してしまうと文字コードによっては正しく扱えません。
 
-そのため配列でなく文字列で扱いたい場合は、 [`Encoding.urlEncode`](#url-encodedecode) と [`Encoding.urlDecode`](#url-encodedecode) を通して `'%82%A0'` のようなパーセントでエンコードされた文字列に変換すると、他のリソースに受け渡しが可能です。
+そのため配列でなく文字列で扱いたい場合は、 [`Encoding.urlEncode`](#encodingurlencode-data) と [`Encoding.urlDecode`](#encodingurldecode-string) を通して `'%82%A0'` のようなパーセントでエンコードされた文字列に変換すると、他のリソースに受け渡しが可能です。
 または、[`Encoding.base64Encode`](#base64-encodedecode) と [`Encoding.base64Decode`](#base64-encodedecode) でも同様な方法で文字列として受け渡しができます。
 
 ## インストール
@@ -206,7 +207,8 @@ console.log(Encoding.codeToString(unicodeArray));
 
 * [detect](#encodingdetect-data-encodings)
 * [convert](#encodingconvert-data-to-from)
-* [urlEncode / urlDecode](#url-encodedecode)
+* [urlEncode](#encodingurlencode-data)
+* [urlDecode](#encodingurldecode-string)
 * [base64Encode / base64Decode](#base64-encodedecode)
 * [codeToString / stringToCode](#配列から文字列の相互変換-codetostringstringtocode)
 * [全角・半角変換](#全角半角変換)
@@ -427,27 +429,62 @@ const utf16beArray = Encoding.convert(utf8Array, {
 
 ----
 
-### URL Encode/Decode
+### Encoding.urlEncode (data)
 
-* {_string_} Encoding.**urlEncode** ( data )  
-  URLエンコード (パーセントエンコード) します  
-  @param {_Array_|_TypedArray_} _data_ 対象のデータ  
-  @return {_string_}  エンコードされた文字列が返ります
+文字コードの数値配列を URI 構成要素としてエンコード（パーセントエンコーディング）された `%xx` 形式の文字列に変換します。
 
-* {_Array_} Encoding.**urlDecode** ( string )  
-  URLデコード (パーセントデコード) します  
-  @param {_string_} _string_ 対象の文字列  
-  @return {_Array_}  デコードされた文字コード配列が返ります
+urlEncode は [`encodeURIComponent()`](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent) と同じく、
+下記を除くすべての文字をエスケープします。
+
+```
+エスケープされないもの:
+    A-Z a-z 0-9 - _ . ! ~ * ' ( )
+```
+
+#### パラメータ
+
+* **data** *(Array\<number\>|TypedArray|Buffer|string)* : エンコードする対象の配列または文字列。
+
+#### 戻り値
+
+*(string)* : URI 構成要素としてエンコードされた (`%xx` 形式) の文字列が返ります。
+
+#### 例
+
+Shift_JIS の配列を URL エンコードする例:
 
 ```javascript
-// 文字コードの配列をURLエンコード/デコード
-const sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
+const sjisArray = [130, 168, 130, 205, 130, 230]; // SJISで「おはよ」の配列
 const encoded = Encoding.urlEncode(sjisArray);
-console.log(encoded); // '%82%B1%82%F1%82%C9%82%BF%82%CD'
-
-const decoded = Encoding.urlDecode(encoded);
-console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
+console.log(encoded); // '%82%A8%82%CD%82%E6'
 ```
+
+----
+
+### Encoding.urlDecode (string)
+
+`%xx` 形式のパーセントエンコーディングされた文字列（URI 構成要素としてエンコードされた文字列）を文字コードの数値配列にデコードします。
+
+#### パラメータ
+
+* **string** *(string)* : デコードする対象の文字列。
+
+#### 戻り値
+
+*(Array\<number\>)* : デコードされた文字コードの数値配列が返ります。
+
+#### 例
+
+URL エンコードされた Shift_JIS の文字列をデコードする例:
+
+```javascript
+const encoded = '%82%A8%82%CD%82%E6'; // 'おはよ' が SJIS で URL エンコードされたもの
+const sjisArray = Encoding.urlDecode(encoded);
+console.log(sjisArray); // [130, 168, 130, 205, 130, 230]
+```
+
+----
+
 
 ### Base64 Encode/Decode
 

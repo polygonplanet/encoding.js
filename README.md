@@ -29,7 +29,8 @@ Convert and detect character encoding in JavaScript.
     + [Specify the return type by the `type` option](#specify-the-return-type-by-the-type-option)
     + [Replacing characters with HTML entities when they cannot be represented](#replacing-characters-with-html-entities-when-they-cannot-be-represented)
     + [Specify BOM in UTF-16](#specify-bom-in-utf-16)
-  * [urlEncode / urlDecode : URL encoding and decoding](#url-encodedecode)
+  * [urlEncode : Encodes to percent-encoded string](#encodingurlencode-data)
+  * [urlDecode : Decodes from percent-encoded string](#encodingurldecode-string)
   * [base64Encode / base64Decode : Base64 encoding and decoding](#base64-encodedecode)
   * [codeToString / stringToCode : Code array to string conversion](#code-array-to-string-conversion-codetostringstringtocode)
   * [Japanese Zenkaku / Hankaku conversion](#japanese-zenkakuhankaku-conversion)
@@ -59,7 +60,7 @@ Numeric arrays of character codes can be converted to strings using methods such
 However, due to the JavaScript specifications mentioned above, some character encodings may not be handled properly when converted directly to strings.
 
 If you prefer to use strings instead of numeric arrays, you can convert them to percent-encoded strings,
-such as `'%82%A0'`, using [`Encoding.urlEncode`](#url-encodedecode) and [`Encoding.urlDecode`](#url-encodedecode) for passing to other resources.
+such as `'%82%A0'`, using [`Encoding.urlEncode`](#encodingurlencode-data) and [`Encoding.urlDecode`](#encodingurldecode-string) for passing to other resources.
 Similarly, [`Encoding.base64Encode`](#base64-encodedecode) and [`Encoding.base64Decode`](#base64-encodedecode) allow for encoding and decoding to and from base64,
 which can then be passed as strings.
 
@@ -215,7 +216,8 @@ console.log(Encoding.codeToString(unicodeArray));
 
 * [detect](#encodingdetect-data-encodings)
 * [convert](#encodingconvert-data-to-from)
-* [urlEncode / urlDecode](#url-encodedecode)
+* [urlEncode](#encodingurlencode-data)
+* [urlDecode](#encodingurldecode-string)
 * [base64Encode / base64Decode](#base64-encodedecode)
 * [codeToString / stringToCode](#code-array-to-string-conversion-codetostringstringtocode)
 * [Japanese Zenkaku / Hankaku conversion](#japanese-zenkakuhankaku-conversion)
@@ -435,26 +437,59 @@ const utf16beArray = Encoding.convert(utf8Array, {
 
 ----
 
-### URL Encode/Decode
+### Encoding.urlEncode (data)
 
-* {_string_} Encoding.**urlEncode** ( data )  
-  URL(percent) encode.  
-  @param {_Array_|_TypedArray_} _data_ Target data.  
-  @return {_string_}  Return the encoded string.
+Encodes a numeric character code array into a percent-encoded string formatted as a URI component in `%xx` format.
 
-* {_Array_} Encoding.**urlDecode** ( string )  
-  URL(percent) decode.  
-  @param {_string_} _string_ Target data.  
-  @return {_Array_} Return the decoded array.
+urlEncode escapes all characters except the following, just like [`encodeURIComponent()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent).
+
+```
+A-Z a-z 0-9 - _ . ! ~ * ' ( )
+```
+
+#### Parameters
+
+* **data** *(Array\<number\>|TypedArray|Buffer|string)* : The numeric character code array or string that will be encoded into a percent-encoded URI component.
+
+#### Return value
+
+*(string)* : Returns a percent-encoded string formatted as a URI component in `%xx` format.
+
+#### Examples
+
+Example of URL encoding a Shift_JIS array:
 
 ```javascript
-const sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
+const sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
 const encoded = Encoding.urlEncode(sjisArray);
-console.log(encoded); // '%82%B1%82%F1%82%C9%82%BF%82%CD'
-
-const decoded = Encoding.urlDecode(encoded);
-console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
+console.log(encoded); // '%82%A8%82%CD%82%E6'
 ```
+
+----
+
+### Encoding.urlDecode (string)
+
+Decodes a percent-encoded string formatted as a URI component in `%xx` format to a numeric character code array.
+
+#### Parameters
+
+* **string** *(string)* : The string to decode.
+
+#### Return value
+
+*(Array\<number\>)* : Returns a numeric character code array.
+
+#### Examples
+
+Example of decoding a percent-encoded Shift_JIS string:
+
+```javascript
+const encoded = '%82%A8%82%CD%82%E6'; // 'おはよ' encoded as percent-encoded SJIS string
+const sjisArray = Encoding.urlDecode(encoded);
+console.log(sjisArray); // [130, 168, 130, 205, 130, 230]
+```
+
+----
 
 ### Base64 Encode/Decode
 
