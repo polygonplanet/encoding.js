@@ -31,7 +31,8 @@ Convert and detect character encoding in JavaScript.
     + [Specify BOM in UTF-16](#specify-bom-in-utf-16)
   * [urlEncode : Encodes to percent-encoded string](#encodingurlencode-data)
   * [urlDecode : Decodes from percent-encoded string](#encodingurldecode-string)
-  * [base64Encode / base64Decode : Base64 encoding and decoding](#base64-encodedecode)
+  * [base64Encode : Encodes to Base64 formatted string](#encodingbase64encode-data)
+  * [base64Decode : Decodes from Base64 formatted string](#encodingbase64decode-string)
   * [codeToString / stringToCode : Code array to string conversion](#code-array-to-string-conversion-codetostringstringtocode)
   * [Japanese Zenkaku / Hankaku conversion](#japanese-zenkakuhankaku-conversion)
 - [Other examples](#other-examples)
@@ -61,7 +62,7 @@ However, due to the JavaScript specifications mentioned above, some character en
 
 If you prefer to use strings instead of numeric arrays, you can convert them to percent-encoded strings,
 such as `'%82%A0'`, using [`Encoding.urlEncode`](#encodingurlencode-data) and [`Encoding.urlDecode`](#encodingurldecode-string) for passing to other resources.
-Similarly, [`Encoding.base64Encode`](#base64-encodedecode) and [`Encoding.base64Decode`](#base64-encodedecode) allow for encoding and decoding to and from base64,
+Similarly, [`Encoding.base64Encode`](#encodingbase64encode-data) and [`Encoding.base64Decode`](#encodingbase64decode-string) allow for encoding and decoding to and from base64,
 which can then be passed as strings.
 
 ## Installation
@@ -124,7 +125,7 @@ for example [cdnjs](https://cdnjs.com/libraries/encoding-japanese) or [jsDelivr]
 
 ## Supported encodings
 
-|Value in encoding.js|[`detect()`](#encoding-detect-data-encodings)|[`convert()`](#convert-character-encoding-convert)|MIME Name (Note)|
+|Value in encoding.js|[`detect()`](#encodingdetect-data-encodings)|[`convert()`](#encodingconvert-data-to-from)|MIME Name (Note)|
 |:------:|:----:|:-----:|:---|
 |ASCII   |✓    |       |US-ASCII (Code point range: `0-127`)|
 |BINARY  |✓    |       |(Binary string. Code point range: `0-255`)|
@@ -218,7 +219,8 @@ console.log(Encoding.codeToString(unicodeArray));
 * [convert](#encodingconvert-data-to-from)
 * [urlEncode](#encodingurlencode-data)
 * [urlDecode](#encodingurldecode-string)
-* [base64Encode / base64Decode](#base64-encodedecode)
+* [base64Encode](#encodingbase64encode-data)
+* [base64Decode](#encodingbase64decode-string)
 * [codeToString / stringToCode](#code-array-to-string-conversion-codetostringstringtocode)
 * [Japanese Zenkaku / Hankaku conversion](#japanese-zenkakuhankaku-conversion)
 
@@ -491,26 +493,56 @@ console.log(sjisArray); // [130, 168, 130, 205, 130, 230]
 
 ----
 
-### Base64 Encode/Decode
+### Encoding.base64Encode (data)
 
-* {_string_} Encoding.**base64Encode** ( data )  
-  Base64 encode.  
-  @param {_Array_|_TypedArray_} _data_ Target data.  
-  @return {_string_}  Return the Base64 encoded string.
+Encodes a numeric character code array into a Base64 encoded string.
 
-* {_Array_} Encoding.**base64Decode** ( string )  
-  Base64 decode.  
-  @param {_string_} _string_ Target data.  
-  @return {_Array_} Return the Base64 decoded array.
+#### Parameters
+
+* **data** *(Array\<number\>|TypedArray|Buffer|string)* : The numeric character code array or string to encode.
+
+#### Return value
+
+*(string)* : Returns a Base64 encoded string.
+
+#### Examples
+
+Example of Base64 encoding a Shift_JIS array:
 
 ```javascript
-const sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
-const encoded = Encoding.base64Encode(sjisArray);
-console.log(encoded); // 'grGC8YLJgr+CzQ=='
-
-const decoded = Encoding.base64Decode(encoded);
-console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
+const sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
+const encodedStr = Encoding.base64Encode(sjisArray);
+console.log(encodedStr); // 'gqiCzYLm'
 ```
+
+----
+
+### Encoding.base64Decode (string)
+
+Decodes a Base64 encoded string to a numeric character code array.
+
+#### Parameters
+
+* **string** *(string)* : The Base64 encoded string to decode.
+
+#### Return value
+
+*(Array\<number\>)* : Returns a Base64 decoded numeric character code array.
+
+#### Examples
+
+Example of `base64Encode` and `base64Decode`:
+
+```javascript
+const sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]; // 'こんにちは' array in SJIS
+const encodedStr = Encoding.base64Encode(sjisArray);
+console.log(encodedStr); // 'grGC8YLJgr+CzQ=='
+
+const decodedArray = Encoding.base64Decode(encodedStr);
+console.log(decodedArray); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
+```
+
+----
 
 ### Code array to string conversion (codeToString/stringToCode)
 

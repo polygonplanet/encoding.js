@@ -31,7 +31,8 @@ JavaScript で文字コードの変換や判定をします。
     + [UTF-16 に BOM をつける](#utf-16-に-bom-をつける)
   * [urlEncode : 文字コードの配列をURLエンコードする](#encodingurlencode-data)
   * [urlDecode : 文字コードの配列にURLデコードする](#encodingurldecode-string)
-  * [base64Encode / base64Decode : Base64エンコード・デコード](#base64-encodedecode)
+  * [base64Encode : 文字コードの配列を Base64 エンコードする](#encodingbase64encode-data)
+  * [base64Decode : 文字コードの配列に Base64 デコードする](#encodingbase64decode-string)
   * [codeToString / stringToCode : 配列から文字列の相互変換](#配列から文字列の相互変換-codetostringstringtocode)
   * [全角・半角変換](#全角半角変換)
 - [その他の例](#その他の例)
@@ -55,7 +56,7 @@ JavaScript の文字列は内部で UTF-16 コードユニットとして符号�
 文字コードの数値配列から文字列には [`Encoding.codeToString`](#配列から文字列の相互変換-codetostringstringtocode) などのメソッドで変換できますが、JavaScript は上記の特徴があるため文字列化してしまうと文字コードによっては正しく扱えません。
 
 そのため配列でなく文字列で扱いたい場合は、 [`Encoding.urlEncode`](#encodingurlencode-data) と [`Encoding.urlDecode`](#encodingurldecode-string) を通して `'%82%A0'` のようなパーセントでエンコードされた文字列に変換すると、他のリソースに受け渡しが可能です。
-または、[`Encoding.base64Encode`](#base64-encodedecode) と [`Encoding.base64Decode`](#base64-encodedecode) でも同様な方法で文字列として受け渡しができます。
+または、[`Encoding.base64Encode`](#encodingbase64encode-data) と [`Encoding.base64Decode`](#encodingbase64decode-string) でも同様な方法で文字列として受け渡しができます。
 
 ## インストール
 
@@ -209,7 +210,8 @@ console.log(Encoding.codeToString(unicodeArray));
 * [convert](#encodingconvert-data-to-from)
 * [urlEncode](#encodingurlencode-data)
 * [urlDecode](#encodingurldecode-string)
-* [base64Encode / base64Decode](#base64-encodedecode)
+* [base64Encode](#encodingbase64encode-data)
+* [base64Decode](#encodingbase64decode-string)
 * [codeToString / stringToCode](#配列から文字列の相互変換-codetostringstringtocode)
 * [全角・半角変換](#全角半角変換)
 
@@ -455,8 +457,8 @@ Shift_JIS の配列を URL エンコードする例:
 
 ```javascript
 const sjisArray = [130, 168, 130, 205, 130, 230]; // SJISで「おはよ」の配列
-const encoded = Encoding.urlEncode(sjisArray);
-console.log(encoded); // '%82%A8%82%CD%82%E6'
+const encodedStr = Encoding.urlEncode(sjisArray);
+console.log(encodedStr); // '%82%A8%82%CD%82%E6'
 ```
 
 ----
@@ -478,34 +480,63 @@ console.log(encoded); // '%82%A8%82%CD%82%E6'
 URL エンコードされた Shift_JIS の文字列をデコードする例:
 
 ```javascript
-const encoded = '%82%A8%82%CD%82%E6'; // 'おはよ' が SJIS で URL エンコードされたもの
-const sjisArray = Encoding.urlDecode(encoded);
+const encodedStr = '%82%A8%82%CD%82%E6'; // 'おはよ' が SJIS で URL エンコードされたもの
+const sjisArray = Encoding.urlDecode(encodedStr);
 console.log(sjisArray); // [130, 168, 130, 205, 130, 230]
 ```
 
 ----
 
+### Encoding.base64Encode (data)
 
-### Base64 Encode/Decode
+文字コードの数値配列を Base64 エンコードされた文字列に変換します。
 
-* {_string_} Encoding.**base64Encode** ( data )  
-  Base64エンコードします  
-  @param {_Array_|_TypedArray_} _data_ 対象のデータ  
-  @return {_string_}  Base64エンコードされた文字列が返ります
+#### パラメータ
 
-* {_Array_} Encoding.**base64Decode** ( string )  
-  Base64デコードします  
-  @param {_string_} _string_ 対象のデータ  
-  @return {_Array_} Base64デコードされた文字コード配列が返ります
+* **data** *(Array\<number\>|TypedArray|Buffer|string)* : Base64 エンコードする対象の配列または文字列。
+
+#### 戻り値
+
+*(string)* : Base64 エンコードされた文字列が返ります。
+
+#### 例
+
+Shift_JIS の配列を Base64 エンコードする例:
 
 ```javascript
-const sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]; // SJISの'こんにちは'
-const encoded = Encoding.base64Encode(sjisArray);
-console.log(encoded); // 'grGC8YLJgr+CzQ=='
-
-const decoded = Encoding.base64Decode(encoded);
-console.log(decoded); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
+const sjisArray = [130, 168, 130, 205, 130, 230]; // SJISで「おはよ」の配列
+const encodedStr = Encoding.base64Encode(sjisArray);
+console.log(encodedStr); // 'gqiCzYLm'
 ```
+
+----
+
+### Encoding.base64Decode (string)
+
+Base64 エンコードされた文字列を文字コードの数値配列に変換します。
+
+#### パラメータ
+
+* **string** *(string)* : Base64 エンコードされた文字列。
+
+#### 戻り値
+
+*(Array\<number\>)* : Base64 デコードした文字コードの数値配列が返ります。
+
+#### 例
+
+`base64Encode` と `base64Decode` の例:
+
+```javascript
+const sjisArray = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]; // SJISの「こんにちは」
+const encodedStr = Encoding.base64Encode(sjisArray);
+console.log(encodedStr); // 'grGC8YLJgr+CzQ=='
+
+const decodedArray = Encoding.base64Decode(encodedStr);
+console.log(decodedArray); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
+```
+
+----
 
 ### 配列から文字列の相互変換 (codeToString/stringToCode)
 
