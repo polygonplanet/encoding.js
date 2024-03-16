@@ -33,7 +33,8 @@ JavaScript で文字コードの変換や判定をします。
   * [urlDecode : 文字コードの配列にURLデコードする](#encodingurldecode-string)
   * [base64Encode : 文字コードの配列を Base64 エンコードする](#encodingbase64encode-data)
   * [base64Decode : 文字コードの配列に Base64 デコードする](#encodingbase64decode-string)
-  * [codeToString / stringToCode : 配列から文字列の相互変換](#配列から文字列の相互変換-codetostringstringtocode)
+  * [codeToString : 文字コードの配列を文字列に変換する](#encodingcodetostring-code)
+  * [stringToCode : 文字列を文字コードの配列に変換する](#encodingstringtocode-string)
   * [全角・半角変換](#全角半角変換)
 - [その他の例](#その他の例)
   * [`Fetch API` と Typed Arrays (Uint8Array) を使用した例](#fetch-api-と-typed-arrays-uint8array-を使用した例)
@@ -53,7 +54,7 @@ JavaScript の文字列は内部で UTF-16 コードユニットとして符号�
 
 ### 各文字コードを文字列で扱うには？
 
-文字コードの数値配列から文字列には [`Encoding.codeToString`](#配列から文字列の相互変換-codetostringstringtocode) などのメソッドで変換できますが、JavaScript は上記の特徴があるため文字列化してしまうと文字コードによっては正しく扱えません。
+文字コードの数値配列から文字列には [`Encoding.codeToString`](#encodingcodetostring-code) などのメソッドで変換できますが、JavaScript は上記の特徴があるため文字列化してしまうと文字コードによっては正しく扱えません。
 
 そのため配列でなく文字列で扱いたい場合は、 [`Encoding.urlEncode`](#encodingurlencode-data) と [`Encoding.urlDecode`](#encodingurldecode-string) を通して `'%82%A0'` のようなパーセントでエンコードされた文字列に変換すると、他のリソースに受け渡しが可能です。
 または、[`Encoding.base64Encode`](#encodingbase64encode-data) と [`Encoding.base64Decode`](#encodingbase64decode-string) でも同様な方法で文字列として受け渡しができます。
@@ -212,7 +213,8 @@ console.log(Encoding.codeToString(unicodeArray));
 * [urlDecode](#encodingurldecode-string)
 * [base64Encode](#encodingbase64encode-data)
 * [base64Decode](#encodingbase64decode-string)
-* [codeToString / stringToCode](#配列から文字列の相互変換-codetostringstringtocode)
+* [codeToString](#encodingcodetostring-code)
+* [stringToCode](#encodingstringtocode-string)
 * [全角・半角変換](#全角半角変換)
 
 ----
@@ -348,7 +350,7 @@ console.log(unicodeString); // 'おはよ'
 * **arraybuffer** : ArrayBuffer として (歴史的な理由で実際には `Uint16Array` が) 返ります。
 * **array** : 配列として返ります。 (デフォルト)
 
-`type: 'string'` は、配列から文字列に変換する [`Encoding.codeToString`](#配列から文字列の相互変換-codetostringstringtocode) のショートハンドとして使用することができます。  
+`type: 'string'` は、配列から文字列に変換する [`Encoding.codeToString`](#encodingcodetostring-code) のショートハンドとして使用することができます。  
 ※ `UNICODE` への変換以外は `type: 'string'` を指定しても正しく扱えない可能性がありますのでご注意ください
 
 #### 変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える
@@ -538,13 +540,56 @@ console.log(decodedArray); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 
 ----
 
-### 配列から文字列の相互変換 (codeToString/stringToCode)
+### Encoding.codeToString (code)
 
-* {_string_} Encoding.**codeToString** ( {_Array_|_TypedArray_} data )  
-  文字コード配列を文字列に変換(連結)して返します
+文字コードの数値配列を文字列に変換します。
 
-* {_Array_} Encoding.**stringToCode** ( {_string_} string )  
-  文字列を文字コード配列に変換(分割)して返します
+#### パラメータ
+
+* **code** *(Array\<number\>|TypedArray|Buffer)* : 文字列に変換する対象の文字コード配列。
+
+#### 戻り値
+
+*(string)* : 変換した文字列が返ります。
+
+#### 例
+
+文字コードの数値配列を文字列に変換する例:
+
+```javascript
+const sjisArray = [130, 168, 130, 205, 130, 230]; // SJISで「おはよ」の配列
+const unicodeArray = Encoding.convert(sjisArray, {
+  to: 'UNICODE',
+  from: 'SJIS'
+});
+const unicodeStr = Encoding.codeToString(unicodeArray);
+console.log(unicodeStr); // 'おはよ'
+```
+
+----
+
+### Encoding.stringToCode (string)
+
+文字列を文字コードの数値配列に変換します。
+
+#### パラメータ
+
+* **string** *(string)* : 変換する対象の文字列。
+
+#### 戻り値
+
+*(Array\<number\>)* : 変換した文字コードの数値配列が返ります。
+
+#### 例
+
+文字列を文字コードの数値配列に変換する例:
+
+```javascript
+const unicodeArray = Encoding.stringToCode('おはよ');
+console.log(unicodeArray); // [12362, 12399, 12424]
+```
+
+----
 
 ### 全角・半角変換
 

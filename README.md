@@ -33,7 +33,8 @@ Convert and detect character encoding in JavaScript.
   * [urlDecode : Decodes from percent-encoded string](#encodingurldecode-string)
   * [base64Encode : Encodes to Base64 formatted string](#encodingbase64encode-data)
   * [base64Decode : Decodes from Base64 formatted string](#encodingbase64decode-string)
-  * [codeToString / stringToCode : Code array to string conversion](#code-array-to-string-conversion-codetostringstringtocode)
+  * [codeToString : Converts character code array to string](#encodingcodetostring-code)
+  * [stringToCode : Converts string to character code array](#encodingstringtocode-string)
   * [Japanese Zenkaku / Hankaku conversion](#japanese-zenkakuhankaku-conversion)
 - [Other examples](#other-examples)
   * [Example using the `fetch API` and Typed Arrays (Uint8Array)](#example-using-the-fetch-api-and-typed-arrays-uint8array)
@@ -57,7 +58,7 @@ The array of character codes used in its methods can also be utilized with Typed
 
 ### How to Use Character Encoding in Strings?
 
-Numeric arrays of character codes can be converted to strings using methods such as [`Encoding.codeToString`](#code-array-to-string-conversion-codetostringstringtocode).
+Numeric arrays of character codes can be converted to strings using methods such as [`Encoding.codeToString`](#encodingcodetostring-code).
 However, due to the JavaScript specifications mentioned above, some character encodings may not be handled properly when converted directly to strings.
 
 If you prefer to use strings instead of numeric arrays, you can convert them to percent-encoded strings,
@@ -221,7 +222,8 @@ console.log(Encoding.codeToString(unicodeArray));
 * [urlDecode](#encodingurldecode-string)
 * [base64Encode](#encodingbase64encode-data)
 * [base64Decode](#encodingbase64decode-string)
-* [codeToString / stringToCode](#code-array-to-string-conversion-codetostringstringtocode)
+* [codeToString](#encodingcodetostring-code)
+* [stringToCode](#encodingstringtocode-string)
 * [Japanese Zenkaku / Hankaku conversion](#japanese-zenkakuhankaku-conversion)
 
 ----
@@ -358,7 +360,7 @@ The following `type` options are supported.
 * **array** :  Return as an Array. (*default*)
 
 `type: 'string'` can be used as a shorthand for converting a code array to a string,
-as performed by [`Encoding.codeToString`](#code-array-to-string-conversion-codetostringstringtocode).  
+as performed by [`Encoding.codeToString`](#encodingcodetostring-code).  
 Note: Specifying `type: 'string'` may not handle conversions properly, except when converting to `UNICODE`.
 
 #### Replacing characters with HTML entities when they cannot be represented
@@ -544,13 +546,56 @@ console.log(decodedArray); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 
 ----
 
-### Code array to string conversion (codeToString/stringToCode)
+### Encoding.codeToString (code)
 
-* {_string_} Encoding.**codeToString** ( {_Array_|_TypedArray_} data )  
-  Joins a character code array to string.
+Converts a numeric character code array to string.
 
-* {_Array_} Encoding.**stringToCode** ( {_string_} string )  
-  Splits string to an array of character codes.
+#### Parameters
+
+* **code** *(Array\<number\>|TypedArray|Buffer)* : The numeric character code array to convert.
+
+#### Return value
+
+*(string)* : Returns a converted string.
+
+#### Examples
+
+Example of converting a character code array to a string:
+
+```javascript
+const sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
+const unicodeArray = Encoding.convert(sjisArray, {
+  to: 'UNICODE',
+  from: 'SJIS'
+});
+const unicodeStr = Encoding.codeToString(unicodeArray);
+console.log(unicodeStr); // 'おはよ'
+```
+
+----
+
+### Encoding.stringToCode (string)
+
+Converts a string to a numeric character code array.
+
+#### Parameters
+
+* **string** *(string)* : The string to convert.
+
+#### Return value
+
+*(Array\<number\>)* : Returns a numeric character code array converted from the string.
+
+#### Examples
+
+Example of converting a string to a character code array:
+
+```javascript
+const unicodeArray = Encoding.stringToCode('おはよ');
+console.log(unicodeArray); // [12362, 12399, 12424]
+```
+
+----
 
 ### Japanese Zenkaku/Hankaku conversion
 
