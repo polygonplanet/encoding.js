@@ -35,7 +35,7 @@ Convert and detect character encoding in JavaScript.
   * [base64Decode : Decodes from Base64 formatted string](#encodingbase64decode-string)
   * [codeToString : Converts character code array to string](#encodingcodetostring-code)
   * [stringToCode : Converts string to character code array](#encodingstringtocode-string)
-  * [Japanese Zenkaku / Hankaku conversion](#japanese-zenkakuhankaku-conversion)
+  * [Japanese Zenkaku/Hankaku conversion](#japanese-zenkakuhankaku-conversion)
 - [Other examples](#other-examples)
   * [Example using the `fetch API` and Typed Arrays (Uint8Array)](#example-using-the-fetch-api-and-typed-arrays-uint8array)
   * [Convert encoding for file using the File APIs](#convert-encoding-for-file-using-the-file-apis)
@@ -224,7 +224,7 @@ console.log(Encoding.codeToString(unicodeArray));
 * [base64Decode](#encodingbase64decode-string)
 * [codeToString](#encodingcodetostring-code)
 * [stringToCode](#encodingstringtocode-string)
-* [Japanese Zenkaku / Hankaku conversion](#japanese-zenkakuhankaku-conversion)
+* [Japanese Zenkaku/Hankaku conversion](#japanese-zenkakuhankaku-conversion)
 
 ----
 
@@ -599,29 +599,65 @@ console.log(unicodeArray); // [12362, 12399, 12424]
 
 ### Japanese Zenkaku/Hankaku conversion
 
-* {_Array|string_} Encoding.**toHankakuCase** ( {_Array|string_} data )  
-  Convert the ascii symbols and alphanumeric characters to the zenkaku symbols and alphanumeric characters.
+The following methods convert Japanese full-width (zenkaku) and half-width (hankaku) characters,
+suitable for use with `UNICODE` strings or numeric character code arrays of `UNICODE`.
 
-* {_Array|string_} Encoding.**toZenkakuCase** ( {_Array|string_} data )  
-  Convert to the zenkaku symbols and alphanumeric characters from the ascii symbols and alphanumeric characters.
+Returns a converted string if the argument `data` is a string.
+Returns a numeric character code array if the argument `data` is a code array.
 
-* {_Array|string_} Encoding.**toHiraganaCase** ( {_Array|string_} data )  
-  Convert to the zenkaku hiragana from the zenkaku katakana.
+- **Encoding.toHankakuCase (data)** : Converts full-width (zenkaku) symbols and alphanumeric characters to their half-width (hankaku) equivalents.
+- **Encoding.toZenkakuCase (data)** : Converts half-width (hankaku) symbols and alphanumeric characters to their full-width (zenkaku) equivalents.
+- **Encoding.toHiraganaCase (data)** : Converts full-width katakana to full-width hiragana.
+- **Encoding.toKatakanaCase (data)** : Converts full-width hiragana to full-width katakana.
+- **Encoding.toHankanaCase (data)** : Converts full-width katakana to half-width katakana.
+- **Encoding.toZenkanaCase (data)** : Converts half-width katakana to full-width katakana.
+- **Encoding.toHankakuSpace (data)** : Converts the em space (U+3000) to the single space (U+0020).
+- **Encoding.toZenkakuSpace (data)** : Converts the single space (U+0020) to the em space (U+3000).
 
-* {_Array|string_} Encoding.**toKatakanaCase** ( {_Array|string_} data )  
-  Convert to the zenkaku katakana from the zenkaku hiragana.
+#### Parameters
 
-* {_Array|string_} Encoding.**toHankanaCase** ( {_Array|string_} data )  
-  Convert to the hankaku katakana from the zenkaku katakana.
+- **data** *(Array\<number\>|TypedArray|Buffer|string)* : The string or numeric character code array to convert.
 
-* {_Array|string_} Encoding.**toZenkanaCase** ( {_Array|string_} data )  
-  Convert to the zenkaku katakana from the hankaku katakana.
+#### Return value
 
-* {_Array|string_} Encoding.**toHankakuSpace** ({_Array|string_} data )  
-  Convert the em space(U+3000) to the single space(U+0020).
+*(Array\<number\>|string)* : Returns a converted string or numeric character code array.
 
-* {_Array|string_} Encoding.**toZenkakuSpace** ( {_Array|string_} data )  
-  Convert the single space(U+0020) to the em space(U+3000).
+#### Examples
+
+Example of converting zenkaku and hankaku strings:
+
+```javascript
+console.log(Encoding.toHankakuCase('ａｂｃＤＥＦ１２３＠！＃＊＝')); // 'abcDEF123@!#*='
+console.log(Encoding.toZenkakuCase('abcDEF123@!#*=')); // 'ａｂｃＤＥＦ１２３＠！＃＊＝'
+console.log(Encoding.toHiraganaCase('アイウエオァィゥェォヴボポ')); // 'あいうえおぁぃぅぇぉゔぼぽ'
+console.log(Encoding.toKatakanaCase('あいうえおぁぃぅぇぉゔぼぽ')); // 'アイウエオァィゥェォヴボポ'
+console.log(Encoding.toHankanaCase('アイウエオァィゥェォヴボポ')); // 'ｱｲｳｴｵｧｨｩｪｫｳﾞﾎﾞﾎﾟ'
+console.log(Encoding.toZenkanaCase('ｱｲｳｴｵｧｨｩｪｫｳﾞﾎﾞﾎﾟ')); // 'アイウエオァィゥェォヴボポ'
+console.log(Encoding.toHankakuSpace('あいうえお　abc　123')); // 'あいうえお abc 123'
+console.log(Encoding.toZenkakuSpace('あいうえお abc 123')); // 'あいうえお　abc　123'
+```
+
+Example of converting zenkaku and hankaku code arrays:
+
+```javascript
+const unicodeArray = Encoding.stringToCode('ａｂｃ１２３！＃　あいうアイウ ABCｱｲｳ');
+console.log(Encoding.codeToString(Encoding.toHankakuCase(unicodeArray)));
+// 'abc123!#　あいうアイウ ABCｱｲｳ'
+console.log(Encoding.codeToString(Encoding.toZenkakuCase(unicodeArray)));
+// 'ａｂｃ１２３！＃　あいうアイウ ＡＢＣｱｲｳ'
+console.log(Encoding.codeToString(Encoding.toHiraganaCase(unicodeArray)));
+// 'ａｂｃ１２３！＃　あいうあいう ABCｱｲｳ'
+console.log(Encoding.codeToString(Encoding.toKatakanaCase(unicodeArray)));
+// 'ａｂｃ１２３！＃　アイウアイウ ABCｱｲｳ'
+console.log(Encoding.codeToString(Encoding.toHankanaCase(unicodeArray)));
+// 'ａｂｃ１２３！＃　あいうｱｲｳ ABCｱｲｳ'
+console.log(Encoding.codeToString(Encoding.toZenkanaCase(unicodeArray)));
+// 'ａｂｃ１２３！＃　あいうアイウ ABCアイウ'
+console.log(Encoding.codeToString(Encoding.toHankakuSpace(unicodeArray)));
+// 'ａｂｃ１２３！＃ あいうアイウ ABCｱｲｳ'
+console.log(Encoding.codeToString(Encoding.toZenkakuSpace(unicodeArray)));
+// 'ａｂｃ１２３！＃　あいうアイウ　ABCｱｲｳ'
+```
 
 ## Other examples
 

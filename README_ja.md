@@ -35,7 +35,7 @@ JavaScript で文字コードの変換や判定をします。
   * [base64Decode : 文字コードの配列に Base64 デコードする](#encodingbase64decode-string)
   * [codeToString : 文字コードの配列を文字列に変換する](#encodingcodetostring-code)
   * [stringToCode : 文字列を文字コードの配列に変換する](#encodingstringtocode-string)
-  * [全角・半角変換](#全角半角変換)
+  * [日本語の全角・半角変換](#日本語の全角半角変換)
 - [その他の例](#その他の例)
   * [`Fetch API` と Typed Arrays (Uint8Array) を使用した例](#fetch-api-と-typed-arrays-uint8array-を使用した例)
   * [File API を使用したファイルの文字コード判定・変換例](#file-api-を使用したファイルの文字コード判定変換例)
@@ -215,7 +215,7 @@ console.log(Encoding.codeToString(unicodeArray));
 * [base64Decode](#encodingbase64decode-string)
 * [codeToString](#encodingcodetostring-code)
 * [stringToCode](#encodingstringtocode-string)
-* [全角・半角変換](#全角半角変換)
+* [日本語の全角・半角変換](#日本語の全角半角変換)
 
 ----
 
@@ -591,33 +591,67 @@ console.log(unicodeArray); // [12362, 12399, 12424]
 
 ----
 
-### 全角・半角変換
+### 日本語の全角・半角変換
 
-以下のメソッドは `UNICODE` の文字列または `UNICODE` の文字コードの配列に対して使用できます。
+以下のメソッドは、日本語の全角・半角文字を変換します。
+`UNICODE` の文字列または `UNICODE` の文字コードの数値配列に対して使用できます。
 
-* {_Array|string_} Encoding.**toHankakuCase** ( {_Array|string_} data )  
-  全角英数記号文字を半角英数記号文字に変換
+入力されたデータが文字列の場合、変換した文字列を返します。
+数値配列の場合、変換した文字コードの数値配列を返します。
 
-* {_Array|string_} Encoding.**toZenkakuCase** ( {_Array|string_} data )  
-  半角英数記号文字を全角英数記号文字に変換
+- **Encoding.toHankakuCase (data)** : 全角英数記号文字を半角英数記号文字に変換します。
+- **Encoding.toZenkakuCase (data)** : 半角英数記号文字を全角英数記号文字に変換します。
+- **Encoding.toHiraganaCase (data)** : 全角カタカナを全角ひらがなに変換します。
+- **Encoding.toKatakanaCase (data)** : 全角ひらがなを全角カタカナに変換します。
+- **Encoding.toHankanaCase (data)** : 全角カタカナを半角ｶﾀｶﾅに変換します。
+- **Encoding.toZenkanaCase (data)** : 半角ｶﾀｶﾅを全角カタカナに変換します。
+- **Encoding.toHankakuSpace (data)** : 全角スペース(U+3000)を半角スペース(U+0020)に変換します。
+- **Encoding.toZenkakuSpace (data)** : 半角スペース(U+0020)を全角スペース(U+3000)に変換します。
 
-* {_Array|string_} Encoding.**toHiraganaCase** ( {_Array|string_} data )  
-  全角カタカナを全角ひらがなに変換
+#### パラメータ
 
-* {_Array|string_} Encoding.**toKatakanaCase** ( {_Array|string_} data )  
-  全角ひらがなを全角カタカナに変換
+- **data** *(Array\<number\>|TypedArray|Buffer|string)* : 変換する対象の文字列または文字コードの数値配列。
 
-* {_Array|string_} Encoding.**toHankanaCase** ( {_Array|string_} data )  
-  全角カタカナを半角ｶﾀｶﾅに変換
+#### 戻り値
 
-* {_Array|string_} Encoding.**toZenkanaCase** ( {_Array|string_} data )  
-  半角ｶﾀｶﾅを全角カタカナに変換
+*(Array\<number\>|string)* : 変換した文字列または文字コードの数値配列が返ります。
 
-* {_Array|string_} Encoding.**toHankakuSpace** ({_Array|string_} data )  
-  全角スペース(U+3000)を半角スペース(U+0020)に変換
+#### 例
 
-* {_Array|string_} Encoding.**toZenkakuSpace** ( {_Array|string_} data )  
-  半角スペース(U+0020)を全角スペース(U+3000)に変換
+全角・半角の文字列を変換する例:
+
+```javascript
+console.log(Encoding.toHankakuCase('ａｂｃＤＥＦ１２３＠！＃＊＝')); // 'abcDEF123@!#*='
+console.log(Encoding.toZenkakuCase('abcDEF123@!#*=')); // 'ａｂｃＤＥＦ１２３＠！＃＊＝'
+console.log(Encoding.toHiraganaCase('アイウエオァィゥェォヴボポ')); // 'あいうえおぁぃぅぇぉゔぼぽ'
+console.log(Encoding.toKatakanaCase('あいうえおぁぃぅぇぉゔぼぽ')); // 'アイウエオァィゥェォヴボポ'
+console.log(Encoding.toHankanaCase('アイウエオァィゥェォヴボポ')); // 'ｱｲｳｴｵｧｨｩｪｫｳﾞﾎﾞﾎﾟ'
+console.log(Encoding.toZenkanaCase('ｱｲｳｴｵｧｨｩｪｫｳﾞﾎﾞﾎﾟ')); // 'アイウエオァィゥェォヴボポ'
+console.log(Encoding.toHankakuSpace('あいうえお　abc　123')); // 'あいうえお abc 123'
+console.log(Encoding.toZenkakuSpace('あいうえお abc 123')); // 'あいうえお　abc　123'
+```
+
+全角・半角の数値配列を変換する例:
+
+```javascript
+const unicodeArray = Encoding.stringToCode('ａｂｃ１２３！＃　あいうアイウ ABCｱｲｳ');
+console.log(Encoding.codeToString(Encoding.toHankakuCase(unicodeArray)));
+// 'abc123!#　あいうアイウ ABCｱｲｳ'
+console.log(Encoding.codeToString(Encoding.toZenkakuCase(unicodeArray)));
+// 'ａｂｃ１２３！＃　あいうアイウ ＡＢＣｱｲｳ'
+console.log(Encoding.codeToString(Encoding.toHiraganaCase(unicodeArray)));
+// 'ａｂｃ１２３！＃　あいうあいう ABCｱｲｳ'
+console.log(Encoding.codeToString(Encoding.toKatakanaCase(unicodeArray)));
+// 'ａｂｃ１２３！＃　アイウアイウ ABCｱｲｳ'
+console.log(Encoding.codeToString(Encoding.toHankanaCase(unicodeArray)));
+// 'ａｂｃ１２３！＃　あいうｱｲｳ ABCｱｲｳ'
+console.log(Encoding.codeToString(Encoding.toZenkanaCase(unicodeArray)));
+// 'ａｂｃ１２３！＃　あいうアイウ ABCアイウ'
+console.log(Encoding.codeToString(Encoding.toHankakuSpace(unicodeArray)));
+// 'ａｂｃ１２３！＃ あいうアイウ ABCｱｲｳ'
+console.log(Encoding.codeToString(Encoding.toZenkakuSpace(unicodeArray)));
+// 'ａｂｃ１２３！＃　あいうアイウ　ABCｱｲｳ'
+```
 
 ## その他の例
 
