@@ -1,5 +1,34 @@
 # Change Log
 
+All notable changes to this project will be documented in this file.
+
+## [2.1.0](https://github.com/polygonplanet/encoding.js/compare/2.0.0...2.1.0) (2024-03-21)
+
+### Changes
+
+* Remove output source map `encoding.min.js.map` from bundles to simplify build and reduce distribution size. ([b963656](https://github.com/polygonplanet/encoding.js/commit/b963656e4f17ad862e1ea11c7d5a11b51e514516))
+
+### CI
+
+* Migrate CI from Travis CI (`.travis.yml`) to GitHub Actions (`.github/workflows/ci.yml`). ([8c4612e](https://github.com/polygonplanet/encoding.js/commit/8c4612e7f25d6b58beb28e9f0e36f43347aeab11))
+
+### Maintenance
+
+* Update devDependencies (`eslint`, `mocha`, `uglify-js`) to the latest versions. ([f092635](https://github.com/polygonplanet/encoding.js/commit/f0926354792dd12560924b79422fd534629973ce))
+
+### Documentation
+
+* Update API documents (
+  [`detect`](https://github.com/polygonplanet/encoding.js/commit/eed1e770d9ef8c3f25803a996487de3815375d5b)
+  [`convert`](https://github.com/polygonplanet/encoding.js/commit/3263b396a7406ed0b61ce001763b3068227a661d),
+  [`urlEncode/urlDecode`](https://github.com/polygonplanet/encoding.js/commit/992efb0f1522336f60fd646e0283afcc82374f73),
+  [`base64Encode/base64Decode`](https://github.com/polygonplanet/encoding.js/commit/bb7dffd141757bd4fa32f5ed95cdca082a6277bd),
+  [`codeToString/stringToCode`](https://github.com/polygonplanet/encoding.js/commit/7ede9a5b37b835611e700d466870d66d1e271a46),
+  [`Japanese Zenkaku/Hankaku conversion`](https://github.com/polygonplanet/encoding.js/commit/f44ed2f93f1b0c9c93264c7e55272e42a6e3bd6e)
+  ) in README.md.
+* Update CDN sections and add example CDN script tag in README.md. ([f2aaefd](https://github.com/polygonplanet/encoding.js/commit/f2aaefde725309a879ed491cfc5bfeeefe0347a6))
+* Change example code from XMLHttpRequest to use fetch API in README.md. ([fd88f12](https://github.com/polygonplanet/encoding.js/commit/fd88f12ff6656b9a21ab8170a9056512098dc387))
+
 ## [2.0.0](https://github.com/polygonplanet/encoding.js/compare/1.0.30...2.0.0) (2022-03-29)
 
 ### Features
