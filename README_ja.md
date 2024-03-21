@@ -111,7 +111,7 @@ minify された `encoding.min.js` も使用できます。
 `<script>` タグで CDN から直接 encoding.js (パッケージ名: `encoding-japanese`) を利用できます。
 
 ```html
-<script src="https://unpkg.com/encoding-japanese@2.0.0/encoding.min.js"></script>
+<script src="https://unpkg.com/encoding-japanese@2.1.0/encoding.min.js"></script>
 ```
 
 この例では [unpkg](https://unpkg.com/encoding-japanese/) を使用していますが、
@@ -652,6 +652,8 @@ console.log(Encoding.codeToString(Encoding.toHankakuSpace(unicodeArray)));
 console.log(Encoding.codeToString(Encoding.toZenkakuSpace(unicodeArray)));
 // 'ａｂｃ１２３！＃　あいうアイウ　ABCｱｲｳ'
 ```
+
+----
 
 ## その他の例
 
