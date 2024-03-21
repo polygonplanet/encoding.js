@@ -9,7 +9,7 @@ JavaScript で文字コードの変換や判定をします。
 
 [**README (English)**](README.md)
 
-## Table of contents
+## 目次
 
 - [特徴](#特徴)
   * [各文字コードを文字列で扱うには？](#各文字コードを文字列で扱うには)
@@ -146,7 +146,7 @@ encoding.js では JavaScript で扱える内部文字コード (JavaScript の�
 
 ## 使い方の例
 
-JavaScript の文字列 (`UNICODE`) から `SJIS` に文字コードを変換する
+JavaScript の文字列 (`UNICODE`) から `SJIS` に文字コードを変換する:
 
 ```javascript
 const unicodeArray = Encoding.stringToCode('こんにちは'); // 文字列から文字コード値の配列に変換
@@ -158,7 +158,7 @@ console.log(sjisArray);
 // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205] (SJISの 'こんにちは' の配列)
 ```
 
-`SJIS` から `UNICODE` に文字コードを変換する
+`SJIS` から `UNICODE` に文字コードを変換する:
 
 ```javascript
 const sjisArray = [
@@ -173,7 +173,7 @@ const str = Encoding.codeToString(unicodeArray); // 文字コード値の配列�
 console.log(str); // 'こんにちは'
 ```
 
-文字コードを判定する
+文字コードを判定する:
 
 ```javascript
 const data = [
