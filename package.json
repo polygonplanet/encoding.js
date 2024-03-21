@@ -6,7 +6,6 @@
   "files": [
     "encoding.js",
     "encoding.min.js",
-    "encoding.min.js.map",
     "src/*"
   ],
   "scripts": {
