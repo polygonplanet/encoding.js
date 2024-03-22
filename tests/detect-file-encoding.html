@@ -67,19 +67,19 @@
   <script src="https://unpkg.com/encoding-japanese@2.1.0/encoding.min.js"></script>
   <script>
   function onFileSelect(event) {
-    var file = event.target.files[0];
+    const file = event.target.files[0];
 
-    var reader = new FileReader();
+    const reader = new FileReader();
     reader.onload = function(e) {
-      var codes = new Uint8Array(e.target.result);
-      var detectedEncoding = Encoding.detect(codes);
+      const codes = new Uint8Array(e.target.result);
 
-      document.getElementById('detected-encoding').textContent = 'ファイルから検出した文字コード: ' + detectedEncoding;
+      const detectedEncoding = Encoding.detect(codes);
+      document.getElementById('detected-encoding').textContent = `ファイルから判定した文字コード:  ${detectedEncoding}`;
 
       try {
-        var rawResult = String.fromCharCode.apply(null, codes);
+        const rawResult = String.fromCharCode.apply(null, codes);
 
-        var unicodeString = Encoding.convert(codes, {
+        const unicodeString = Encoding.convert(codes, {
           to: 'unicode',
           from: detectedEncoding,
           type: 'string'
