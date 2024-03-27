@@ -1,177 +1,192 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<title>Converts character encoding in JavaScript - encoding.js</title>
-<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/encoding-japanese@2.1.0/encoding.min.js"></script>
-<script>
-(function() {
-  'use strict';
-
-  var ENCODINGS = ['SJIS', 'JIS', 'EUCJP', 'UTF8'];
-
-  $(document).ready(doit);
-
-  function doit() {
-    var run = document.getElementById('run');
-    run.removeAttribute('disabled');
-    run.addEventListener('click', function() {
-      run.disabled = true;
-      convert();
-    }, false);
-  }
-
-  function convert() {
-    var d = $.Deferred();
-
-    ENCODINGS.forEach(function(encodingName) {
-      d.then(function() {
-        var filename = 'encoding-' + encodingName.toLowerCase() + '.txt';
-
-        return readFile(filename).then(function(data) {
-          appendTitle('Open ', filename);
-
-          appendText(encodingName + ' Array', Array.prototype.slice.call(data).toString());
-          appendText(encodingName + ' String', Encoding.codeToString(data));
-
-          var detected = Encoding.detect(data);
-          appendText('Encoding.detect(' + encodingName +' Array)', detected);
-
-          var encoded = Encoding.urlEncode(data);
-          appendText('Encoding.urlEncode(' + encodingName + ' Array)', encoded);
-
-          var decoded = Encoding.urlDecode(encoded);
-          appendText('Encoding.urlDecode()', decoded.toString());
-
-          // Convert to Unicode.
-          var unicode = Encoding.convert(data, {
-            to: 'UNICODE',
-            from: 'AUTO'
-          });
-
-          appendText(encodingName + ' Array => UNICODE Array', unicode.toString());
-          appendText('UNICODE Array => UNICODE String', Encoding.codeToString(unicode));
-        }, function(err) {
-          appendTitle('Open ', filename);
-          appendText('Error', err);
-          console.error(err);
-          throw err;
-        });
-      });
-    });
-
-    d.resolve();
-  }
-
-  function readFile(url) {
-    var d = $.Deferred();
-    var req = new XMLHttpRequest();
-    req.open('GET', url, true);
-    req.responseType = 'arraybuffer';
-
-    req.onload = function(ev) {
-      if (req.readyState === 4) {
-        if (req.status === 200) {
-          var buffer = req.response;
-          if (buffer) {
-            var data = new Uint8Array(buffer);
-            d.resolve(data);
-          } else {
-            d.reject(req.statusText);
-          }
-        } else {
-          d.reject(req.statusText);
-        }
-      }
-    };
-
-    req.onerror = function(ev) {
-      d.reject(req.statusText);
-    };
-
-    req.send(null);
-
-    return d;
-  }
-
-  function appendTitle(title, url) {
-    var a = document.createElement('a');
-    a.href = url;
-    a.target = '_blank';
-    a.textContent = url;
-
-    var h3 = document.createElement('h3');
-    h3.appendChild(document.createTextNode(title));
-    h3.appendChild(a);
-
-    var result = document.getElementById('result');
-    result.appendChild(h3);
-  }
-
-  function appendText(title, text) {
-    var div = document.createElement('div');
-    div.appendChild(document.createTextNode(title));
-
-    var textarea = document.createElement('textarea');
-    textarea.value = text;
-
-    var result = document.getElementById('result');
-    result.appendChild(div);
-    result.appendChild(textarea);
-  }
-
-}());
-</script>
-<style>
-* {
-  font-family: tahoma, verdana, sans-serif;
-}
-
-textarea {
-  width: 98%;
-  height: 2.5em;
-  font-family: consolas, monospace;
-}
-
-.container {
-  margin-left: 5em;
-  margin-right: 5em;
-  margin-top: 100px;
-  margin-bottom: 1em;
-}
-
-#run {
-  font-size: 120%;
-  font-weight: bold;
-}
-
-footer {
-  margin: 0.5em auto;
-  margin-top: 2em;
-  font-weight: bold;
-}
-</style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <h1>Converts character encoding in JavaScript</h1>
-      <h2><a href="https://github.com/polygonplanet/encoding.js">encoding.js</a> を使って文字コードを変換します</h2>
-      <div class="description">
-        いろいろな文字コードで書かれているテキストを取得して、文字コードを変換して表示します。
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Encoding.js Demo : Convert and detect character encoding in JavaScript</title>
+    <link rel="stylesheet" href="css/common.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>
+          <a href="https://github.com/polygonplanet/encoding.js">Encoding.js</a>
+          - Convert and detect character encoding in JavaScript
+        </h1>
+        <div class="language-select-wrapper">
+          <label for="language-select">Language:</label>
+          <select id="language-select">
+            <option value="ja" selected>日本語</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <h2><span data-i18n="title">encoding.js を使って文字コードを変換するサンプル</span></h2>
+        <div data-i18n="description">
+          「Run」ボタンを押すと、いろいろな文字コード (Shift_JIS、EUC-JP、UTF-8 等)
+          で書かれたテキストファイルを読み込み、 文字化けしないよう `Encoding.convert()`
+          で文字コードを変換して表示します。
+        </div>
+      </header>
+      <div class="wrapper">
+        <div>
+          <button
+            type="button"
+            id="run-btn"
+            disabled="disabled"
+            title="Read the files and convert character encodings"
+            data-i18n="button-title"
+            data-i18n-attr="title"
+          >
+            Run
+          </button>
+        </div>
+        <div id="result"></div>
       </div>
-    </header>
-    <div class="wrapper">
-      <div>
-        <button type="button" id="run" disabled="disabled">Run</button>
-      </div>
-      <div id="result"></div>
+      <footer>
+        <a href="https://github.com/polygonplanet/encoding.js">Repository in GitHub</a>
+      </footer>
     </div>
-    <footer>
-      <a href="https://github.com/polygonplanet/encoding.js">Repository in GitHub</a>
-    </footer>
-  </div>
-  <a href="https://github.com/polygonplanet/encoding.js"><img style="position: absolute; top: 0; left: 0; border: 0;" decoding="async" width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_left_green_007200.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" loading="lazy" data-recalc-dims="1"></a>
-</body>
+
+    <script>
+      window.__translations__ = {
+        ja: {
+          'button-title': 'テキストファイルを読み込み、文字コードを変換します',
+          'log-title': '{{encodingName}} で書かれたテキストファイルを読み込み：{{{filename}}}',
+          'log-array': '読み込んだ内容の配列：',
+          'log-array-to-string': '配列を文字列に変換して表示：',
+          'log-encoding-detect': 'Encoding.detect() で文字コードを判定：',
+          'log-url-encode': 'Encoding.urlEncode() で URL エンコードして表示：',
+          'log-url-decode': 'Encoding.urlDecode() で URL デコードして戻して表示：',
+          'log-convert-unicode':
+            'Encoding.convert() で {{encodingName}} から UNICODE に文字コードを変換した配列：',
+        },
+        en: {
+          'title': 'Demo of converting character encodings using encoding.js',
+          'description':
+            'By clicking the "Run" button, reads the contents of text files written in various character encodings (such as Shift_JIS, EUC-JP, and UTF-8), convert these encodings using `Encoding.convert()` to prevent garbled text, and display them in textareas.',
+          'button-title': 'Read the files and convert character encodings',
+          'log-title': 'Read text files written in {{encodingName}} : {{{filename}}}',
+          'log-array': 'Array of the read content:',
+          'log-array-to-string': 'Converts character code array to string:',
+          'log-encoding-detect': 'Detects character encoding using Encoding.detect():',
+          'log-url-encode': 'Encodes to percent-encoded using Encoding.urlEncode():',
+          'log-url-decode': 'Decodes from percent-encoded using Encoding.urlDecode():',
+          'log-convert-unicode':
+            'Converts character encoding from {{encodingName}} to UNICODE using Encoding.convert():',
+        },
+      };
+    </script>
+    <script src="https://unpkg.com/encoding-japanese@2.1.0/encoding.min.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+      (function () {
+        'use strict';
+
+        const ENCODINGS = ['SJIS', 'JIS', 'EUCJP', 'UTF8'];
+        let result;
+        let logId = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+          result = document.getElementById('result');
+
+          const runBtn = document.getElementById('run-btn');
+          runBtn.removeAttribute('disabled');
+          runBtn.addEventListener('click', () => {
+            runBtn.disabled = true;
+            convert();
+          });
+        });
+
+        const convert = async () => {
+          for (const encodingName of ENCODINGS) {
+            const filename = `encoding-${encodingName.toLowerCase()}.txt`;
+
+            try {
+              const data = await readFile(filename);
+              logTitle('log-title', { encodingName, filename });
+              log('log-array', Array.from(data).toString());
+              log('log-array-to-string', Encoding.codeToString(data));
+
+              const detectedEncoding = Encoding.detect(data);
+              log('log-encoding-detect', detectedEncoding);
+
+              const urlEncodedArray = Encoding.urlEncode(data);
+              log('log-url-encode', urlEncodedArray);
+
+              const urlDecodedArray = Encoding.urlDecode(urlEncodedArray);
+              log('log-url-decode', urlDecodedArray.toString());
+
+              // Convert to UNICODE
+              const unicodeArray = Encoding.convert(data, { to: 'UNICODE' });
+              log('log-convert-unicode', unicodeArray.toString(), {
+                encodingName: detectedEncoding,
+              });
+              log('log-array-to-string', Encoding.codeToString(unicodeArray));
+
+              result.appendChild(document.createElement('hr'));
+            } catch (err) {
+              logError('Error', err);
+              console.error(err);
+              throw err;
+            }
+          }
+        };
+
+        const readFile = async (filename) => {
+          const response = await fetch(filename);
+          if (!response.ok) {
+            throw new Error(`Failed to read file: ${filename}`);
+          }
+          const buffer = await response.arrayBuffer();
+          return new Uint8Array(buffer);
+        };
+
+        const logTitle = (key, args) => {
+          const filename = `<a href="${args.filename}" target="_blank">${args.filename}</a>`;
+          args = { ...args, filename };
+
+          const h3 = document.createElement('h3');
+          i18n.setElement(h3, key, args);
+          i18n.translateElement(h3);
+
+          result.appendChild(h3);
+        };
+
+        const log = (key, output, args, isError) => {
+          const id = `log-${++logId}`;
+
+          const details = document.createElement('details');
+          details.open = true;
+          details.classList.add('log');
+          if (isError) {
+            details.classList.add('error');
+          }
+
+          const summary = document.createElement('summary');
+          summary.htmlFor = id;
+          i18n.setElement(summary, key, args);
+          i18n.translateElement(summary);
+
+          details.appendChild(summary);
+
+          const textarea = document.createElement('textarea');
+          textarea.id = id;
+          textarea.value = output;
+          details.appendChild(textarea);
+
+          result.appendChild(details);
+        };
+
+        const logError = (title, err) => {
+          log(title, err, null, true);
+        };
+      })();
+    </script>
+
+    <!-- prettier-ignore -->
+    <a href="https://github.com/polygonplanet/encoding.js" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+    <!-- prettier-ignore -->
+    <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+  </body>
 </html>
