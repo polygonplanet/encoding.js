@@ -39,6 +39,14 @@ details summary {
   cursor: pointer;
 }
 
+fieldset {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  background-color: #e3e9f3;
+  border-radius: 5px;
+  border: 1px solid #8b8b8b;
+}
+
 .log {
   margin-bottom: 1em;
   background-color: #e3e9f3;
@@ -100,4 +108,20 @@ footer {
   margin: 0.5em auto;
   margin-top: 2em;
   font-weight: bold;
+}
+
+/* detect-file-encoding.html */
+#file {
+  margin: 1em 0;
+  font-size: 110%;
+  cursor: pointer;
+}
+
+#detected-encoding {
+  font-weight: bold;
+}
+
+.detect-file-encoding textarea {
+  height: 120px;
+  font-family: consolas, monospace;
 }

@@ -4,50 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Encoding.jsでファイルを指定して文字コード変換・検出するデモ</title>
-  <style>
-    body {
-      font-family: tahoma, "Helvetica Neue", Helvetica, sans-serif;
-      margin: 1em;
-    }
-
-    .container {
-      max-width: 1024px;
-      margin: 1em auto 2em auto;
-      padding: 1em 2em;
-    }
-
-    h1 {
-      margin: 0.5em 0 1em 0;
-    }
-
-    #file {
-      margin: 1em 0;
-      font-size: 110%;
-      cursor: pointer;
-    }
-
-    #detected-encoding {
-      font-weight: bold;
-    }
-
-    textarea {
-      width: 98%;
-      height: 120px;
-      font-family: consolas, monospace;
-    }
-
-    fieldset {
-      margin-top: 1em;
-    }
-
-    footer {
-      margin-top: 1em;
-      font-weight: bold;
-    }
-  </style>
+  <link rel="stylesheet" href="css/common.css" />
 </head>
 <body>
-  <div class="container">
+  <div class="container detect-file-encoding">
     <h1><a href="https://github.com/polygonplanet/encoding.js">Encoding.js</a>でファイルを指定して文字コード変換・検出するデモ</h1>
     <p>
       テキストファイルを読み込んで文字コード変換して表示します。
@@ -77,7 +37,6 @@
         <textarea id="result" rows="7" cols="80"></textarea>
       </div>
     </fieldset>
-
 
     <footer>
       <a href="https://github.com/polygonplanet/encoding.js">Repository in GitHub</a>
