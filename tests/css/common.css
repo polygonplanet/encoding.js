@@ -14,6 +14,11 @@ body {
   padding: 1em 2em;
 }
 
+a:hover {
+  text-decoration: none;
+  opacity: 0.85;
+}
+
 textarea {
   width: 98%;
   height: 2.5em;
@@ -69,6 +74,12 @@ fieldset {
   }
 }
 
+.log-title {
+  background-color: rgb(251, 244, 154, 0.5);
+  padding: 0.1em 0.5em;
+  border-radius: 3px;
+}
+
 .language-select-wrapper {
   display: flex;
   justify-content: flex-end;
@@ -81,6 +92,13 @@ fieldset {
   margin-right: 0.2em;
 }
 
+footer {
+  margin: 0.5em auto;
+  margin-top: 2em;
+  font-weight: bold;
+}
+
+/* convert-encoding-demo (encoding-test.html) */
 #run-btn {
   font-size: 1.2em;
   font-weight: bold;
@@ -104,12 +122,6 @@ fieldset {
   opacity: 0.8;
 }
 
-footer {
-  margin: 0.5em auto;
-  margin-top: 2em;
-  font-weight: bold;
-}
-
 /* detect-file-encoding.html */
 #file {
   margin: 1em 0;
@@ -119,6 +131,10 @@ footer {
 
 #detected-encoding {
   font-weight: bold;
+  background-color: rgb(251, 244, 154, 0.5);
+  padding: 0 0.6em;
+  border-radius: 3px;
+  display: inline-block;
 }
 
 .detect-file-encoding textarea {

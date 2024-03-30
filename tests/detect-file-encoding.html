@@ -3,40 +3,50 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Encoding.jsでファイルを指定して文字コード変換・検出するデモ</title>
+    <title data-i18n="title">Encoding.jsでファイルを指定して文字コード変換・検出するデモ</title>
     <link rel="stylesheet" href="css/common.css" />
   </head>
   <body>
     <div class="container detect-file-encoding">
-      <h1>
-        <a href="https://github.com/polygonplanet/encoding.js">Encoding.js</a
-        >でファイルを指定して文字コード変換・検出するデモ
+      <h1 data-i18n="convert-demo">
+        <a href="https://github.com/polygonplanet/encoding.js">Encoding.js</a>
+        でファイルを指定して文字コード変換・検出するデモ
       </h1>
+      <div class="language-select-wrapper">
+        <label for="language-select">Language:</label>
+        <select id="language-select">
+          <option value="ja" selected>日本語</option>
+          <option value="en">English</option>
+        </select>
+      </div>
       <p>
-        テキストファイルを読み込んで文字コード変換して表示します。
+        <span data-i18n="read-file-convert">テキストファイルを読み込んで文字コード変換して表示します。</span>
         <br />
-        通常、ブラウザで Shift_JIS や EUC-JP で書かれたファイルを読み込むと文字化けしますが、
-        encoding.js で文字コードを変換して文字化けしないようにします。
+        <span data-i18n="encodingjs-can-convert">
+          通常、ブラウザで Shift_JIS や EUC-JP で書かれたファイルを読み込むと文字化けしますが、 encoding.js
+          で文字コードを変換して文字化けしないようにします。
+        </span>
       </p>
       <p>
-        適当なファイルを選択してみてください。
+        <span data-i18n="select-file">適当なファイルを選択してみてください。</span>
         <br />
-        ※ファイルはサーバー等にアップロードされません (このページ内JavaScriptのみで実行されます)
+        <span data-i18n="file-not-uploaded">※ファイルはサーバー等にアップロードされません (このページ内JavaScriptのみで実行されます)</span>
       </p>
 
-      <input type="file" id="file" />
-
-      <div id="detected-encoding"></div>
+      <div>
+        <input type="file" id="file" />
+      </div>
+      <div id="detected-encoding" class="log-title"></div>
 
       <fieldset>
-        <legend>ファイル内容そのまま表示:</legend>
+        <legend data-i18n="file-raw-contents">ファイル内容そのまま表示</legend>
         <div>
           <textarea id="raw-result" rows="7" cols="80"></textarea>
         </div>
       </fieldset>
 
       <fieldset>
-        <legend>encoding.js で文字コードを変換して表示:</legend>
+        <legend data-i18n="file-converted-contents">encoding.js で文字コードを変換して表示</legend>
         <div>
           <textarea id="result" rows="7" cols="80"></textarea>
         </div>
@@ -47,41 +57,88 @@
       </footer>
     </div>
 
-    <script src="https://unpkg.com/encoding-japanese@2.1.0/encoding.min.js"></script>
     <script>
-      function onFileSelect(event) {
-        const file = event.target.files[0];
+      window.__translations__ = {
+        args: {
+          encodingjs: '<a href="https://github.com/polygonplanet/encoding.js">Encoding.js</a>'
+        },
+        ja: {
+          'title': 'Encoding.jsでファイルを指定して文字コード変換・検出するデモ',
+          'convert-demo': '{{{encodingjs}}} でファイルを指定して文字コード変換・検出するデモ',
+          'read-file-convert': 'テキストファイルを読み込んで文字コード変換して表示します。',
+          'encodingjs-can-convert':
+            '通常、ブラウザで Shift_JIS や EUC-JP で書かれたファイルを読み込むと文字化けしますが、 encoding.js で文字コードを変換して文字化けしないようにします。',
+          'select-file': '適当なファイルを選択してみてください。',
+          'file-not-uploaded': '※ファイルはサーバー等にアップロードされません (このページ内JavaScriptのみで実行されます)',
+          'file-raw-contents': 'ファイル内容そのまま表示：',
+          'converted-contents': 'encoding.js で文字コードを変換して表示',
+          'detected-encoding': 'ファイルから判定した文字コード: {{detectedEncoding}}',
+          'file-size-too-large': 'ファイルサイズが大きすぎます'
+        },
+        en: {
+          'title': 'Encoding.js Demo : Convert and detect character encoding by specifying a file in JavaScript',
+          'convert-demo': 'Demo to convert and detect character encoding by specifying a file with {{{encodingjs}}}',
+          'read-file-convert': 'Reads the text file and converts character encodings, then displays it.',
+          'encodingjs-can-convert':
+            'Typically, loading files written in Shift_JIS or EUC-JP in a browser results in garbled text, but encoding.js can convert the character encoding to prevent this issue.',
+          'select-file': 'Try selecting any text file for a character encoding conversion test.',
+          'file-not-uploaded': '* Files are not uploaded to any server, they are processed locally within this page by JavaScript.',
+          'file-raw-contents': 'File contents as is:',
+          'file-converted-contents': 'Contents with character encoding converted using encoding.js:',
+          'detected-encoding': 'Detected character encoding from the file: {{detectedEncoding}}',
+          'file-size-too-large': 'Error: The file size is too large'
+        }
+      };
+    </script>
+    <script src="https://unpkg.com/encoding-japanese@2.1.0/encoding.min.js"></script>
+    <script src="js/i18n.umd.js"></script>
+    <script src="js/nanodown.umd.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+      (function () {
+        'use strict';
 
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const codes = new Uint8Array(e.target.result);
+        document.addEventListener('DOMContentLoaded', () => {
+          i18n.translateElements();
+        });
 
-          const detectedEncoding = Encoding.detect(codes);
-          document.getElementById(
-            'detected-encoding'
-          ).textContent = `ファイルから判定した文字コード:  ${detectedEncoding}`;
+        function onFileSelect(event) {
+          const file = event.target.files[0];
 
-          try {
-            const rawResult = String.fromCharCode.apply(null, codes);
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const codes = new Uint8Array(e.target.result);
 
-            const unicodeString = Encoding.convert(codes, {
-              to: 'unicode',
-              from: detectedEncoding,
-              type: 'string',
-            });
+            const detectedEncoding = Encoding.detect(codes);
 
-            document.getElementById('raw-result').value = rawResult;
-            document.getElementById('result').value = unicodeString;
-          } catch (e) {
-            // Uncaught RangeError: Maximum call stack size exceeded
-            alert('ファイルサイズが大きすぎます');
-          }
-        };
+            // Display the detected encoding
+            const el = document.getElementById('detected-encoding');
+            i18n.translateElement(el, 'detected-encoding', { detectedEncoding });
 
-        reader.readAsArrayBuffer(file);
-      }
+            try {
+              // In this demo, Encoding.codeToString() is not used to avoid raising an error when
+              // uploading files that are too large.
+              const rawResult = String.fromCharCode.apply(null, codes);
 
-      document.getElementById('file').addEventListener('change', onFileSelect, false);
+              const unicodeString = Encoding.convert(codes, {
+                to: 'unicode',
+                from: detectedEncoding,
+                type: 'string'
+              });
+
+              document.getElementById('raw-result').value = rawResult;
+              document.getElementById('result').value = unicodeString;
+            } catch (e) {
+              // Uncaught RangeError: Maximum call stack size exceeded
+              alert(i18n.t('file-size-too-large'));
+            }
+          };
+
+          reader.readAsArrayBuffer(file);
+        }
+
+        document.getElementById('file').addEventListener('change', onFileSelect);
+      })();
     </script>
 
     <!-- prettier-ignore -->
