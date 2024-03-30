@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/common.css" />
   </head>
   <body>
-    <div class="container">
+    <div class="container convert-encoding-demo">
       <header>
         <h1>
           <a href="https://github.com/polygonplanet/encoding.js">Encoding.js</a>
@@ -20,11 +20,10 @@
             <option value="en">English</option>
           </select>
         </div>
-        <h2><span data-i18n="title">encoding.js を使って文字コードを変換するサンプル</span></h2>
+        <h2><span data-i18n="header-title">encoding.js を使って文字コードを変換するサンプル</span></h2>
         <div data-i18n="description">
-          「Run」ボタンを押すと、いろいろな文字コード (Shift_JIS、EUC-JP、UTF-8 等)
-          で書かれたテキストファイルを読み込み、 文字化けしないよう `Encoding.convert()`
-          で文字コードを変換して表示します。
+          「Run」ボタンを押すと、いろいろな文字コード (Shift_JIS、EUC-JP、UTF-8 等) で書かれたテキストファイルを読み込み、
+          文字化けしないよう `Encoding.convert()` で文字コードを変換して表示します。
         </div>
       </header>
       <div class="wrapper">
@@ -51,33 +50,32 @@
       window.__translations__ = {
         ja: {
           'button-title': 'テキストファイルを読み込み、文字コードを変換します',
-          'log-title': '{{encodingName}} で書かれたテキストファイルを読み込み：{{{filename}}}',
+          'log-title': '{{encodingName}} で書かれたテキストファイル「{{{filename}}}」を読み込み：',
           'log-array': '読み込んだ内容の配列：',
           'log-array-to-string': '配列を文字列に変換して表示：',
-          'log-encoding-detect': 'Encoding.detect() で文字コードを判定：',
-          'log-url-encode': 'Encoding.urlEncode() で URL エンコードして表示：',
-          'log-url-decode': 'Encoding.urlDecode() で URL デコードして戻して表示：',
-          'log-convert-unicode':
-            'Encoding.convert() で {{encodingName}} から UNICODE に文字コードを変換した配列：',
+          'log-encoding-detect': '`Encoding.detect()` で文字コードを判定：',
+          'log-url-encode': '`Encoding.urlEncode()` で URL エンコードして表示：',
+          'log-url-decode': '`Encoding.urlDecode()` で URL デコードして戻して表示：',
+          'log-convert-unicode': '`Encoding.convert()` で {{encodingName}} から UNICODE に文字コードを変換した配列：'
         },
         en: {
-          'title': 'Demo of converting character encodings using encoding.js',
+          'header-title': 'Demo of converting character encodings using encoding.js',
           'description':
             'By clicking the "Run" button, reads the contents of text files written in various character encodings (such as Shift_JIS, EUC-JP, and UTF-8), convert these encodings using `Encoding.convert()` to prevent garbled text, and display them in textareas.',
           'button-title': 'Read the files and convert character encodings',
-          'log-title': 'Read text files written in {{encodingName}} : {{{filename}}}',
+          'log-title': 'Read text file &quot;{{{filename}}}&quot; written in {{encodingName}}:',
           'log-array': 'Array of the read content:',
           'log-array-to-string': 'Converts character code array to string:',
-          'log-encoding-detect': 'Detects character encoding using Encoding.detect():',
-          'log-url-encode': 'Encodes to percent-encoded using Encoding.urlEncode():',
-          'log-url-decode': 'Decodes from percent-encoded using Encoding.urlDecode():',
-          'log-convert-unicode':
-            'Converts character encoding from {{encodingName}} to UNICODE using Encoding.convert():',
-        },
+          'log-encoding-detect': 'Detects character encoding using `Encoding.detect()`:',
+          'log-url-encode': 'Encodes to percent-encoded using `Encoding.urlEncode()`:',
+          'log-url-decode': 'Decodes from percent-encoded using `Encoding.urlDecode()`:',
+          'log-convert-unicode': 'Converts character encoding from {{encodingName}} to UNICODE using `Encoding.convert()`:'
+        }
       };
     </script>
     <script src="https://unpkg.com/encoding-japanese@2.1.0/encoding.min.js"></script>
-    <script src="js/i18n.js"></script>
+    <script src="js/i18n.umd.js"></script>
+    <script src="js/nanodown.umd.js"></script>
     <script src="js/common.js"></script>
     <script>
       (function () {
@@ -120,7 +118,7 @@
               // Convert to UNICODE
               const unicodeArray = Encoding.convert(data, { to: 'UNICODE' });
               log('log-convert-unicode', unicodeArray.toString(), {
-                encodingName: detectedEncoding,
+                encodingName: detectedEncoding
               });
               log('log-array-to-string', Encoding.codeToString(unicodeArray));
 
@@ -147,8 +145,8 @@
           args = { ...args, filename };
 
           const h3 = document.createElement('h3');
-          i18n.setElement(h3, key, args);
-          i18n.translateElement(h3);
+          h3.classList.add('log-title');
+          i18n.translateElement(h3, key, args);
 
           result.appendChild(h3);
         };
@@ -165,8 +163,7 @@
 
           const summary = document.createElement('summary');
           summary.htmlFor = id;
-          i18n.setElement(summary, key, args);
-          i18n.translateElement(summary);
+          i18n.translateElement(summary, key, args);
 
           details.appendChild(summary);
 
