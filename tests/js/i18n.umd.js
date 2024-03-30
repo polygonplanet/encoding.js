@@ -1,19 +1,26 @@
 /*
- * microi18n v0.0.1 - Tiny i18n translation utility
+ * i18n v0.0.1 - Tiny i18n translation utility
  * Copyright (c) 2024 polygonplanet
  * @license MIT
  */
-(function (self) {
-  'use strict';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.i18n = factory());
+})(this, (function () { 'use strict';
 
-  if (self.i18n) return;
+  /*
+   * i18n v0.0.1 - Tiny i18n translation utility
+   * Copyright (c) 2024 polygonplanet
+   * @license MIT
+   */
 
   const escapeMap = [
     [/&/g, '&amp;'],
     [/</g, '&lt;'],
     [/>/g, '&gt;'],
     [/"/g, '&quot;'],
-    [/'/g, '&#39;'],
+    [/'/g, '&#39;']
   ];
   const escape = (str) => escapeMap.reduce((s, [from, to]) => s.replace(from, to), str);
 
@@ -21,59 +28,32 @@
   const format = (str, args = {}) =>
     [
       [/{{{(.+?)}}}/g, (_, key) => args[key] || ''],
-      [/{{(.+?)}}/g, (_, key) => escape(args[key] || '')],
+      [/{{(.+?)}}/g, (_, key) => escape(args[key] || '')]
     ].reduce((s, [from, to]) => s.replace(from, to), str);
-
-  class RawString {
-    constructor(value) {
-      this.value = value;
-    }
-
-    toString() {
-      return this.value;
-    }
-  }
-
-  function raw(strings, ...substs) {
-    return new RawString(
-      strings.reduce((result, s, i) => {
-        result += s;
-        if (i < substs.length) {
-          result += substs[i];
-        }
-        return result;
-      }, '')
-    );
-  }
-
-  function i18n(strings, ...substs) {
-    return strings.reduce((result, s, i) => {
-      let subst = i < substs.length ? substs[i] : '';
-      if (subst == null) {
-        subst = '';
-      } else if (!(subst instanceof RawString)) {
-        subst = escape(subst);
-      }
-      return result + s + subst;
-    }, '');
-  }
 
   const defaultOptions = {
     lang: '',
     fallback: 'en',
     formatters: [],
-    translations: {},
+    translations: {}
   };
+
+  function i18n(key, args) {
+    return this.t(key, args);
+  }
 
   // i18n core methods
   Object.assign(i18n, {
+    args: {},
     lang: '',
-    raw,
     init(options = {}) {
       const { fallback, formatters, lang, translations } = { ...defaultOptions, ...options };
       Object.assign(this, { fallback, formatters, translations });
 
-      const supportedLangs = Object.keys(this.translations);
+      this.args = translations.args || {};
+      delete translations.args;
+
+      const supportedLangs = Object.keys(translations);
       this.lang = lang && supportedLangs.includes(lang) ? lang : fallback;
       return this;
     },
@@ -81,11 +61,15 @@
       this.lang = lang;
       return this;
     },
-    t(key, args = {}) {
+    t(key, args) {
+      if (args == null) args = this.args;
       const translation = this.translations[this.lang] || {};
       const content = format(translation[key] || '', args);
-      return this.formatters.reduce((s, formatter) => formatter(s, args), content);
-    },
+
+      return this.formatters.reduce((s, formatter) => {
+        return formatter(s, args);
+      }, content);
+    }
   });
 
   // Add i18n DOM methods
@@ -113,9 +97,13 @@
         $(key) {
           return document.querySelector(`[data-i18n="${key}"]`);
         },
-        translateElement(el) {
-          const key = el.dataset.i18n;
-          const args = elemArgs.get(el) || {};
+        translateElement(el, key, args) {
+          if (key != null) {
+            this.setElement(el, key, args);
+          } else {
+            key = el.dataset.i18n;
+          }
+          args = elemArgs.has(el) ? elemArgs.get(el) : this.args || {};
           const content = this.t(key, args);
 
           if ('i18nAttr' in el.dataset) {
@@ -144,20 +132,11 @@
             this.translateElement(el)
           );
           return this;
-        },
+        }
       };
     })()
   );
 
-  self.i18n = i18n;
-})(
-  typeof globalThis !== 'undefined'
-    ? globalThis
-    : typeof self !== 'undefined'
-    ? self
-    : typeof window !== 'undefined'
-    ? window
-    : typeof global !== 'undefined'
-    ? global
-    : this
-);
+  return i18n;
+
+}));
