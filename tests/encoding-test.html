@@ -51,8 +51,8 @@
         ja: {
           'button-title': 'テキストファイルを読み込み、文字コードを変換します',
           'log-title': '{{encodingName}} で書かれたテキストファイル「{{{filename}}}」を読み込み：',
-          'log-array': '読み込んだ内容の配列：',
-          'log-array-to-string': '配列を文字列に変換して表示：',
+          'log-array': '読み込んだ {{encodingName}} の配列：',
+          'log-array-to-string': '{{encodingName}} の配列を文字列に変換して表示：',
           'log-encoding-detect': '`Encoding.detect()` で文字コードを判定：',
           'log-url-encode': '`Encoding.urlEncode()` で URL エンコードして表示：',
           'log-url-decode': '`Encoding.urlDecode()` で URL デコードして戻して表示：',
@@ -64,8 +64,8 @@
             'By clicking the "Run" button, reads the contents of text files written in various character encodings (such as Shift_JIS, EUC-JP, and UTF-8), convert these encodings using `Encoding.convert()` to prevent garbled text, and display them in textareas.',
           'button-title': 'Read the files and convert character encodings',
           'log-title': 'Read text file &quot;{{{filename}}}&quot; written in {{encodingName}}:',
-          'log-array': 'Array of the read content:',
-          'log-array-to-string': 'Converts character code array to string:',
+          'log-array': '{{encodingName}} array of the read content:',
+          'log-array-to-string': 'Converts {{encodingName}} character code array to string:',
           'log-encoding-detect': 'Detects character encoding using `Encoding.detect()`:',
           'log-url-encode': 'Encodes to percent-encoded using `Encoding.urlEncode()`:',
           'log-url-decode': 'Decodes from percent-encoded using `Encoding.urlDecode()`:',
@@ -81,7 +81,24 @@
       (function () {
         'use strict';
 
-        const ENCODINGS = ['SJIS', 'JIS', 'EUCJP', 'UTF8'];
+        const ENCODINGS = [
+          {
+            encodingName: 'SJIS',
+            filename: 'encoding-sjis.txt'
+          },
+          {
+            encodingName: 'JIS',
+            filename: 'encoding-jis.txt'
+          },
+          {
+            encodingName: 'EUCJP',
+            filename: 'encoding-eucjp.txt'
+          },
+          {
+            encodingName: 'UTF8',
+            filename: 'encoding-utf8.txt'
+          }
+        ];
         let result;
         let logId = 0;
 
@@ -97,14 +114,14 @@
         });
 
         const convert = async () => {
-          for (const encodingName of ENCODINGS) {
-            const filename = `encoding-${encodingName.toLowerCase()}.txt`;
-
+          for (const { encodingName, filename } of ENCODINGS) {
             try {
-              const data = await readFile(filename);
-              logTitle('log-title', { encodingName, filename });
-              log('log-array', Array.from(data).toString());
-              log('log-array-to-string', Encoding.codeToString(data));
+              const filepath = `fixtures/${filename}`;
+              const data = await readFile(filepath);
+
+              logTitle('log-title', { encodingName, filename, filepath });
+              log('log-array', `[${Array.from(data).toString()}]`, { encodingName });
+              log('log-array-to-string', Encoding.codeToString(data), { encodingName });
 
               const detectedEncoding = Encoding.detect(data);
               log('log-encoding-detect', detectedEncoding);
@@ -113,14 +130,16 @@
               log('log-url-encode', urlEncodedArray);
 
               const urlDecodedArray = Encoding.urlDecode(urlEncodedArray);
-              log('log-url-decode', urlDecodedArray.toString());
+              log('log-url-decode', `[${urlDecodedArray.toString()}]`);
 
               // Convert to UNICODE
               const unicodeArray = Encoding.convert(data, { to: 'UNICODE' });
-              log('log-convert-unicode', unicodeArray.toString(), {
+              log('log-convert-unicode', `[${unicodeArray.toString()}`, {
                 encodingName: detectedEncoding
               });
-              log('log-array-to-string', Encoding.codeToString(unicodeArray));
+              log('log-array-to-string', Encoding.codeToString(unicodeArray), {
+                encodingName: 'UNICODE'
+              });
 
               result.appendChild(document.createElement('hr'));
             } catch (err) {
@@ -141,7 +160,7 @@
         };
 
         const logTitle = (key, args) => {
-          const filename = `<a href="${args.filename}" target="_blank">${args.filename}</a>`;
+          const filename = `<a href="${args.filepath}" target="_blank">${args.filename}</a>`;
           args = { ...args, filename };
 
           const h3 = document.createElement('h3');
@@ -164,7 +183,6 @@
           const summary = document.createElement('summary');
           summary.htmlFor = id;
           i18n.translateElement(summary, key, args);
-
           details.appendChild(summary);
 
           const textarea = document.createElement('textarea');
