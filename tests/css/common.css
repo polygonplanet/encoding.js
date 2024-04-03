@@ -14,9 +14,14 @@ body {
   padding: 1em 2em;
 }
 
-a:hover {
+a {
+  color: #334aff;
   text-decoration: none;
-  opacity: 0.85;
+}
+
+a:hover {
+  text-decoration: underline;
+  opacity: 0.8;
 }
 
 textarea {
@@ -50,6 +55,10 @@ fieldset {
   background-color: #e3e9f3;
   border-radius: 5px;
   border: 1px solid #8b8b8b;
+}
+
+ul li {
+  margin-bottom: 0.5em;
 }
 
 .log {
