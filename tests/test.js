@@ -636,6 +636,50 @@ describe('encoding', function() {
           assert.deepEqual(decoded, '&#127843;寿司ビール&#127866;');
         });
       });
+
+      describe('Ignore untranslatable unknown characters', function() {
+        it('SJIS', function() {
+          // Characters that cannot be converted to Shift_JIS ('🍣', '🍺') will be ignored.
+          var sjis = encoding.convert(utf8, {
+            to: 'sjis',
+            from: 'utf-8',
+            fallback: 'ignore'
+          });
+          var decoded = encoding.convert(sjis, {
+            to: 'unicode',
+            from: 'sjis'
+          });
+          assert.deepEqual(decoded, '寿司ビール');
+        });
+
+        it('EUC-JP', function() {
+          // Characters that cannot be converted to EUC-JP ('🍣', '🍺') will be ignored.
+          var eucjp = encoding.convert(utf8, {
+            to: 'euc-jp',
+            from: 'utf-8',
+            fallback: 'ignore'
+          });
+          var decoded = encoding.convert(eucjp, {
+            to: 'unicode',
+            from: 'euc-jp'
+          });
+          assert.deepEqual(decoded, '寿司ビール');
+        });
+
+        it('JIS', function() {
+          // Characters that cannot be converted to JIS ('🍣', '🍺') will be ignored.
+          var jis = encoding.convert(utf8, {
+            to: 'jis',
+            from: 'utf-8',
+            fallback: 'ignore'
+          });
+          var decoded = encoding.convert(jis, {
+            to: 'unicode',
+            from: 'jis'
+          });
+          assert.deepEqual(decoded, '寿司ビール');
+        });
+      });
     });
   });
 
