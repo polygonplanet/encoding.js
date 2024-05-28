@@ -28,6 +28,7 @@ Convert and detect character encoding in JavaScript.
     + [Specify conversion options to the argument `to` as an object](#specify-conversion-options-to-the-argument-to-as-an-object)
     + [Specify the return type by the `type` option](#specify-the-return-type-by-the-type-option)
     + [Replacing characters with HTML entities when they cannot be represented](#replacing-characters-with-html-entities-when-they-cannot-be-represented)
+    + [Ignoring characters when they cannot be represented](#ignoring-characters-when-they-cannot-be-represented)
     + [Specify BOM in UTF-16](#specify-bom-in-utf-16)
   * [urlEncode : Encodes to percent-encoded string](#encodingurlencode-data)
   * [urlDecode : Decodes from percent-encoded string](#encodingurldecode-string)
@@ -403,6 +404,30 @@ const sjisArray = Encoding.convert(unicodeArray, {
   fallback: 'html-entity-hex'
 });
 console.log(sjisArray); // Converted to a code array of 'ホッケの漢字は&#x29e3d;'
+```
+
+#### Ignoring characters when they cannot be represented
+
+By specifying `ignore` as a `fallback` option, characters that cannot be represented in the target encoding format can be ignored.
+
+Example of specifying `{ fallback: 'ignore' }` option:
+
+```javascript
+const unicodeArray = Encoding.stringToCode("寿司🍣ビール🍺");
+// No fallback specified
+let sjisArray = Encoding.convert(unicodeArray, {
+  to: "SJIS",
+  from: "UNICODE",
+});
+console.log(sjisArray); // Converted to a code array of '寿司?ビール?'
+
+// Specify `fallback: html-entity`
+sjisArray = Encoding.convert(unicodeArray, {
+  to: "SJIS",
+  from: "UNICODE",
+  fallback: "ignore",
+});
+console.log(sjisArray); // Converted to a code array of '寿司ビール'
 ```
 
 #### Specify BOM in UTF-16
