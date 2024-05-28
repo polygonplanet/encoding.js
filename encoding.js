@@ -1824,6 +1824,9 @@ function handleFallback(results, bytes, fallbackOption) {
         }
         results[results.length] = 0x3B; // ;
       }
+      break;
+    case 'ignore':
+      break;
   }
 }
 
