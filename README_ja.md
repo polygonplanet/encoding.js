@@ -28,6 +28,7 @@ JavaScript で文字コードの変換や判定をします。
     + [引数 `to` にオブジェクトで変換オプションを指定する](#引数-to-にオブジェクトで変換オプションを指定する)
     + [`type` オプションで戻り値の型を指定する](#type-オプションで戻り値の型を指定する)
     + [変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える](#変換できない文字を-html-エンティティ-html-数値文字参照-に置き換える)
+    + [変換できない文字を無視する](#変換できない文字を無視する)
     + [UTF-16 に BOM をつける](#utf-16-に-bom-をつける)
   * [urlEncode : 文字コードの配列をURLエンコードする](#encodingurlencode-data)
   * [urlDecode : 文字コードの配列にURLデコードする](#encodingurldecode-string)
@@ -393,6 +394,30 @@ const sjisArray = Encoding.convert(unicodeArray, {
   fallback: 'html-entity-hex'
 });
 console.log(sjisArray); // 'ホッケの漢字は&#x29e3d;' の数値配列に変換されます
+```
+
+#### 変換できない文字を無視する
+
+変換先の文字コードで表現できない文字を無視するには、 `fallback` オプションに `ignore` を指定します。
+
+`{ fallback: 'ignore' }` オプションを指定する例:
+
+```javascript
+const unicodeArray = Encoding.stringToCode('寿司🍣ビール🍺');
+// fallback指定なし
+let sjisArray = Encoding.convert(unicodeArray, {
+  to: 'SJIS',
+  from: 'UNICODE'
+});
+console.log(sjisArray); // '寿司?ビール?' の数値配列に変換されます
+
+// `fallback: ignore`を指定
+sjisArray = Encoding.convert(unicodeArray, {
+  to: 'SJIS',
+  from: 'UNICODE',
+  fallback: 'ignore'
+});
+console.log(sjisArray); // '寿司ビール' の数値配列に変換されます
 ```
 
 #### UTF-16 に BOM をつける
