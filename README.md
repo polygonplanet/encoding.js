@@ -421,7 +421,7 @@ let sjisArray = Encoding.convert(unicodeArray, {
 });
 console.log(sjisArray); // Converted to a code array of '寿司?ビール?'
 
-// Specify `fallback: html-entity`
+// Specify `fallback: ignore`
 sjisArray = Encoding.convert(unicodeArray, {
   to: "SJIS",
   from: "UNICODE",
