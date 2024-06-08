@@ -27,9 +27,10 @@ Convert and detect character encoding in JavaScript.
   * [convert : Converts character encoding](#encodingconvert-data-to-from)
     + [Specify conversion options to the argument `to` as an object](#specify-conversion-options-to-the-argument-to-as-an-object)
     + [Specify the return type by the `type` option](#specify-the-return-type-by-the-type-option)
+    + [Specify handling for unrepresentable characters](#specify-handling-for-unrepresentable-characters)
     + [Replacing characters with HTML entities when they cannot be represented](#replacing-characters-with-html-entities-when-they-cannot-be-represented)
     + [Ignoring characters when they cannot be represented](#ignoring-characters-when-they-cannot-be-represented)
-    + [Raising an Error when they cannot be represented](#raising-an-error-when-they-cannot-be-represented)
+    + [Throwing an Error when they cannot be represented](#throwing-an-error-when-they-cannot-be-represented)
     + [Specify BOM in UTF-16](#specify-bom-in-utf-16)
   * [urlEncode : Encodes to percent-encoded string](#encodingurlencode-data)
   * [urlDecode : Decodes from percent-encoded string](#encodingurldecode-string)
@@ -365,15 +366,20 @@ The following `type` options are supported.
 as performed by [`Encoding.codeToString`](#encodingcodetostring-code).  
 Note: Specifying `type: 'string'` may not handle conversions properly, except when converting to `UNICODE`.
 
+#### Specify handling for unrepresentable characters
+
+With the `fallback` option, you can specify how to handle characters that cannot be represented in the target encoding.
+The `fallback` option supports the following values:
+
+* **html-entity**: Replace characters with HTML entities (decimal HTML numeric character references).
+* **html-entity-hex**: Replace characters with HTML entities (hexadecimal HTML numeric character references).
+* **ignore**: Ignore characters that cannot be represented.
+* **error**: Throw an error if any character cannot be represented.
+
 #### Replacing characters with HTML entities when they cannot be represented
 
 Characters that cannot be represented in the target character set are replaced with '?' (U+003F) by default,
-but by specifying the `fallback` option, you can replace them with HTML entities (Numeric character references), such as `&#127843;`.
-
-The `fallback` option supports the following values.
-
-* **html-entity** : Replace to HTML entity (decimal HTML numeric character reference).
-* **html-entity-hex** : Replace to HTML entity (hexadecimal HTML numeric character reference).
+but by specifying `html-entity` as the `fallback` option, you can replace them with HTML entities (Numeric character references), such as `&#127843;`.
 
 Example of specifying `{ fallback: 'html-entity' }` option:
 
@@ -414,27 +420,29 @@ By specifying `ignore` as a `fallback` option, characters that cannot be represe
 Example of specifying `{ fallback: 'ignore' }` option:
 
 ```javascript
-const unicodeArray = Encoding.stringToCode("寿司🍣ビール🍺");
+const unicodeArray = Encoding.stringToCode('寿司🍣ビール🍺');
 // No fallback specified
 let sjisArray = Encoding.convert(unicodeArray, {
-  to: "SJIS",
-  from: "UNICODE",
+  to: 'SJIS',
+  from: 'UNICODE'
 });
 console.log(sjisArray); // Converted to a code array of '寿司?ビール?'
 
 // Specify `fallback: ignore`
 sjisArray = Encoding.convert(unicodeArray, {
-  to: "SJIS",
-  from: "UNICODE",
-  fallback: "ignore",
+  to: 'SJIS',
+  from: 'UNICODE',
+  fallback: 'ignore'
 });
 console.log(sjisArray); // Converted to a code array of '寿司ビール'
 ```
 
-#### Raising an Error when they cannot be represented
+#### Throwing an Error when they cannot be represented
 
 If you need to throw an error when a character cannot be represented in the target character encoding,
 specify `error` as a `fallback` option. This will cause an exception to be thrown.
+
+Example of specifying `{ fallback: 'error' }` option:
 
 ```javascript
 const unicodeArray = Encoding.stringToCode('おにぎり🍙ラーメン🍜');
@@ -456,9 +464,9 @@ The default is no BOM.
 
 ```javascript
 const utf16Array = Encoding.convert(utf8Array, {
-  to: 'UTF16', // to_encoding
-  from: 'UTF8', // from_encoding
-  bom: true // Add BOM
+  to: 'UTF16',
+  from: 'UTF8',
+  bom: true // Specify to add the BOM
 });
 ```
 
@@ -467,9 +475,9 @@ If you want to convert as little-endian, specify the `{ bom: 'LE' }` option.
 
 ```javascript
 const utf16leArray = Encoding.convert(utf8Array, {
-  to: 'UTF16', // to_encoding
-  from: 'UTF8', // from_encoding
-  bom: 'LE' // With BOM (little-endian)
+  to: 'UTF16',
+  from: 'UTF8',
+  bom: 'LE' // Specify to add the BOM as little-endian
 });
 ```
 

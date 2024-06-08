@@ -27,6 +27,7 @@ JavaScript で文字コードの変換や判定をします。
   * [convert : 文字コードを変換する](#encodingconvert-data-to-from)
     + [引数 `to` にオブジェクトで変換オプションを指定する](#引数-to-にオブジェクトで変換オプションを指定する)
     + [`type` オプションで戻り値の型を指定する](#type-オプションで戻り値の型を指定する)
+    + [`fallback` オプションで変換できない文字の扱いを指定する](#fallback-オプションで変換できない文字の扱いを指定する)
     + [変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える](#変換できない文字を-html-エンティティ-html-数値文字参照-に置き換える)
     + [変換できない文字を無視する](#変換できない文字を無視する)
     + [変換できない文字が含まれている場合にエラーを発生させる](#変換できない文字が含まれている場合にエラーを発生させる)
@@ -355,15 +356,20 @@ console.log(unicodeString); // 'おはよ'
 `type: 'string'` は、配列から文字列に変換する [`Encoding.codeToString`](#encodingcodetostring-code) のショートハンドとして使用することができます。  
 ※ `UNICODE` への変換以外は `type: 'string'` を指定しても正しく扱えない可能性がありますのでご注意ください
 
-#### 変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える
+#### `fallback` オプションで変換できない文字の扱いを指定する
 
-変換先の文字コードで表現できない文字はデフォルトで「?」 (U+003F) に置き換えられますが、
-`fallback` オプションを指定すると `&#127843;` 等の HTML エンティティに置き換えることができます。
-
+`fallback` オプションで、変換先の文字コードで表現できない文字があった場合の扱いを指定できます。
 `fallback` オプションは以下の値が使用できます。
 
 * **html-entity** : HTML エンティティ (10進数の HTML 数値文字参照) に置き換える
 * **html-entity-hex** : HTML エンティティ (16進数の HTML 数値文字参照) に置き換える
+* **ignore** : 変換できない文字を無視する
+* **error** : 変換できない文字が含まれている場合にエラーを発生させる
+
+#### 変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える
+
+変換先の文字コードで表現できない文字はデフォルトで「?」 (U+003F) に置き換えられますが、
+`fallback` オプションに `html-entity` を指定すると `&#127843;` 等の HTML エンティティに置き換えることができます。
 
 `{ fallback: 'html-entity' }` オプションを指定する例:
 
@@ -425,6 +431,8 @@ console.log(sjisArray); // '寿司ビール' の数値配列に変換されま�
 
 `fallback` オプションに `error` を指定すると、変換先の文字コードで表現できない文字が含まれている場合にエラーが発生し、例外が投げられます。
 
+`{ fallback: 'error' }` オプションを指定する例:
+
 ```javascript
 const unicodeArray = Encoding.stringToCode('おにぎり🍙ラーメン🍜');
 try {
@@ -445,8 +453,8 @@ try {
 
 ```javascript
 const utf16Array = Encoding.convert(utf8Array, {
-  to: 'UTF16', // to_encoding
-  from: 'UTF8', // from_encoding
+  to: 'UTF16',
+  from: 'UTF8',
   bom: true // BOMをつける
 });
 ```
@@ -456,8 +464,8 @@ little-endian として変換したい場合は `bom` オプションに `LE` �
 
 ```javascript
 const utf16leArray = Encoding.convert(utf8Array, {
-  to: 'UTF16', // to_encoding
-  from: 'UTF8', // from_encoding
+  to: 'UTF16',
+  from: 'UTF8',
   bom: 'LE' // BOM (little-endian) をつける
 });
 ```
