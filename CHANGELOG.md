@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0](https://github.com/polygonplanet/encoding.js/compare/2.1.0...2.2.0) (2024-06-09)
+
+### Features
+
+* Add `fallback: 'ignore'` option in `Encoding.convert`. ([#41](https://github.com/polygonplanet/encoding.js/pull/41)) Thanks [@syumai](https://github.com/syumai)
+* Add `fallback: 'error'` option in `Encoding.convert`. ([#44](https://github.com/polygonplanet/encoding.js/pull/44))
+
+### Maintenance
+
+* Update devDependencies (`mocha`) to the latest versions. ([a7bded8](https://github.com/polygonplanet/encoding.js/commit/a7bded8ec7cc4db6ab1702b850560c5dd3ee3206))
+
+### Documentation
+
+* Update `fallback` option of `convert` in README.md ([2a522ea](https://github.com/polygonplanet/encoding.js/commit/2a522ea07c651b2dceae5e97fdc4756bc22bfd3f))
+
 ## [2.1.0](https://github.com/polygonplanet/encoding.js/compare/2.0.0...2.1.0) (2024-03-21)
 
 ### Changes
@@ -19,7 +34,7 @@ All notable changes to this project will be documented in this file.
 ### Documentation
 
 * Update API documents (
-  [`detect`](https://github.com/polygonplanet/encoding.js/commit/eed1e770d9ef8c3f25803a996487de3815375d5b)
+  [`detect`](https://github.com/polygonplanet/encoding.js/commit/eed1e770d9ef8c3f25803a996487de3815375d5b),
   [`convert`](https://github.com/polygonplanet/encoding.js/commit/3263b396a7406ed0b61ce001763b3068227a661d),
   [`urlEncode/urlDecode`](https://github.com/polygonplanet/encoding.js/commit/992efb0f1522336f60fd646e0283afcc82374f73),
   [`base64Encode/base64Decode`](https://github.com/polygonplanet/encoding.js/commit/bb7dffd141757bd4fa32f5ed95cdca082a6277bd),
@@ -33,8 +48,8 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
+* Add `fallback` option to `Encoding.convert`. ([5622bfa](https://github.com/polygonplanet/encoding.js/commit/5622bfa4b2ee3981d664315b743094fcfd4d01a0)) Thanks [#23](https://github.com/polygonplanet/encoding.js/pull/23) by [@tohutohu](https://github.com/tohutohu), [fallback types](https://github.com/DefinitelyTyped/DefinitelyTyped/pull/59656) by [@p-chan](https://github.com/p-chan)
 * Add `Encoding.version`. ([bd3d6ef](https://github.com/polygonplanet/encoding.js/commit/bd3d6ef511a17c2d9671453e6c93618dae7ae9db))
-* Add `fallback` option to `Encoding.convert`. ([#23](https://github.com/polygonplanet/encoding.js/pull/23)) ([5622bfa](https://github.com/polygonplanet/encoding.js/commit/5622bfa4b2ee3981d664315b743094fcfd4d01a0))  Thanks [@tohutohu](https://github.com/tohutohu)
 
 ### Bug Fixes
 
