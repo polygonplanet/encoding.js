@@ -680,6 +680,41 @@ describe('encoding', function() {
           assert.deepEqual(decoded, '寿司ビール');
         });
       });
+
+      describe('Raise an Error when characters cannot be represented', function() {
+        it('SJIS', function() {
+          var fn = function() {
+            encoding.convert(utf8, {
+              to: 'sjis',
+              from: 'utf-8',
+              fallback: 'error'
+            });
+          };
+          assert.throws(fn, Error, 'Character cannot be represented: [240, 159, 141, 163]');
+        });
+
+        it('EUC-JP', function() {
+          var fn = function() {
+            encoding.convert(utf8, {
+              to: 'euc-jp',
+              from: 'utf-8',
+              fallback: 'error'
+            });
+          };
+          assert.throws(fn, Error, 'Character cannot be represented: [240, 159, 141, 163]');
+        });
+
+        it('JIS', function() {
+          var fn = function() {
+            encoding.convert(utf8, {
+              to: 'jis',
+              from: 'utf-8',
+              fallback: 'error'
+            });
+          };
+          assert.throws(fn, Error, 'Character cannot be represented: [240, 159, 141, 163]');
+        });
+      });
     });
   });
 
