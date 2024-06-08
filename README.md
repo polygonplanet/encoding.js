@@ -29,6 +29,7 @@ Convert and detect character encoding in JavaScript.
     + [Specify the return type by the `type` option](#specify-the-return-type-by-the-type-option)
     + [Replacing characters with HTML entities when they cannot be represented](#replacing-characters-with-html-entities-when-they-cannot-be-represented)
     + [Ignoring characters when they cannot be represented](#ignoring-characters-when-they-cannot-be-represented)
+    + [Raising an Error when they cannot be represented](#raising-an-error-when-they-cannot-be-represented)
     + [Specify BOM in UTF-16](#specify-bom-in-utf-16)
   * [urlEncode : Encodes to percent-encoded string](#encodingurlencode-data)
   * [urlDecode : Decodes from percent-encoded string](#encodingurldecode-string)
@@ -428,6 +429,24 @@ sjisArray = Encoding.convert(unicodeArray, {
   fallback: "ignore",
 });
 console.log(sjisArray); // Converted to a code array of '寿司ビール'
+```
+
+#### Raising an Error when they cannot be represented
+
+If you need to throw an error when a character cannot be represented in the target character encoding,
+specify `error` as a `fallback` option. This will cause an exception to be thrown.
+
+```javascript
+const unicodeArray = Encoding.stringToCode('おにぎり🍙ラーメン🍜');
+try {
+  const sjisArray = Encoding.convert(unicodeArray, {
+    to: 'SJIS',
+    from: 'UNICODE',
+    fallback: 'error' // Specify 'error' to throw an exception
+  });
+} catch (e) {
+  console.error(e); // Error: Character cannot be represented: [240, 159, 141, 153]
+}
 ```
 
 #### Specify BOM in UTF-16

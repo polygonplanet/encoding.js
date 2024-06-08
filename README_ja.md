@@ -29,6 +29,7 @@ JavaScript で文字コードの変換や判定をします。
     + [`type` オプションで戻り値の型を指定する](#type-オプションで戻り値の型を指定する)
     + [変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える](#変換できない文字を-html-エンティティ-html-数値文字参照-に置き換える)
     + [変換できない文字を無視する](#変換できない文字を無視する)
+    + [変換できない文字が含まれている場合にエラーを発生させる](#変換できない文字が含まれている場合にエラーを発生させる)
     + [UTF-16 に BOM をつける](#utf-16-に-bom-をつける)
   * [urlEncode : 文字コードの配列をURLエンコードする](#encodingurlencode-data)
   * [urlDecode : 文字コードの配列にURLデコードする](#encodingurldecode-string)
@@ -418,6 +419,23 @@ sjisArray = Encoding.convert(unicodeArray, {
   fallback: 'ignore'
 });
 console.log(sjisArray); // '寿司ビール' の数値配列に変換されます
+```
+
+#### 変換できない文字が含まれている場合にエラーを発生させる
+
+`fallback` オプションに `error` を指定すると、変換先の文字コードで表現できない文字が含まれている場合にエラーが発生し、例外が投げられます。
+
+```javascript
+const unicodeArray = Encoding.stringToCode('おにぎり🍙ラーメン🍜');
+try {
+  const sjisArray = Encoding.convert(unicodeArray, {
+    to: 'SJIS',
+    from: 'UNICODE',
+    fallback: 'error' // 'error'を指定
+  });
+} catch (e) {
+  console.error(e); // Error: Character cannot be represented: [240, 159, 141, 153]
+}
 ```
 
 #### UTF-16 に BOM をつける
