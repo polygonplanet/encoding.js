@@ -121,7 +121,7 @@ When the script is loaded, the object `Encoding` is defined in the global scope 
 You can use encoding.js (package name: `encoding-japanese`) directly from a CDN via a script tag:
 
 ```html
-<script src="https://unpkg.com/encoding-japanese@2.1.0/encoding.min.js"></script>
+<script src="https://unpkg.com/encoding-japanese@2.2.0/encoding.min.js"></script>
 ```
 
 In this example we use [unpkg](https://unpkg.com/encoding-japanese/), but you can use any CDN that provides npm packages,
