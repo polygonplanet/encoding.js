@@ -1673,6 +1673,8 @@ function handleFallback(results, bytes, fallbackOption) {
         results[results.length] = 0x3B; // ;
       }
       break;
+    case 'error':
+      throw new Error('Character cannot be represented: [' + bytes.join(', ') + ']');
     case 'ignore':
       break;
   }
