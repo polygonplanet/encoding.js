@@ -61,6 +61,17 @@ ul li {
   margin-bottom: 0.5em;
 }
 
+label[for] {
+  cursor: pointer;
+}
+
+footer {
+  margin: 0.5em auto;
+  margin-top: 2em;
+  font-weight: bold;
+}
+
+/* ----- language-select ----- */
 .language-select-wrapper {
   display: flex;
   justify-content: flex-end;
@@ -73,14 +84,7 @@ ul li {
   margin-right: 0.2em;
 }
 
-footer {
-  margin: 0.5em auto;
-  margin-top: 2em;
-  font-weight: bold;
-}
-
-/* convert-encoding-demo (encoding-test.html) */
-#run-btn {
+.btn-primary, .btn-secondary, .btn-success {
   font-size: 1.2em;
   font-weight: bold;
   color: #fff;
@@ -89,16 +93,37 @@ footer {
   outline: 0;
   border: 0;
   cursor: pointer;
-  background-color: #3a953f;
-  margin: 1em 0.2em;
+  background-color: #4d5cd5;
+  margin: 0.2em;
 }
 
-#run-btn:disabled {
+.btn-secondary {
+  background-color: #6a6a75;
+}
+
+.btn-success {
+  background-color: #3a953f;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-success:disabled {
   color: rgba(0, 0, 0, 0.25);
   background-color: rgba(0, 0, 0, 0.2);
   cursor: default;
 }
 
-#run-btn:not([disabled]):hover {
+.btn-primary:not([disabled]):hover,
+.btn-secondary:not([disabled]):hover,
+.btn-success:not([disabled]):hover {
+  opacity: 0.85;
+}
+
+.btn-primary:not([disabled]):active,
+.btn-secondary:not([disabled]):active,
+.btn-success:not([disabled]):active {
+  opacity: 0.75;
+}
+
   opacity: 0.8;
 }
