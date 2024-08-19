@@ -1,0 +1,28 @@
+/* encoding-test.html */
+.log {
+  margin-bottom: 1em;
+  background-color: #e3e9f3;
+  border-radius: 5px;
+  padding: 0.2em 0.7em;
+}
+
+.log.error {
+  background-color: #ffbbbb;
+}
+
+.log textarea {
+  width: 95%;
+  height: 4em;
+}
+
+@media screen and (min-width: 768px) {
+  .log textarea {
+    height: 3em;
+  }
+}
+
+.log-title {
+  background-color: rgb(251, 244, 154, 0.5);
+  padding: 0.1em 0.5em;
+  border-radius: 3px;
+}
