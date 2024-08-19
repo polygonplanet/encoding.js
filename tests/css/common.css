@@ -102,23 +102,3 @@ footer {
 #run-btn:not([disabled]):hover {
   opacity: 0.8;
 }
-
-/* detect-file-encoding.html */
-#file {
-  margin: 1em 0;
-  font-size: 110%;
-  cursor: pointer;
-}
-
-#detected-encoding {
-  font-weight: bold;
-  background-color: rgb(251, 244, 154, 0.5);
-  padding: 0 0.6em;
-  border-radius: 3px;
-  display: inline-block;
-}
-
-.detect-file-encoding textarea {
-  height: 120px;
-  font-family: consolas, monospace;
-}
