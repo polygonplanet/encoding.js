@@ -1,5 +1,5 @@
 /*
- * i18n v0.0.1 - Tiny i18n translation utility
+ * i18n v0.1.0 - Tiny i18n translation utility
  * Copyright (c) 2024 polygonplanet
  * @license MIT
  */
@@ -7,15 +7,35 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.i18n = factory());
-})(this, (function () { 'use strict';
+})(this, (function () {
+  'use strict';
 
-  /*
-   * i18n v0.0.2 - Tiny i18n translation utility
-   * Copyright (c) 2024 polygonplanet
-   * @license MIT
+  /**
+   * i18n - Tiny i18n translation utility
+   *
+   * @example
+   * // Basic translation example
+   * i18n.init({
+   *   translations: {
+   *     ja: { hello: 'こんにちは' },
+   *     en: { hello: 'Hello' }
+   *   }
+   * });
+   * i18n.changeLanguage('ja');
+   * console.log(i18n.t('hello')); // 'こんにちは'
+   *
+   * @example
+   * // Translation with dynamic arguments example
+   * i18n.init({
+   *   translations: {
+   *     ja: { upload: '{{file}}をアップロードしました' },
+   *     en: { upload: 'Uploaded {{file}}' }
+   *   }
+   * });
+   * i18n.changeLanguage('en');
+   * console.log(i18n.t('upload', { file: 'image.jpg' })); // 'Uploaded image.jpg'
    */
   const i18n = (function (self) {
-
     const escapeMap = [
       [/&/g, '&amp;'],
       [/</g, '&lt;'],
@@ -73,7 +93,34 @@
       }
     });
 
-    // Add i18n DOM methods
+    /**
+     * Add i18n DOM methods
+     *
+     * @example
+     * // HTML
+     * <h1 data-i18n="hello">Hello</h1>
+     * // JS
+     * i18n.init({
+     *   lang: i18n.detectLanguage(),
+     *   translations: {
+     *     ja: { hello: 'こんにちは' },
+     *     en: { hello: 'Hello' }
+     *   },
+     *   fallback: 'ja'
+     * }).translateElements();
+     *
+     * @example
+     * // Translate for attributes with ':' separator
+     * // HTML
+     * <button id="btn" title="Open window" data-i18n="my-btn:title">Open</button>
+     * // JS
+     * i18n.init({
+     *   translations: {
+     *     ja: { 'my-btn:title': 'ウィンドウを開く' },
+     *     en: { 'my-btn:title': 'Open window' },
+     *   }
+     * }).translateElement(document.getElementById('btn'));
+     */
     Object.assign(
       i18n,
       (() => {
@@ -105,27 +152,17 @@
               key = el.dataset.i18n;
             }
             args = elemArgs.has(el) ? elemArgs.get(el) : this.args || {};
-            const content = this.t(key, args);
+            key.split(/\s*,\s*/).forEach((k) => {
+              const [keyName, attrName] = k.split(':');
+              const content = this.t(keyName, args);
+              if (attrName) {
 
-            if ('i18nAttr' in el.dataset) {
-              // Translate for attributes
-              // @example
-              // // HTML
-            // <button id="btn" title="Open window" data-i18n="my-btn" data-i18n-attr="title">Open</button>
-              // // JS
-              // i18n.init({
-              //   translations: {
-              //     ja: { 'my-btn': 'ウィンドウを開く' },
-              //     en: { 'my-btn': 'Open window' },
-              //   }
-              // });
-              // i18n.translateElement(document.getElementById('btn'));
-              const attrName = el.dataset.i18nAttr;
-              el.setAttribute(attrName, content);
-            } else {
-              // Translate for text content
-              el.innerHTML = content;
-            }
+                el.setAttribute(attrName, content);
+              } else {
+                // Translate for text content
+                el.innerHTML = content;
+              }
+            });
             return this;
           },
           translateElements() {
@@ -152,5 +189,4 @@
   );
 
   return i18n;
-
 }));
