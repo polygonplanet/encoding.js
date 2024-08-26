@@ -26,3 +26,7 @@
   padding: 0.1em 0.5em;
   border-radius: 3px;
 }
+
+#run-btn {
+  margin-top: 1em;
+}
