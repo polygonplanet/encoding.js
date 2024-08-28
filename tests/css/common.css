@@ -84,7 +84,9 @@ footer {
   margin-right: 0.2em;
 }
 
-.btn-primary, .btn-secondary, .btn-success {
+.btn-primary,
+.btn-secondary,
+.btn-success {
   font-size: 1.2em;
   font-weight: bold;
   color: #fff;
@@ -123,7 +125,4 @@ footer {
 .btn-secondary:not([disabled]):active,
 .btn-success:not([disabled]):active {
   opacity: 0.75;
-}
-
-  opacity: 0.8;
 }
