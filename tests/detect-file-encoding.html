@@ -68,7 +68,7 @@
           'convert-demo': '{{{encodingjs}}} でファイルを指定して文字コード変換・判定するデモ',
           'read-file-convert': 'テキストファイルを読み込んで文字コード変換して表示します。',
           'encodingjs-can-convert':
-            '通常、ブラウザで Shift_JIS や EUC-JP で書かれたファイルを読み込むと文字化けしますが、 encoding.js で文字コードを変換して文字化けしないようにします。',
+            '通常、ブラウザで Shift_JIS や EUC-JP で書かれたファイルを読み込むと文字化けしますが、encoding.js で文字コードを変換して文字化けしないようにします。',
           'select-file': '適当なファイルを選択してみてください。',
           'file-not-uploaded': '※ファイルはサーバー等にアップロードされません (このページ内JavaScriptのみで実行されます)',
           'file-raw-contents': 'ファイル内容そのまま表示：',
@@ -78,15 +78,15 @@
         },
         en: {
           'title': 'Encoding.js Demo : Convert and detect character encoding by specifying a file in JavaScript',
-          'convert-demo': 'Demo to convert and detect character encoding by specifying a file with {{{encodingjs}}}',
-          'read-file-convert': 'Reads the text file and converts character encodings, then displays it.',
+          'convert-demo': 'Demo for converting and detecting character encoding by specifying a file with {{{encodingjs}}}',
+          'read-file-convert': 'Reads a text file, converts the character encoding, and displays the result.',
           'encodingjs-can-convert':
             'Typically, loading files written in Shift_JIS or EUC-JP in a browser results in garbled text, but encoding.js can convert the character encoding to prevent this issue.',
           'select-file': 'Try selecting any text file for a character encoding conversion test.',
           'file-not-uploaded': '* Files are not uploaded to any server, they are processed locally within this page by JavaScript.',
-          'file-raw-contents': 'File contents as is:',
-          'file-converted-contents': 'Contents with character encoding converted using encoding.js:',
-          'detected-encoding': 'Detected character encoding from the file: {{detectedEncoding}}',
+          'file-raw-contents': 'File contents (as is):',
+          'file-converted-contents': 'Contents after character encoding conversion using encoding.js:',
+          'detected-encoding': 'Character encoding detected from the file: {{detectedEncoding}}',
           'file-size-too-large': 'Error: The file size is too large'
         }
       };
@@ -114,7 +114,7 @@
 
             // Display the detected encoding
             const el = document.getElementById('detected-encoding');
-            i18n.translateElement(el, 'detected-encoding', { detectedEncoding });
+            el.textContent = i18n.t('detected-encoding', { detectedEncoding });
 
             try {
               // In this demo, Encoding.codeToString() is not used to avoid raising an error when
