@@ -3,16 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Encoding.js Demo : Convert and detect character encoding in JavaScript</title>
+    <title data-i18n="title">Encoding.jsを使ってサンプルテキストの文字コードを変換するテスト</title>
     <link rel="stylesheet" href="css/common.css" />
     <link rel="stylesheet" href="css/encoding-test.css" />
   </head>
   <body>
     <div class="container convert-encoding-demo">
       <header>
-        <h1>
-          <a href="https://github.com/polygonplanet/encoding.js">Encoding.js</a>
-          - Convert and detect character encoding in JavaScript
+        <h1 data-i18n="header-title">
+          サンプルファイルを読み込み、<a href="https://github.com/polygonplanet/encoding.js">Encoding.js</a>
+          を使って文字コードを変換するテスト
         </h1>
         <div class="language-select-wrapper">
           <label for="language-select">Language:</label>
@@ -21,7 +21,6 @@
             <option value="en">English</option>
           </select>
         </div>
-        <h2><span data-i18n="header-title">encoding.js を使って文字コードを変換するサンプル</span></h2>
         <div data-i18n="description">
           「Run」ボタンを押すと、いろいろな文字コード (Shift_JIS、EUC-JP、UTF-8 等) で書かれたテキストファイルを読み込み、
           文字化けしないよう `Encoding.convert()` で文字コードを変換して表示します。
@@ -49,8 +48,15 @@
 
     <script>
       window.__translations__ = {
+        args: {
+          encodingjs: '<a href="https://github.com/polygonplanet/encoding.js">Encoding.js</a>'
+        },
         ja: {
-          'button-title': 'テキストファイルを読み込み、文字コードを変換します',
+          'title': 'Encoding.jsを使ってサンプルテキストの文字コードを変換するテスト',
+          'header-title': 'サンプルファイルを読み込み、{{{encodingjs}}} を使って文字コードを変換するテスト',
+          'description':
+            '「Run」ボタンを押すと、いろいろな文字コード (Shift_JIS、EUC-JP、UTF-8 等) で書かれたテキストファイルを読み込み、文字化けしないよう `Encoding.convert()` で文字コードを変換して表示します。',
+          'button-title': 'テキストファイルを読み込んで文字コードを変換します',
           'log-title': '{{encodingName}} で書かれたテキストファイル「{{{filename}}}」を読み込み：',
           'log-array': '読み込んだ {{encodingName}} の配列：',
           'log-array-to-string': '{{encodingName}} の配列を文字列に変換して表示：',
@@ -60,9 +66,10 @@
           'log-convert-unicode': '`Encoding.convert()` で {{encodingName}} から UNICODE に文字コードを変換した配列：'
         },
         en: {
-          'header-title': 'Demo of converting character encodings using encoding.js',
+          'title': 'Encoding.js Test Run : Convert and detect character encoding in JavaScript',
+          'header-title': 'Test run for reading sample files and converting character encodings with {{{encodingjs}}}',
           'description':
-            'By clicking the "Run" button, reads the contents of text files written in various character encodings (such as Shift_JIS, EUC-JP, and UTF-8), convert these encodings using `Encoding.convert()` to prevent garbled text, and display them in textareas.',
+            'Clicking the "Run" button will read text files written in various character encodings (such as Shift_JIS, EUC-JP, and UTF-8), convert these encodings using `Encoding.convert()` to prevent garbled text, and display the result in textareas.',
           'button-title': 'Read the files and convert character encodings',
           'log-title': 'Read text file &quot;{{{filename}}}&quot; written in {{encodingName}}:',
           'log-array': '{{encodingName}} array of the read content:',
