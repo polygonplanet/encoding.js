@@ -7,7 +7,8 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.nanodown = factory());
-})(this, (function () { 'use strict';
+})(this, (function () {
+  'use strict';
 
   const markdownMap = [
     [/^(#{1,6})\s+(.*)$/gm, (_, p1, p2) => `<h${p1.length}>${p2}</h${p1.length}>`],
@@ -24,5 +25,4 @@
   }
 
   return nanodown;
-
 }));
