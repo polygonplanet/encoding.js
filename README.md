@@ -212,8 +212,9 @@ console.log(Encoding.codeToString(unicodeArray));
 
 ## Demo
 
-* [Test for character encoding conversion (Demo)](https://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
-* [Detect and Convert encoding from file (Demo)](https://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
+* [**Playground** for testing character encoding conversion and detection](https://polygonplanet.github.io/encoding.js/tests/playground.html)
+* [**Test run** for reading sample files and converting character encodings](https://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+* [**Demo** for converting and detecting character encoding by specifying a file](https://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ----
 

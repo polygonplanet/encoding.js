@@ -203,8 +203,9 @@ console.log(Encoding.codeToString(unicodeArray));
 
 ## Demo
 
-* [文字コード変換テスト(Demo)](https://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
-* [ファイルから文字コードの判定・変換(Demo)](https://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
+* [(Playground) 文字コードの変換や判定を試せるプレイグラウンド](https://polygonplanet.github.io/encoding.js/tests/playground.html)
+* [(Test run) サンプルファイルを読み込み、文字コードを変換するテスト](https://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+* [(Demo) ファイルを指定して文字コード変換・判定するデモ](https://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ----
 
