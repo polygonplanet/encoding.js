@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Encoding.js Playground - JavaScriptで文字コードを変換・判定</title>
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/playground.css" />
+  </head>
+  <body @vue:mounted="init">
+    <div class="container playground">
+      <h1 data-i18n="title"><a href="https://github.com/polygonplanet/encoding.js">Encoding.js</a> Playground</h1>
+      <h2 data-i18n="description">Convert and detect character encoding in JavaScript</h2>
+      <div class="language-select-wrapper">
+        <label for="language-select">Language:</label>
+        <select id="language-select">
+          <option value="ja" selected>日本語</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+
+      <fieldset>
+        <legend data-i18n="input">Input</legend>
+        <div>
+          <textarea id="input" rows="7" cols="80" v-model="input" @input="updateInput"></textarea>
+        </div>
+        <div>
+          <label for="input-code" data-i18n="code" class="sub-label">Code</label>
+          <textarea id="input-code" class="code" rows="3" cols="80" v-model="inputCode" @input="updateInputCode"></textarea>
+          <div>
+            <label class="toggle-btn">
+              <input type="checkbox" id="display-hex-input" v-model="inputCodeAsHex" @change="inputCodeAsHexChange" />
+            </label>
+            <label for="display-hex-input" class="toggle-btn-label" data-i18n="display-as-hex">Display as HEX</label>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="convert-param-container">
+        <div class="convert-param">
+          <label>to</label>
+          <select id="to-encoding" v-model="to">
+            <option v-for="option in toOptions" :value="option.value">{{ option.text }}</option>
+          </select>
+        </div>
+
+        <div class="convert-param">
+          <label>from</label>
+          <select id="from-encoding" v-model="from">
+            <option v-for="option in fromOptions" :value="option.value">{{ option.text }}</option>
+          </select>
+        </div>
+
+        <div class="convert-param">
+          <label>fallback</label>
+          <select id="fallback" v-model="fallback">
+            <option v-for="option in fallbackOptions" :value="option.value">{{ option.text }}</option>
+          </select>
+        </div>
+
+        <div class="convert-param">
+          <label>bom</label>
+          <select id="bom" v-model="bom" :disabled="to !== 'UTF16'">
+            <option v-for="option in bomOptions" :value="option.value">{{ option.text }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="convert-param-container">
+        <button type="button" id="convert" class="btn-primary" @click="convert" data-i18n="convert-btn,convert-btn-title:title">
+          Convert
+        </button>
+        <button type="button" id="detect" class="btn-primary" @click="detect" data-i18n="detect-btn,detect-btn-title:title">Detect</button>
+        <button type="button" id="clear" class="btn-secondary" @click="clear" data-i18n="clear-btn,clear-btn-title:title">Clear</button>
+      </div>
+
+      <fieldset>
+        <legend data-i18n="result">Result</legend>
+        <div>
+          <textarea id="result" rows="7" cols="80" v-model="result" @input="updateResult"></textarea>
+        </div>
+        <div>
+          <label for="result-code" data-i18n="code" class="sub-label">Code</label>
+          <textarea id="result-code" class="code" rows="3" cols="80" v-model="resultCode" @input="updateResultCode"></textarea>
+          <div>
+            <label class="toggle-btn">
+              <input type="checkbox" id="display-hex-result" v-model="resultCodeAsHex" @change="resultCodeAsHexChange" />
+            </label>
+            <label for="display-hex-result" class="toggle-btn-label" data-i18n="display-as-hex">Display as HEX</label>
+          </div>
+        </div>
+      </fieldset>
+
+      <footer>
+        <span class="version">Encoding.js v{{version}}</span>
+        <a class="repository-link-btn" href="https://github.com/polygonplanet/encoding.js" title="GitHub">
+          <!-- prettier-ignore -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M12.5.75C6.146.75 1 5.896 1 12.25c0 5.089 3.292 9.387 7.863 10.91.575.101.79-.244.79-.546 0-.273-.014-1.178-.014-2.142-2.889.532-3.636-.704-3.866-1.35-.13-.331-.69-1.352-1.18-1.625-.402-.216-.977-.748-.014-.762.906-.014 1.553.834 1.769 1.179 1.035 1.74 2.688 1.25 3.349.948.1-.747.402-1.25.733-1.538-2.559-.287-5.232-1.279-5.232-5.678 0-1.25.445-2.285 1.178-3.09-.115-.288-.517-1.467.115-3.048 0 0 .963-.302 3.163 1.179.92-.259 1.897-.388 2.875-.388.977 0 1.955.13 2.875.388 2.2-1.495 3.162-1.179 3.162-1.179.633 1.581.23 2.76.115 3.048.733.805 1.179 1.825 1.179 3.09 0 4.413-2.688 5.39-5.247 5.678.417.36.776 1.05.776 2.128 0 1.538-.014 2.774-.014 3.162 0 .302.216.662.79.547C20.709 21.637 24 17.324 24 12.25 24 5.896 18.854.75 12.5.75Z"></path></svg>
+        </a>
+      </footer>
+    </div>
+
+    <script src="https://unpkg.com/encoding-japanese@2.2.0/encoding.min.js"></script>
+    <script src="js/i18n.umd.js"></script>
+    <script src="js/nanodown.umd.js"></script>
+    <script src="js/playground-i18n.js"></script>
+    <script src="js/common.js"></script>
+    <script src="https://unpkg.com/petite-vue"></script>
+    <script src="js/playground.js"></script>
+
+    <!-- prettier-ignore -->
+    <a href="https://github.com/polygonplanet/encoding.js" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+    <!-- prettier-ignore -->
+    <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+  </body>
+</html>

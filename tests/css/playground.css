@@ -1,0 +1,98 @@
+/* playground.html */
+
+textarea {
+  height: 5.6em;
+  font-family: consolas, monospace;
+}
+
+textarea.code {
+  height: 3.1em;
+}
+
+label.sub-label {
+  font-size: 15px;
+}
+
+h2 {
+  font-size: 16px;
+  font-weight: normal;
+  margin: 0.2em;
+}
+
+fieldset {
+  margin-top: 0.5em;
+  padding-right: 1.5em;
+}
+
+.convert-param-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.convert-param-container:last-of-type {
+  margin-top: 1em;
+}
+
+.convert-param {
+  margin-right: 1em;
+}
+
+.version {
+  font-weight: normal;
+}
+
+.repository-link-btn {
+  vertical-align: middle;
+  margin-left: 0.5em;
+  display: inline-block;
+}
+
+/* ----- toggle-button ----- */
+.toggle-btn {
+  margin: 0.4em 0.1em 0.1em 0.1em;
+  display: inline-block;
+  position: relative;
+  width: 2em;
+  height: 1em;
+  border-radius: 50px;
+  background-color: #bbb;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.toggle-btn:has(:checked) {
+  background-color: #4cc152;
+}
+
+.toggle-btn::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgb(0 0 0 / 30%);
+  background-color: #fff;
+  content: '';
+  transition: left 0.2s;
+}
+
+.toggle-btn:has(:checked)::after {
+  left: 1em;
+}
+
+.toggle-btn:not([disabled]):hover {
+  opacity: 0.8;
+}
+
+.toggle-btn input {
+  display: none;
+}
+
+.toggle-btn-label {
+  display: inline-block;
+  position: relative;
+  top: -3px;
+  margin: 0.4em 0.1em 0.1em 0.1em;
+}
