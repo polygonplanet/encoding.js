@@ -10,8 +10,9 @@ body {
 
 .container {
   max-width: 1024px;
-  margin: 1em auto 2em auto;
+  margin: 0 auto 2em auto;
   padding: 1em 2em;
+  position: relative;
 }
 
 a {
@@ -34,6 +35,14 @@ textarea {
 
 h1 {
   font-size: 1.8em;
+  margin-top: 1.3em;
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.3em;
+    margin-top: 1.5em;
+  }
 }
 
 code {
@@ -67,17 +76,20 @@ label[for] {
 
 footer {
   margin: 0.5em auto;
-  margin-top: 2em;
+  margin-top: 1.5em;
   font-weight: bold;
 }
 
 /* ----- language-select ----- */
 .language-select-wrapper {
+  position: absolute;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   width: 90%;
   margin: 1em 0;
+  right: 90px;
+  top: 0;
 }
 
 .language-select-wrapper label {
@@ -96,7 +108,7 @@ footer {
   border: 0;
   cursor: pointer;
   background-color: #4d5cd5;
-  margin: 0.2em;
+  margin: 0.2em 0.4em;
 }
 
 .btn-secondary {
