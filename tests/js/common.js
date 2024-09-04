@@ -5,15 +5,6 @@
   const nanodown = window.nanodown;
 
   document.addEventListener('DOMContentLoaded', function () {
-    // Set default language (ja) contents from HTML
-    translations.ja = Object.keys(translations.en).reduce((memo, key) => {
-      if (memo[key]) return memo;
-      const el = i18n.$(key);
-      const content = el.dataset.i18nAttr ? el.getAttribute(el.dataset.i18nAttr) : el.textContent;
-      memo[key] = content.trim();
-      return memo;
-    }, translations.ja || {});
-
     i18n.init({
       lang: i18n.detectLanguage(),
       translations,
