@@ -38,13 +38,17 @@ fieldset {
   margin-right: 1em;
 }
 
+.help {
+  cursor: help;
+}
+
 .version {
   font-weight: normal;
 }
 
 .repository-link-btn {
   vertical-align: middle;
-  margin-left: 0.5em;
+  margin: 0 0.3em;
   display: inline-block;
 }
 

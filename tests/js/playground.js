@@ -1,7 +1,16 @@
 (function () {
   'use strict';
 
-  const ENCODINGS = ['SJIS', 'UTF8', 'EUCJP', 'JIS', 'UTF16', 'UTF16BE', 'UTF16LE', 'UNICODE'];
+  const ENCODINGS = {
+    SJIS: 'Shift_JIS',
+    UTF8: 'UTF-8',
+    EUCJP: 'EUC-JP',
+    JIS: 'ISO-2022-JP',
+    UTF16: 'UTF-16',
+    UTF16BE: 'UTF-16BE',
+    UTF16LE: 'UTF-16LE',
+    UNICODE: 'UNICODE'
+  };
 
   const inspectArray = (array) => `[${array.join(', ')}]`;
 
@@ -46,8 +55,15 @@
     bom: '',
     version: Encoding.version,
 
-    toOptions: ENCODINGS.map((encoding) => ({ text: encoding, value: encoding })),
-    fromOptions: ['AUTO', ...ENCODINGS].map((encoding) => ({ text: encoding, value: encoding })),
+    toOptions: Object.entries(ENCODINGS).map(([key, value]) => {
+      const text = key === value ? key : `${key} (${value})`;
+      return { text, value: key };
+    }),
+    fromOptions: Object.entries({ ...{ AUTO: 'AUTO' }, ...ENCODINGS }).map(([key, value]) => {
+      const text = key === value ? key : `${key} (${value})`;
+      return { text, value: key };
+    }),
+
     fallbackOptions: [
       { text: '(none)', value: '' },
       { text: 'error', value: 'error' },
