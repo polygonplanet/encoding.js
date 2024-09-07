@@ -156,7 +156,6 @@
               const [keyName, attrName] = k.split(':');
               const content = this.t(keyName, args);
               if (attrName) {
-
                 el.setAttribute(attrName, content);
               } else {
                 // Translate for text content
