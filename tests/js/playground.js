@@ -26,7 +26,7 @@
 
   const isValidCode = (code) => {
     code = code.trim();
-    return /^\[\s*(?:\s*(?:0|[1-9]\d*|0x[a-f0-9]+)\s*(?=,|\]),?)*?\s*\]$/i.test(code);
+    return /^\[\s*(?:(?:0|[1-9]\d*|0x[a-f0-9]+)(?:\s*,\s*(?:0|[1-9]\d*|0x[a-f0-9]+))*?)\s*\]$/i.test(code);
   };
 
   const decToHex = (code) => {
@@ -37,9 +37,7 @@
         hexLen = len;
       }
     });
-    return code.map(
-      (c) => '0x' + (new Array(hexLen + 1).join('0') + c.toString(16)).slice(-hexLen).toUpperCase()
-    );
+    return code.map((c) => '0x' + (new Array(hexLen + 1).join('0') + c.toString(16)).slice(-hexLen).toUpperCase());
   };
 
   PetiteVue.createApp({
