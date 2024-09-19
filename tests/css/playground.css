@@ -24,6 +24,12 @@ fieldset {
   padding-right: 1.5em;
 }
 
+.data-not-uploaded {
+  color: #666;
+  font-size: 14px;
+  margin: 0.2em 0.2em 1em 0.2em;
+}
+
 .convert-param-container {
   display: flex;
   justify-content: center;

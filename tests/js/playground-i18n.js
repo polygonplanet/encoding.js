@@ -5,6 +5,7 @@ window.__translations__ = {
   ja: {
     'title': '{{{encodingjs}}} Playground',
     'description': 'JavaScript で文字コードの変換や判定をします',
+    'data-not-uploaded': '※入力内容はサーバーにアップロードされたり、保存・共有されることはありません。変換処理はこのページ内のJavaScriptでのみ実行されます。',
     'display-as-hex': '16進数で表示',
     'input': '変換する内容',
     'code': 'コード',
@@ -26,6 +27,7 @@ window.__translations__ = {
   en: {
     'title': '{{{encodingjs}}} Playground',
     'description': 'Convert and detect character encoding in JavaScript',
+    'data-not-uploaded': '* The input data is not uploaded, saved or shared. The conversion process is executed only in this page with JavaScript.',
     'display-as-hex': 'Display as HEX',
     'input': 'Input',
     'code': 'Code',
