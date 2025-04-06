@@ -1,5 +1,5 @@
 /*
- * i18n v1.0.0 - Tiny i18n translation utility
+ * i18n v1.0.1 - Tiny i18n translation utility
  * Copyright (c) 2024 polygonplanet
  * @license MIT
  */
@@ -15,8 +15,8 @@
    * // Translate text
    * i18n.init({
    *   translations: {
-   *     ja: { hello: 'こんにちは' },
-   *     en: { hello: 'Hello' }
+   *     ja: { 'hello': 'こんにちは' },
+   *     en: { 'hello': 'Hello' }
    *   }
    * });
    * i18n.changeLanguage('ja');
@@ -26,11 +26,27 @@
    * // Translate text with arguments
    * i18n.init({
    *   translations: {
-   *     ja: { hello: 'こんにちは、{{name}}さん' },
-   *     en: { hello: 'Hello, {{name}}' }
+   *     ja: { 'hello': 'こんにちは、{{name}}さん' },
+   *     en: { 'hello': 'Hello, {{name}}' }
    *   }
    * });
-   * console.log(i18n.t('hello', { name: 'Taro' })); // 'こんにちは、Taroさん'
+   * i18n.changeLanguage('en');
+   * console.log(i18n.t('hello', { name: 'Taro' })); // 'Hello, Taro'
+   *
+   * @example
+   * // Translate user comment with HTML escaping
+   * // `{{{xxx}}}` will not be escaped, `{{xxx}}` will be HTML-escaped
+   * i18n.init({
+   *   translations: {
+   *     ja: { 'comment': '{{{name}}}さんのコメント: {{comment}}' },
+   *     en: { 'comment': '{{{name}}} says: {{comment}}' }
+   *   }
+   * });
+   * i18n.changeLanguage('ja');
+   * console.log(i18n.t('comment', {
+   *   name: '<b>Taro</b>',
+   *   comment: '<script>alert("XSS")</script>'
+   * })); // '<b>Taro</b>さんのコメント: &lt;script&gt;alert("XSS")&lt;/script&gt;'
    */
   const i18n = (function (self) {
     const escapeMap = [
