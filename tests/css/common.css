@@ -31,6 +31,38 @@ textarea {
   padding: 0.5em;
   font-family: ui-monospace, SF Mono, Menlo, Consolas, monospace;
   border-radius: 5px;
+  border: 1px solid #8b8b8b;
+  color: #000;
+}
+
+textarea:focus {
+  outline: 0;
+  border: 2px solid #4d5cd5;
+  padding: calc(0.5em - 1px);
+}
+
+input[type="text"], input[type="number"] {
+  width: 100%;
+  padding: 0.5em;
+  font-family: ui-monospace, SF Mono, Menlo, Consolas, monospace;
+  border-radius: 5px;
+  border: 1px solid #8b8b8b;
+  color: #000;
+}
+
+textarea:read-only, input[type="text"]:read-only, input[type="number"]:read-only {
+  background-color: #f0f0f0;
+  color: #555;
+}
+
+input[type="text"]:disabled, input[type="number"]:disabled {
+  background-color: #f0f0f0;
+}
+
+input[type="text"]:focus, input[type="number"]:focus {
+  outline: 0;
+  border: 2px solid #4d5cd5;
+  padding: calc(0.5em - 1px);
 }
 
 h1 {
