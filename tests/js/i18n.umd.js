@@ -1,5 +1,5 @@
 /*
- * i18n v0.1.0 - Tiny i18n translation utility
+ * i18n v1.0.0 - Tiny i18n translation utility
  * Copyright (c) 2024 polygonplanet
  * @license MIT
  */
@@ -11,10 +11,8 @@
   'use strict';
 
   /**
-   * i18n - Tiny i18n translation utility
-   *
    * @example
-   * // Basic translation example
+   * // Translate text
    * i18n.init({
    *   translations: {
    *     ja: { hello: 'こんにちは' },
@@ -25,15 +23,14 @@
    * console.log(i18n.t('hello')); // 'こんにちは'
    *
    * @example
-   * // Translation with dynamic arguments example
+   * // Translate text with arguments
    * i18n.init({
    *   translations: {
-   *     ja: { upload: '{{file}}をアップロードしました' },
-   *     en: { upload: 'Uploaded {{file}}' }
+   *     ja: { hello: 'こんにちは、{{name}}さん' },
+   *     en: { hello: 'Hello, {{name}}' }
    *   }
    * });
-   * i18n.changeLanguage('en');
-   * console.log(i18n.t('upload', { file: 'image.jpg' })); // 'Uploaded image.jpg'
+   * console.log(i18n.t('hello', { name: 'Taro' })); // 'こんにちは、Taroさん'
    */
   const i18n = (function (self) {
     const escapeMap = [
@@ -109,15 +106,16 @@
      *   fallback: 'ja'
      * }).translateElements();
      *
+     * Translate for attributes with '[attrName]' brackets
+     *
      * @example
-     * // Translate for attributes with ':' separator
      * // HTML
-     * <button id="btn" title="Open window" data-i18n="my-btn:title">Open</button>
+     * <button id="btn" data-i18n="[title]open window">Open</button>
      * // JS
      * i18n.init({
      *   translations: {
-     *     ja: { 'my-btn:title': 'ウィンドウを開く' },
-     *     en: { 'my-btn:title': 'Open window' },
+     *     ja: { 'open window': 'ウィンドウを開く' },
+     *     en: { 'open window': 'Open window' },
      *   }
      * }).translateElement(document.getElementById('btn'));
      */
@@ -153,7 +151,15 @@
             }
             args = elemArgs.has(el) ? elemArgs.get(el) : this.args || {};
             key.split(/\s*,\s*/).forEach((k) => {
-              const [keyName, attrName] = k.split(':');
+              let keyName, attrName;
+
+              // When specifying `data-i18n="[attr]key"`
+              if (k.charAt(0) === '[') {
+                [attrName, keyName] = k.split(']');
+                attrName = attrName.slice(1);
+              } else {
+                keyName = k;
+              }
               const content = this.t(keyName, args);
               if (attrName) {
                 el.setAttribute(attrName, content);
