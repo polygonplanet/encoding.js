@@ -1,13 +1,10 @@
 // Translation for encoding.js demo
 (function () {
   const i18n = window.i18n;
-  delete window.i18n;
+  const nanodown = window.nanodown;
 
   const translations = window.__translations__ || {};
   delete window.__translations__;
-
-  const nanodown = window.nanodown;
-  delete window.nanodown;
 
   document.addEventListener('DOMContentLoaded', () => {
     i18n.init({
