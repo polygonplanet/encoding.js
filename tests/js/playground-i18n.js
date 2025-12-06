@@ -22,7 +22,11 @@ window.__translations__ = {
     'clear-btn': 'クリア',
     'convert-btn-title': '文字コードを変換',
     'detect-btn-title': '文字コードを判定',
-    'clear-btn-title': '入力欄をクリア'
+    'clear-btn-title': '入力欄をクリア',
+    'share-url-btn': 'URLをコピー',
+    'share-url-btn-title': '現在の入力内容を反映した共有用URLをクリップボードにコピー',
+    'tooltip-copied': 'クリップボードにコピーしました！',
+    'tooltip-failed-to-copy': '⚠️ コピーに失敗しました！'
   },
   en: {
     'title': '{{{encodingjs}}} Playground',
@@ -44,6 +48,10 @@ window.__translations__ = {
     'clear-btn': 'Clear',
     'convert-btn-title': 'Convert character encoding',
     'detect-btn-title': 'Detect character encoding',
-    'clear-btn-title': 'Clear input fields'
+    'clear-btn-title': 'Clear input fields',
+    'share-url-btn': 'Copy URL',
+    'share-url-btn-title': 'Copy the share URL with the current input to clipboard',
+    'tooltip-copied': 'Copied to clipboard!',
+    'tooltip-failed-to-copy': '⚠️ Failed to copy!'
   }
 };

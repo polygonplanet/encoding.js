@@ -41,7 +41,8 @@ textarea:focus {
   padding: calc(0.5em - 1px);
 }
 
-input[type="text"], input[type="number"] {
+input[type='text'],
+input[type='number'] {
   width: 100%;
   padding: 0.5em;
   font-family: ui-monospace, SF Mono, Menlo, Consolas, monospace;
@@ -50,16 +51,20 @@ input[type="text"], input[type="number"] {
   color: #000;
 }
 
-textarea:read-only, input[type="text"]:read-only, input[type="number"]:read-only {
+textarea:read-only,
+input[type='text']:read-only,
+input[type='number']:read-only {
   background-color: #f0f0f0;
   color: #555;
 }
 
-input[type="text"]:disabled, input[type="number"]:disabled {
+input[type='text']:disabled,
+input[type='number']:disabled {
   background-color: #f0f0f0;
 }
 
-input[type="text"]:focus, input[type="number"]:focus {
+input[type='text']:focus,
+input[type='number']:focus {
   outline: 0;
   border: 2px solid #4d5cd5;
   padding: calc(0.5em - 1px);
@@ -131,6 +136,7 @@ footer {
 .btn-primary,
 .btn-secondary,
 .btn-success {
+  font-family: tahoma, verdana, sans-serif;
   font-size: 1.2em;
   font-weight: bold;
   color: #fff;
@@ -156,7 +162,7 @@ footer {
 .btn-success:disabled {
   color: rgba(0, 0, 0, 0.25);
   background-color: rgba(0, 0, 0, 0.2);
-  cursor: default;
+  cursor: not-allowed;
 }
 
 .btn-primary:not([disabled]):hover,

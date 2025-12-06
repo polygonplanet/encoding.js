@@ -40,8 +40,47 @@
     return code.map((c) => '0x' + (new Array(hexLen + 1).join('0') + c.toString(16)).slice(-hexLen).toUpperCase());
   };
 
+  const parseQueryParams = () => {
+    const query = location.search.substring(1);
+    if (query.length === 0) {
+      return {};
+    }
+    const searchParams = new URLSearchParams(query);
+    const params = {};
+    for (const [key, value] of searchParams) {
+      params[key] = value;
+    }
+    return params;
+  };
+
+  const parseInputParams = () => {
+    const params = parseQueryParams();
+    const input = params.input || '';
+    if (input.length === 0 || /[^a-zA-Z0-9]/.test(input)) {
+      return '';
+    }
+    return lzbase62.decompress(input);
+  };
+
+  const updateURLParam = (params) => {
+    const url = new URL(window.location);
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value && value.length) {
+        url.searchParams.set(key, value);
+      } else {
+        url.searchParams.delete(key);
+      }
+    });
+    window.history.pushState({}, '', url);
+  };
+
+  let isPopStateAdded = false;
+  const DEFAULT_INPUT = 'こんにちは';
+  const getDefaultInput = () => parseInputParams() || DEFAULT_INPUT;
+
   PetiteVue.createApp({
-    input: 'こんにちは',
+    input: getDefaultInput(),
     inputCode: '',
     inputCodeAsHex: false,
     result: '',
@@ -51,6 +90,9 @@
     from: 'AUTO',
     fallback: '',
     bom: '',
+    shareURLInput: '',
+    shareURLCopiedMessage: '',
+    isValidShareURL: false,
     version: Encoding.version,
 
     toOptions: Object.entries(ENCODINGS).map(([key, value]) => {
@@ -78,6 +120,17 @@
     init() {
       this.updateInput();
       this.updateResult();
+      this.updateShareURL();
+
+      if (!isPopStateAdded) {
+        isPopStateAdded = true;
+        window.addEventListener('popstate', (ev) => {
+          const input = parseInputParams();
+          this.input = input || DEFAULT_INPUT;
+          this.updateInput();
+          this.updateShareURL();
+        });
+      }
     },
     setInputCode(code) {
       this.inputCode = inspectArray(this.inputCodeAsHex ? decToHex(code) : code);
@@ -153,16 +206,58 @@
         this.result = e.message;
       }
       this.updateResult();
+      this.updateShareURL();
     },
     detect() {
       this.result = Encoding.detect(this.input);
       this.updateResult();
+      this.updateShareURL();
     },
     clear() {
       this.input = '';
       this.inputCode = '';
       this.result = '';
       this.resultCode = '';
+      this.isCopiedShareURL = false;
+      this.updateShareURL();
+    },
+    updateShareURL() {
+      if (this.input.length > 1500) {
+        this.shareURLInput = 'Input is too long to generate share URL.';
+        this.isValidShareURL = false;
+        return;
+      }
+
+      this.isValidShareURL = true;
+      let compressedInput = '';
+
+      if (this.input.length === 0 || this.input === DEFAULT_INPUT) {
+        compressedInput = '';
+      } else {
+        compressedInput = lzbase62.compress(this.input);
+      }
+      updateURLParam({ input: compressedInput });
+      this.shareURLInput = window.location.href;
+    },
+    copyShareURL() {
+      const copyToClipboard = (text) => {
+        if (window.isSecureContext && navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(text);
+        }
+        return Promise.reject();
+      };
+
+      copyToClipboard(this.shareURLInput).then(
+        () => {
+          this.shareURLCopiedMessage = i18n.t('tooltip-copied');
+        },
+        () => {
+          this.shareURLCopiedMessage = i18n.t('tooltip-failed-to-copy');
+          console.error('Failed to copy the share URL to clipboard.');
+        }
+      );
+
+      setTimeout(() => (this.shareURLCopiedMessage = ''), 2000);
     }
   }).mount();
 })();
