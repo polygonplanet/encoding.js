@@ -225,7 +225,7 @@
       this.isCopiedShareURL = false;
       this.updateShareURL();
     },
-    updateShareURL() {
+    updateShareURL(skipPushState = false) {
       if (this.input.length > 1500) {
         this.shareURLInput = 'Input is too long to generate share URL.';
         this.isValidShareURL = false;
