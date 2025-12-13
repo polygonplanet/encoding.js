@@ -195,7 +195,7 @@
       }
       const codeArray = codeToArray(code);
       this.result = Encoding.codeToString(codeArray);
-      this.updateResultByteSize(result, codeArray);
+      this.updateResultByteSize(this.result, codeArray);
     },
     updateResultByteSize(result, codeArray) {
       const hasWideChar = codeArray.some((n) => n > 255);
