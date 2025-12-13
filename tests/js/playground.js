@@ -72,6 +72,10 @@
         url.searchParams.delete(key);
       }
     });
+
+    if (url.toString() === window.location.toString()) {
+      return;
+    }
     window.history.pushState({}, '', url);
   };
 
@@ -128,7 +132,7 @@
           const input = parseInputParams();
           this.input = input || DEFAULT_INPUT;
           this.updateInput();
-          this.updateShareURL();
+          this.updateShareURL(true);
         });
       }
     },
@@ -236,7 +240,10 @@
       } else {
         compressedInput = lzbase62.compress(this.input);
       }
-      updateURLParam({ input: compressedInput });
+
+      if (!skipPushState) {
+        updateURLParam({ input: compressedInput });
+      }
       this.shareURLInput = window.location.href;
     },
     copyShareURL() {
