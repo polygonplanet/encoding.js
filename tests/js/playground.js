@@ -40,6 +40,8 @@
     return code.map((c) => '0x' + (new Array(hexLen + 1).join('0') + c.toString(16)).slice(-hexLen).toUpperCase());
   };
 
+  const getByteSize = (str) => new TextEncoder().encode(str).length;
+
   const parseQueryParams = () => {
     const query = location.search.substring(1);
     if (query.length === 0) {
@@ -87,9 +89,11 @@
     input: getDefaultInput(),
     inputCode: '',
     inputCodeAsHex: false,
+    inputByteSize: null,
     result: '',
     resultCode: '',
     resultCodeAsHex: false,
+    resultByteSize: null,
     to: 'SJIS',
     from: 'AUTO',
     fallback: '',
@@ -143,6 +147,7 @@
       const input = this.input;
       const code = input.length === 0 ? [] : Encoding.stringToCode(input);
       this.setInputCode(code);
+      this.updateInputByteSize();
     },
     updateInputCode() {
       const code = this.inputCode;
@@ -155,6 +160,11 @@
         return;
       }
       this.input = Encoding.codeToString(codeToArray(code));
+      this.updateInputByteSize();
+    },
+    updateInputByteSize() {
+      // Inputは常にUTF-8換算でバイト数を計測
+      this.inputByteSize = getByteSize(this.input);
     },
     inputCodeAsHexChange() {
       let code = this.inputCode;
@@ -170,6 +180,7 @@
       const result = this.result;
       const code = result.length === 0 ? [] : Encoding.stringToCode(result);
       this.setResultCode(code);
+      this.updateResultByteSize(result, code);
     },
     updateResultCode() {
       const code = this.resultCode;
@@ -181,7 +192,22 @@
         // this.result = 'Error: Invalid code';
         return;
       }
-      this.result = Encoding.codeToString(codeToArray(code));
+      const codeArray = codeToArray(code);
+      this.result = Encoding.codeToString(codeArray);
+      this.updateResultByteSize(result, codeArray);
+    },
+    updateResultByteSize(result, codeArray) {
+      const hasWideChar = codeArray.some((n) => n > 255);
+
+      // UNICODE指定時、または255を超える値が含まれる場合（=UNICODE）は、
+      // バイト配列ではなく文字列とみなしてUTF-8換算で計測
+      // UNICODE指定時は内部表現(0-65535)になるため、Inputと同様にUTF-8換算で計測
+      if (this.to === 'UNICODE' || hasWideChar) {
+        this.resultByteSize = getByteSize(result);
+      } else {
+        // SJIS, UTF8, UTF16(BE/LE)などの場合はバイト配列(0-255)が返るので、配列長がそのままバイト数
+        this.resultByteSize = codeArray.length;
+      }
     },
     resultCodeAsHexChange() {
       let code = this.resultCode;
@@ -220,8 +246,10 @@
     clear() {
       this.input = '';
       this.inputCode = '';
+      this.inputByteSize = null;
       this.result = '';
       this.resultCode = '';
+      this.resultByteSize = null;
       this.isCopiedShareURL = false;
       this.updateShareURL();
     },

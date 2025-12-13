@@ -1,8 +1,16 @@
 /* playground.html */
 
+:root {
+  --font-mono: Consolas, 'Cascadia Code', 'SFMono-Regular', Menlo, Monaco, 'Roboto Mono', 'Noto Sans Mono',
+    'Ubuntu Mono', monospace;
+}
+
 textarea {
   height: 5.6em;
-  font-family: consolas, monospace;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.2;
+  display: block;
 }
 
 textarea.code {
@@ -14,11 +22,15 @@ textarea.code {
 }
 
 label.sub-label {
-  font-size: 15px;
+  font-size: 14px;
 }
 
 h1 {
-  margin-top: 1em;
+  margin-top: 0.5em;
+
+  @media (max-width: 480px) {
+    margin-top: 1em;
+  }
 }
 
 h2 {
@@ -33,11 +45,31 @@ fieldset {
   padding-bottom: 0.3em;
 }
 
+legend {
+  font-size: 14px;
+}
+
+footer {
+  margin-top: 0.5em;
+}
+
+.language-select-wrapper {
+  margin-top: 0.5em;
+}
+
 .data-not-uploaded {
   color: #666;
   font-size: 14px;
   margin: 0.2em 0.2em 1em 0.2em;
 }
+
+.byte-size {
+  text-align: right;
+  font-size: 13px;
+  color: #333;
+  margin-right: 0.5em;
+}
+
 
 .convert-param-container {
   display: flex;

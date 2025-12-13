@@ -11,7 +11,9 @@
     <div class="container playground">
       <h1 data-i18n="title"><a href="https://github.com/polygonplanet/encoding.js">Encoding.js</a> Playground</h1>
       <h2 data-i18n="description">Convert and detect character encoding in JavaScript</h2>
-      <p data-i18n="data-not-uploaded" class="data-not-uploaded">* The input data is not uploaded, saved or shared. The conversion process is executed only in this page with JavaScript.</p>
+      <p data-i18n="data-not-uploaded" class="data-not-uploaded">
+        * The input data is not uploaded, saved or shared. The conversion process is executed only in this page with JavaScript.
+      </p>
 
       <div class="header">
         <div class="language-select-wrapper">
@@ -27,6 +29,9 @@
         <legend data-i18n="input">Input</legend>
         <div>
           <textarea id="input" rows="7" cols="80" v-model="input" @input="updateInput"></textarea>
+          <div class="byte-size" v-show="inputByteSize != null">
+            {{ Number(inputByteSize).toLocaleString() }} bytes (UTF-8)
+          </div>
         </div>
         <div>
           <label for="input-code" data-i18n="code" class="sub-label">Code</label>
@@ -118,6 +123,9 @@
         <legend data-i18n="result">Result</legend>
         <div>
           <textarea id="result" rows="7" cols="80" v-model="result" @input="updateResult"></textarea>
+          <div class="byte-size" v-show="resultByteSize != null">
+            {{ Number(resultByteSize).toLocaleString() }} bytes
+          </div>
         </div>
         <div>
           <label for="result-code" data-i18n="code" class="sub-label">Code</label>
@@ -133,7 +141,16 @@
 
       <div class="share-btn-wrapper">
         <input type="text" id="share-url-input" class="share-url-input" v-model="shareURLInput" @focus="$event.target.select()" readonly />
-        <button type="button" id="share-url" class="btn-primary" @click="copyShareURL" :disabled="!isValidShareURL || !shareURLInput" data-i18n="share-url-btn,[title]share-url-btn-title">Copy URL</button>
+        <button
+          type="button"
+          id="share-url"
+          class="btn-primary"
+          @click="copyShareURL"
+          :disabled="!isValidShareURL || !shareURLInput"
+          data-i18n="share-url-btn,[title]share-url-btn-title"
+        >
+          Copy URL
+        </button>
         <div class="copied-message-wrapper">
           <span class="copied-message" v-if="shareURLCopiedMessage">{{ shareURLCopiedMessage }}</span>
         </div>
