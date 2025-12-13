@@ -101,6 +101,7 @@
     shareURLInput: '',
     shareURLCopiedMessage: '',
     isValidShareURL: false,
+    processingTime: null,
     version: Encoding.version,
 
     toOptions: Object.entries(ENCODINGS).map(([key, value]) => {
@@ -230,16 +231,21 @@
       }
 
       try {
-        const result = Encoding.convert(this.input, options);
+        const result = this.withProcessingTime(() => {
+          return Encoding.convert(this.input, options);
+        });
         this.result = Encoding.codeToString(result);
       } catch (e) {
         this.result = e.message;
       }
+
       this.updateResult();
       this.updateShareURL();
     },
     detect() {
-      this.result = Encoding.detect(this.input);
+      this.withProcessingTime(() => {
+        this.result = Encoding.detect(this.input);
+      });
       this.updateResult();
       this.updateShareURL();
     },
@@ -250,8 +256,17 @@
       this.result = '';
       this.resultCode = '';
       this.resultByteSize = null;
+      this.processingTime = null;
       this.isCopiedShareURL = false;
       this.updateShareURL();
+    },
+    withProcessingTime(callback) {
+      this.processingTime = null;
+      const startTime = performance.now();
+      const res = callback();
+      const endTime = performance.now();
+      this.processingTime = Math.round((endTime - startTime) * 10000) / 10000;
+      return res;
     },
     updateShareURL(skipPushState = false) {
       if (this.input.length > 1500) {

@@ -119,6 +119,10 @@
         <button type="button" id="clear" class="btn-secondary" @click="clear" data-i18n="clear-btn,[title]clear-btn-title">Clear</button>
       </div>
 
+      <div class="processing-time" v-if="processingTime != null">
+        Processing Time: {{ Number(processingTime).toLocaleString() }} ms
+      </div>
+
       <fieldset>
         <legend data-i18n="result">Result</legend>
         <div>

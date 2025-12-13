@@ -70,6 +70,12 @@ footer {
   margin-right: 0.5em;
 }
 
+.processing-time {
+  text-align: center;
+  font-size: 13px;
+  color: #333;
+  margin-top: 0.5em;
+}
 
 .convert-param-container {
   display: flex;
