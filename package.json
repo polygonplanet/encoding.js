@@ -16,7 +16,7 @@
     "watch": "watchify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare --poll=300 -v"
   },
   "engines": {
-    "node": ">=8.10.0"
+    "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",
