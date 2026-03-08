@@ -52,13 +52,12 @@
   "dependencies": {},
   "devDependencies": {
     "bannerify": "^1.0.1",
-    "browserify": "^17.0.0",
+    "browserify": "^17.0.1",
     "eslint": "^8.57.0",
-    "mocha": "^10.4.0",
+    "mocha": "^11.7.5",
     "package-json-versionify": "^1.0.4",
     "power-assert": "^1.6.1",
-    "uglify-js": "^3.17.4",
-    "uglifyify": "^5.0.2",
+    "uglify-js": "^3.19.3",
     "watchify": "^4.0.0"
   },
   "browserify": {
