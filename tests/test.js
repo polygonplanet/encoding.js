@@ -1517,6 +1517,24 @@ describe('encoding', function() {
       });
     });
 
+    it('toHiraganaCase/toKatakanaCase wa-row voiced kana', function() {
+      // 'ヷヸヹヺ' (U+30F7 - U+30FA) <=> base hiragana + voiced mark (U+309B)
+      var katakana = 'ヷヸヹヺ';
+      var hiragana = 'わ゛ゐ゛ゑ゛を゛';
+
+      assert.equal(encoding.toHiraganaCase(katakana), hiragana);
+      assert.equal(encoding.toKatakanaCase(hiragana), katakana);
+
+      assert.deepEqual(
+        encoding.toHiraganaCase(encoding.stringToCode(katakana)),
+        encoding.stringToCode(hiragana)
+      );
+      assert.deepEqual(
+        encoding.toKatakanaCase(encoding.stringToCode(hiragana)),
+        encoding.stringToCode(katakana)
+      );
+    });
+
     it('toHankanaCase', function() {
       zenkanas.forEach(function(zenkana, i) {
         var expect = hankanas[i];
