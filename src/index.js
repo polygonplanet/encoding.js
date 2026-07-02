@@ -358,6 +358,14 @@ var Encoding = {
       } else if (c === 0x30F7) {
         results[results.length] = 0x308F;
         c = 0x309B;
+      // 「ヰ゛」 => 「ゐ」 + 「゛」
+      } else if (c === 0x30F8) {
+        results[results.length] = 0x3090;
+        c = 0x309B;
+      // 「ヱ゛」 => 「ゑ」 + 「゛」
+      } else if (c === 0x30F9) {
+        results[results.length] = 0x3091;
+        c = 0x309B;
       // 「ヲ゛」 => 「を」 + 「゛」
       } else if (c === 0x30FA) {
         results[results.length] = 0x3092;
@@ -397,9 +405,13 @@ var Encoding = {
       c = data[i++];
       if (c >= 0x3041 && c <= 0x3096) {
         if ((c === 0x308F || // 「わ」 + 「゛」 => 「ワ゛」
+             c === 0x3090 || // 「ゐ」 + 「゛」 => 「ヰ゛」
+             c === 0x3091 || // 「ゑ」 + 「゛」 => 「ヱ゛」
              c === 0x3092) && // 「を」 + 「゛」 => 「ヲ゛」
             i < len && data[i] === 0x309B) {
-          c = c === 0x308F ? 0x30F7 : 0x30FA;
+          c = c === 0x308F ? 0x30F7 :
+              c === 0x3090 ? 0x30F8 :
+              c === 0x3091 ? 0x30F9 : 0x30FA;
           i++;
         } else {
           c += 0x0060;
