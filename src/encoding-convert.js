@@ -706,6 +706,10 @@ function UTF8ToEUCJP(data, options) {
       }
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
+      // JIS X 0212 chars duplicated into JIS X 0208 unassigned rows: use the JIS X 0212 form.
+      if (jis != null && EncodingTable.UTF8_TO_JISX0212_TABLE[utf8] != null) {
+        jis = null;
+      }
       if (jis == null) {
         jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
         if (jis == null) {
@@ -789,6 +793,10 @@ function UTF8ToJIS(data, options) {
       }
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
+      // JIS X 0212 chars duplicated into JIS X 0208 unassigned rows: use the JIS X 0212 form.
+      if (jis != null && EncodingTable.UTF8_TO_JISX0212_TABLE[utf8] != null) {
+        jis = null;
+      }
       if (jis == null) {
         jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
         if (jis == null) {

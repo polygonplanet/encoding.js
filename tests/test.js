@@ -953,6 +953,44 @@ describe('encoding', function() {
       assert.deepEqual(encoded_sjis_to_utf8, jisx0212_sjis_array);
     });
 
+    it('encodes JIS X 0212 with the 3-byte SS3 form, not JIS X 0208 unassigned rows', function() {
+      var jisTable = require('../src/utf8-to-jis-table');
+      var jisx0212Table = require('../src/utf8-to-jisx0212-table');
+      var keyToCode = function(key) {
+        var bytes = [];
+        var n = parseInt(key, 10);
+        while (n > 0) { bytes.unshift(n & 0xFF); n = n >>> 8; }
+        return Buffer.from(bytes).toString('utf8').codePointAt(0);
+      };
+      // Characters present in both tables are JIS X 0212 code points that are
+      // also duplicated into the JIS X 0208 table at rows unassigned by
+      // JIS X 0208 (NEC/IBM extension rows).
+      var shadowed = Object.keys(jisTable)
+        .filter(function(key) { return jisx0212Table[key] != null; })
+        .map(keyToCode);
+      assert.equal(shadowed.length, 280);
+
+      shadowed.forEach(function(code) {
+        var eucjp = encoding.convert([code], 'EUCJP', 'UNICODE');
+        // EUC-JP code set 3: 0x8F <b1> <b2>, trailing bytes in 0xA1-0xFE.
+        assert.equal(eucjp[0], 0x8F);
+        assert(eucjp[1] >= 0xA1 && eucjp[1] <= 0xFE);
+        assert(eucjp[2] >= 0xA1 && eucjp[2] <= 0xFE);
+        assert.deepEqual(encoding.convert(eucjp, 'UNICODE', 'EUCJP'), [code]);
+
+        var jis = encoding.convert([code], 'JIS', 'UNICODE');
+        // ISO-2022-JP designates JIS X 0212 with ESC $ ( D.
+        assert.deepEqual(jis.slice(0, 4), [0x1B, 0x24, 0x28, 0x44]);
+        assert.deepEqual(encoding.convert(jis, 'UNICODE', 'JIS'), [code]);
+      });
+
+      // Exact bytes: U+4E28 (JIS X 0212 kuten 16-09) and U+2116 (duplicated at row 13).
+      assert.deepEqual(encoding.convert([0x4E28], 'EUCJP', 'UNICODE'), [0x8F, 0xB0, 0xA9]);
+      assert.deepEqual(encoding.convert([0x2116], 'EUCJP', 'UNICODE'), [0x8F, 0xA2, 0xF1]);
+      // A genuine JIS X 0208 kanji (U+4E9C) keeps its 2-byte form.
+      assert.deepEqual(encoding.convert([0x4E9C], 'EUCJP', 'UNICODE'), [0xB0, 0xA1]);
+    });
+
     var encodingNames = [
       'UTF16', 'UTF16BE', 'UTF16LE', 'UNICODE', 'JIS', 'EUCJP', 'UTF8'
     ];
