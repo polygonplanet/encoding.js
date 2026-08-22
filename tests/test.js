@@ -74,6 +74,27 @@ describe('encoding', function() {
       });
     });
 
+    it('UTF-8 with C0 control characters', function() {
+      // Every byte in the ASCII range is valid UTF-8, so a UTF-8 string that
+      // contains a control character must still be detected as UTF-8.
+      var utf8 = encoding.stringToCode('UTF8\u306E\u6587\u5B57\u5217\u3067\u3059');
+      utf8 = encoding.convert(utf8, { to: 'UTF8', from: 'UNICODE' });
+
+      // 0x08 BS, 0x0B VT, 0x0C FF, 0x7F DEL
+      [0x08, 0x0B, 0x0C, 0x7F].forEach(function(control) {
+        assert.equal(encoding.detect(utf8.concat([control])), 'UTF8');
+        assert.equal(encoding.detect([control].concat(utf8)), 'UTF8');
+      });
+
+      // 0x00-0x07 are still reported as BINARY, which is checked before UTF8
+      assert.equal(encoding.detect(utf8.concat([0x00])), 'BINARY');
+
+      // 0x1B is reserved for ISO-2022-JP detection, as in isASCII()
+      var jis = encoding.convert(utf8, { to: 'JIS', from: 'UTF8' });
+      assert.equal(encoding.detect(jis), 'JIS');
+      assert.equal(encoding.detect(jis, 'UTF8'), false);
+    });
+
     it('UTF-16, UTF-16BE', function() {
       var utf16 = [
         0xFE,0xFF,0x30,0x53,0x30,0x6E,0x30,0xC6,0x30,0xAD,0x30,0xB9,0x30,
