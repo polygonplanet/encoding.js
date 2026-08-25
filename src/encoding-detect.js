@@ -201,8 +201,12 @@ function isUTF8(data) {
       return false;
     }
 
-    if (b === 0x09 || b === 0x0A || b === 0x0D ||
-        (b >= 0x20 && b <= 0x7E)) {
+    // Every byte in the ASCII range is valid UTF-8, including the C0 control
+    // characters. Only ESC (0x1B) is excluded here so that ISO-2022-JP data is
+    // not reported as UTF-8 by `isUTF8()`.
+    // In `detect()` this does not widen the result: isBINARY (0x00-0x07, 0xFF)
+    // and isJIS are both tried before UTF8.
+    if (b <= 0x7F && b !== 0x1B) {
       continue;
     }
 
