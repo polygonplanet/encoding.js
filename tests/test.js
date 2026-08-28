@@ -1126,7 +1126,7 @@ describe('encoding', function() {
     });
   });
 
-  describe('convert CP932 IBM extended characters', function() {
+  describe('convert CP932 extended characters', function() {
     var ibmExtTable = require('./cp932-ibm-ext-map');
     var ibmExtSJIS = [];
     var ibmExtUnicode = [];
@@ -1180,6 +1180,25 @@ describe('encoding', function() {
         from: 'jis'
       });
       assert.deepEqual(res, ibmExtUnicode);
+    });
+
+    describe('convert CP932 NEC duplicate codes', function() {
+      var cp932NECDuplicateMap = require('./cp932-nec-duplicate-map');
+
+      it('SJIS to UNICODE', function() {
+        Object.keys(cp932NECDuplicateMap).forEach(function(sjis) {
+          sjis = sjis | 0;
+          var unicode = cp932NECDuplicateMap[sjis];
+          var bytes = [sjis >> 8, sjis & 0xFF];
+
+          var res = encoding.convert(bytes, { to: 'unicode', from: 'sjis' });
+          assert.deepEqual(
+            res,
+            [unicode],
+            '0x' + sjis.toString(16).toUpperCase()
+          );
+        });
+      });
     });
   });
 

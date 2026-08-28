@@ -1,5 +1,5 @@
 /**
- * CP932 IBM extended characters (0xFA40 - 0xFC4B)
+ * SJIS (CP932) IBM extended characters (0xFA40 - 0xFC4B)
  *
  * Generated from CP932.TXT:
  * https://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP932.TXT

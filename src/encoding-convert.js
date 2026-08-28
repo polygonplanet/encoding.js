@@ -162,9 +162,9 @@ function SJISToJIS(data) {
       }
 
       b2 = data[++i];
-      if (b1 >= 0xFA) {
-        // CP932 IBM extended characters (0xFA40 - 0xFC4B)
-        remapped = sjisExt.remapCP932_IBMExt(b1, b2);
+      if (sjisExt.hasCP932DuplicateCode(b1)) {
+        // Remap CP932 duplicate codes and IBM extended characters
+        remapped = sjisExt.remapCP932DuplicateCode(b1, b2);
         b1 = remapped >> 8;
         b2 = remapped & 0xFF;
       }
@@ -228,9 +228,9 @@ function SJISToEUCJP(data) {
       results[results.length] = b1;
     } else if (b1 >= 0x81) {
       b2 = data[++i];
-      if (b1 >= 0xFA) {
-        // CP932 IBM extended characters (0xFA40 - 0xFC4B)
-        remapped = sjisExt.remapCP932_IBMExt(b1, b2);
+      if (sjisExt.hasCP932DuplicateCode(b1)) {
+        // Remap CP932 duplicate codes and IBM extended characters
+        remapped = sjisExt.remapCP932DuplicateCode(b1, b2);
         b1 = remapped >> 8;
         b2 = remapped & 0xFF;
       }
@@ -409,9 +409,9 @@ function SJISToUTF8(data) {
       results[results.length] = u3 & 0xFF;
     } else if (b >= 0x80) {
       b2 = data[++i];
-      if (b >= 0xFA) {
-        // CP932 IBM extended characters (0xFA40 - 0xFC4B)
-        remapped = sjisExt.remapCP932_IBMExt(b, b2);
+      if (sjisExt.hasCP932DuplicateCode(b)) {
+        // Remap CP932 duplicate codes and IBM extended characters
+        remapped = sjisExt.remapCP932DuplicateCode(b, b2);
         b = remapped >> 8;
         b2 = remapped & 0xFF;
       }
