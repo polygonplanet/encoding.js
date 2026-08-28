@@ -155,6 +155,79 @@ describe('encoding', function() {
       assert(encoding.detect(utf32le) === 'UTF32');
     });
 
+    it('SJIS detection does not skip leading bytes above 0x80', function() {
+      // "あいう" in UTF-8
+      // All bytes are above 0x80 and should not be skipped before SJIS validation
+      // In encoding.js 2.2.0 and earlier, leading bytes above 0x80 were skipped.
+      var utf8 = [0xE3, 0x81, 0x82, 0xE3, 0x81, 0x84, 0xE3, 0x81, 0x86];
+
+      assert.equal(encoding.detect(utf8, 'SJIS'), false);
+      assert.equal(encoding.detect([0x81], 'SJIS'), false);
+      assert.equal(encoding.detect([0x65E5], 'SJIS'), false);
+    });
+
+    it('SJIS (CP932) extended character areas', function() {
+      var isSJIS = function(data) {
+        return encoding.detect(data, 'SJIS');
+      };
+
+      // NEC special character area (0x8740 - 0x879C)
+      assert.equal(isSJIS([0x87, 0x40]), 'SJIS');
+      assert.equal(isSJIS([0x87, 0x9C]), 'SJIS');
+      // NEC-selected IBM extended character area (0xED40 - 0xEEFC)
+      assert.equal(isSJIS([0xED, 0x40]), 'SJIS');
+      assert.equal(isSJIS([0xEE, 0xFC]), 'SJIS');
+      // User-defined character area (0xF040 - 0xF9FC)
+      assert.equal(isSJIS([0xF0, 0x40]), 'SJIS');
+      assert.equal(isSJIS([0xF9, 0xFC]), 'SJIS');
+      // IBM extended character area (0xFA40 - 0xFC4B)
+      assert.equal(isSJIS([0xFA, 0x40]), 'SJIS');
+      assert.equal(isSJIS([0xFC, 0x4B]), 'SJIS');
+
+      // Check "テスト" followed by the first and last character of each extended area
+      var sjisPrefix = [0x83, 0x65, 0x83, 0x58, 0x83, 0x67]; // "テスト" in SJIS
+
+      // "①" (0x8740) : the first NEC special character
+      assert.equal(encoding.detect(sjisPrefix.concat([0x87, 0x40])), 'SJIS');
+      // "∪" (0x879C) : the last NEC special character
+      assert.equal(encoding.detect(sjisPrefix.concat([0x87, 0x9C])), 'SJIS');
+
+      // the first NEC-selected IBM extended character
+      assert.equal(encoding.detect(sjisPrefix.concat([0xED, 0x40])), 'SJIS');
+      // the last NEC-selected IBM extended character
+      assert.equal(encoding.detect(sjisPrefix.concat([0xEE, 0xFC])), 'SJIS');
+
+      // the first User-defined character
+      assert.equal(encoding.detect(sjisPrefix.concat([0xF0, 0x40])), 'SJIS');
+      // the last User-defined character
+      assert.equal(encoding.detect(sjisPrefix.concat([0xF9, 0xFC])), 'SJIS');
+
+      // the first IBM extended character
+      assert.equal(encoding.detect(sjisPrefix.concat([0xFA, 0x40])), 'SJIS');
+      // the last IBM extended character
+      assert.equal(encoding.detect(sjisPrefix.concat([0xFC, 0x4B])), 'SJIS');
+    });
+
+    it('Invalid SJIS byte sequences', function() {
+      // IBM extended character area ends at 0xFC4B
+      assert.equal(encoding.detect([0xFC, 0x4C], 'SJIS'), false);
+      assert.equal(encoding.detect([0x83, 0x65, 0xFC, 0x4C], 'SJIS'), false);
+      assert.equal(encoding.detect([0x83, 0x65, 0xFC, 0xFC], 'SJIS'), false);
+
+      // Invalid lead bytes
+      assert.equal(encoding.detect([0xA0, 0x40], 'SJIS'), false);
+      assert.equal(encoding.detect([0xFD, 0x40], 'SJIS'), false);
+
+      // Trail bytes outside 0x40 - 0xFC, and 0x7F is not used in SJIS
+      assert.equal(encoding.detect([0x81, 0x3F], 'SJIS'), false);
+      assert.equal(encoding.detect([0x81, 0x7F], 'SJIS'), false);
+      assert.equal(encoding.detect([0x81, 0xFD], 'SJIS'), false);
+
+      // A lead byte that is not followed by a trail byte
+      assert.equal(encoding.detect([0xFA], 'SJIS'), false);
+      assert.equal(encoding.detect([0x83, 0x65, 0x83], 'SJIS'), false);
+    });
+
     it('Specifying multiple encodings', function() {
       var unicode = 'ユニコード';
 
@@ -1048,6 +1121,82 @@ describe('encoding', function() {
             from: encodingName2
           });
           assert.deepEqual(decoded, jisx0212_array);
+        });
+      });
+    });
+  });
+
+  describe('convert CP932 extended characters', function() {
+    var ibmExtTable = require('./cp932-ibm-ext-map');
+    var ibmExtSJIS = [];
+    var ibmExtUnicode = [];
+
+    Object.keys(ibmExtTable).forEach(function(sjis) {
+      sjis = sjis | 0;
+      var unicode = ibmExtTable[sjis] | 0;
+      ibmExtSJIS.push(sjis >> 8, sjis & 0xFF);
+      ibmExtUnicode.push(unicode);
+    });
+
+    it('SJIS to UNICODE', function() {
+      var sjis = encoding.convert(ibmExtSJIS, {
+        to: 'unicode',
+        from: 'sjis'
+      });
+      assert.deepEqual(sjis, ibmExtUnicode);
+    });
+
+    it('SJIS to UTF-8', function() {
+      var utf8 = encoding.convert(ibmExtSJIS, {
+        to: 'utf-8',
+        from: 'sjis'
+      });
+      var res = encoding.convert(utf8, {
+        to: 'unicode',
+        from: 'utf-8'
+      });
+      assert.deepEqual(res, ibmExtUnicode);
+    });
+
+    it('SJIS to EUC-JP', function() {
+      var eucjp = encoding.convert(ibmExtSJIS, {
+        to: 'euc-jp',
+        from: 'sjis'
+      });
+      var res = encoding.convert(eucjp, {
+        to: 'unicode',
+        from: 'euc-jp'
+      });
+      assert.deepEqual(res, ibmExtUnicode);
+    });
+
+    it('SJIS to JIS', function() {
+      var jis = encoding.convert(ibmExtSJIS, {
+        to: 'jis',
+        from: 'sjis'
+      });
+      var res = encoding.convert(jis, {
+        to: 'unicode',
+        from: 'jis'
+      });
+      assert.deepEqual(res, ibmExtUnicode);
+    });
+
+    describe('convert CP932 NEC duplicate codes', function() {
+      var cp932NECDuplicateMap = require('./cp932-nec-duplicate-map');
+
+      it('SJIS to UNICODE', function() {
+        Object.keys(cp932NECDuplicateMap).forEach(function(sjis) {
+          sjis = sjis | 0;
+          var unicode = cp932NECDuplicateMap[sjis];
+          var bytes = [sjis >> 8, sjis & 0xFF];
+
+          var res = encoding.convert(bytes, { to: 'unicode', from: 'sjis' });
+          assert.deepEqual(
+            res,
+            [unicode],
+            '0x' + sjis.toString(16).toUpperCase()
+          );
         });
       });
     });

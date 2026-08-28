@@ -153,32 +153,39 @@ function isEUCJP(data) {
 exports.isEUCJP = isEUCJP;
 
 /**
- * Shift-JIS (SJIS)
+ * SJIS (Shift_JIS)
+ *
+ * Includes CP932 (Windows-31J) extensions:
+ * - NEC special character area (0x8740 - 0x879C)
+ * - NEC-selected IBM extended character area (0xED40 - 0xEEFC)
+ * - User-defined character area (0xF040 - 0xF9FC)
+ * - IBM extended character area (0xFA40 - 0xFC4B)
  */
 function isSJIS(data) {
   var i = 0;
   var len = data && data.length;
-  var b;
-
-  while (i < len && data[i] > 0x80) {
-    if (data[i++] > 0xFF) {
-      return false;
-    }
-  }
+  var b, lead;
 
   for (; i < len; i++) {
     b = data[i];
+    if (b > 0xFF) {
+      return false;
+    }
+
     if (b <= 0x80 ||
         (0xA1 <= b && b <= 0xDF)) {
       continue;
     }
 
-    if (b === 0xA0 || b > 0xEF || i + 1 >= len) {
+    if (b === 0xA0 || b > 0xFC || i + 1 >= len) {
       return false;
     }
 
+    lead = b;
     b = data[++i];
-    if (b < 0x40 || b === 0x7F || b > 0xFC) {
+    if (b < 0x40 || b > 0xFC || b === 0x7F ||
+        // IBM extended character area ends at 0xFC4B
+        (lead === 0xFC && b > 0x4B)) {
       return false;
     }
   }

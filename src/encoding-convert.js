@@ -2,6 +2,7 @@ var config = require('./config');
 var util = require('./util');
 var EncodingDetect = require('./encoding-detect');
 var EncodingTable = require('./encoding-table');
+var sjisExt = require('./sjis-ext');
 
 /**
  * JIS to SJIS
@@ -134,7 +135,7 @@ function SJISToJIS(data) {
   var index = 0;
   var len = data && data.length;
   var i = 0;
-  var b1, b2;
+  var b1, b2, remapped;
 
   var esc = [
     0x1B, 0x28, 0x42,
@@ -160,8 +161,15 @@ function SJISToJIS(data) {
         results[results.length] = esc[5];
       }
 
-      b1 <<= 1;
       b2 = data[++i];
+      if (sjisExt.hasCP932DuplicateCode(b1)) {
+        // Remap CP932 duplicate codes and IBM extended characters
+        remapped = sjisExt.remapCP932DuplicateCode(b1, b2);
+        b1 = remapped >> 8;
+        b2 = remapped & 0xFF;
+      }
+
+      b1 <<= 1;
       if (b2 < 0x9F) {
         if (b1 < 0x13F) {
           b1 -= 0xE1;
@@ -211,7 +219,7 @@ function SJISToEUCJP(data) {
   var results = [];
   var len = data && data.length;
   var i = 0;
-  var b1, b2;
+  var b1, b2, remapped;
 
   for (; i < len; i++) {
     b1 = data[i];
@@ -220,6 +228,13 @@ function SJISToEUCJP(data) {
       results[results.length] = b1;
     } else if (b1 >= 0x81) {
       b2 = data[++i];
+      if (sjisExt.hasCP932DuplicateCode(b1)) {
+        // Remap CP932 duplicate codes and IBM extended characters
+        remapped = sjisExt.remapCP932DuplicateCode(b1, b2);
+        b1 = remapped >> 8;
+        b2 = remapped & 0xFF;
+      }
+
       b1 <<= 1;
       if (b2 < 0x9F) {
         if (b1 < 0x13F) {
@@ -380,7 +395,7 @@ function SJISToUTF8(data) {
   var results = [];
   var i = 0;
   var len = data && data.length;
-  var b, b1, b2, u2, u3, jis, utf8;
+  var b, b1, b2, u2, u3, jis, utf8, remapped;
 
   for (; i < len; i++) {
     b = data[i];
@@ -393,9 +408,15 @@ function SJISToUTF8(data) {
       results[results.length] = u2 & 0xFF;
       results[results.length] = u3 & 0xFF;
     } else if (b >= 0x80) {
-      b1 = b << 1;
       b2 = data[++i];
+      if (sjisExt.hasCP932DuplicateCode(b)) {
+        // Remap CP932 duplicate codes and IBM extended characters
+        remapped = sjisExt.remapCP932DuplicateCode(b, b2);
+        b = remapped >> 8;
+        b2 = remapped & 0xFF;
+      }
 
+      b1 = b << 1;
       if (b2 < 0x9F) {
         if (b1 < 0x13F) {
           b1 -= 0xE1;
