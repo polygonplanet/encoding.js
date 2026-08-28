@@ -1126,6 +1126,63 @@ describe('encoding', function() {
     });
   });
 
+  describe('convert CP932 IBM extended characters', function() {
+    var ibmExtTable = require('./cp932-ibm-ext-map');
+    var ibmExtSJIS = [];
+    var ibmExtUnicode = [];
+
+    Object.keys(ibmExtTable).forEach(function(sjis) {
+      sjis = sjis | 0;
+      var unicode = ibmExtTable[sjis] | 0;
+      ibmExtSJIS.push(sjis >> 8, sjis & 0xFF);
+      ibmExtUnicode.push(unicode);
+    });
+
+    it('SJIS to UNICODE', function() {
+      var sjis = encoding.convert(ibmExtSJIS, {
+        to: 'unicode',
+        from: 'sjis'
+      });
+      assert.deepEqual(sjis, ibmExtUnicode);
+    });
+
+    it('SJIS to UTF-8', function() {
+      var utf8 = encoding.convert(ibmExtSJIS, {
+        to: 'utf-8',
+        from: 'sjis'
+      });
+      var res = encoding.convert(utf8, {
+        to: 'unicode',
+        from: 'utf-8'
+      });
+      assert.deepEqual(res, ibmExtUnicode);
+    });
+
+    it('SJIS to EUC-JP', function() {
+      var eucjp = encoding.convert(ibmExtSJIS, {
+        to: 'euc-jp',
+        from: 'sjis'
+      });
+      var res = encoding.convert(eucjp, {
+        to: 'unicode',
+        from: 'euc-jp'
+      });
+      assert.deepEqual(res, ibmExtUnicode);
+    });
+
+    it('SJIS to JIS', function() {
+      var jis = encoding.convert(ibmExtSJIS, {
+        to: 'jis',
+        from: 'sjis'
+      });
+      var res = encoding.convert(jis, {
+        to: 'unicode',
+        from: 'jis'
+      });
+      assert.deepEqual(res, ibmExtUnicode);
+    });
+  });
+
   describe('urlEncode/urlDecode', function() {
     encodings.forEach(function(encodingName) {
       it(encodingName, function () {
