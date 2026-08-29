@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased](https://github.com/polygonplanet/encoding.js/compare/2.2.0...HEAD)
+
+### Features
+
+* Support CP932 (Windows-31J) extended character areas in `SJIS` detection and conversion. ([#65](https://github.com/polygonplanet/encoding.js/pull/65), [#54](https://github.com/polygonplanet/encoding.js/issues/54), [#22](https://github.com/polygonplanet/encoding.js/issues/22))
+  - Detect CP932 extended character areas as SJIS.
+  - Convert CP932 IBM extended characters (`0xFA40 - 0xFC4B`).
+  - Remap duplicate codes for CP932 NEC special characters and `0xEEF9` to their JIS X 0208 counterparts.
+
+### Bug Fixes
+
+* Fix conversion of wa-row voiced kana (`U+30F8 / U+30F9`) in `toHiraganaCase` and `toKatakanaCase`. ([#62](https://github.com/polygonplanet/encoding.js/pull/62)) Thanks [@mahirhir](https://github.com/mahirhir)
+* Fix EUC-JP and ISO-2022-JP encoders to use the standard JIS X 0212 forms instead of unassigned JIS X 0208 rows. ([#63](https://github.com/polygonplanet/encoding.js/pull/63)) Thanks [@gaoflow](https://github.com/gaoflow)
+* Fix `Encoding.detect` to treat C0 control characters as valid UTF-8. ([#64](https://github.com/polygonplanet/encoding.js/pull/64), [#49](https://github.com/polygonplanet/encoding.js/issues/49)) Thanks [@hiros0921](https://github.com/hiros0921)
+
+### Changes
+
+* Update `engines.node` to `>=18.0.0` to match the tested versions. ([c6008d0](https://github.com/polygonplanet/encoding.js/commit/c6008d0))
+
+### CI
+
+* Update node matrix to `[18, 20, 22, 24]`. ([c6008d0](https://github.com/polygonplanet/encoding.js/commit/c6008d0), [1bd48ac](https://github.com/polygonplanet/encoding.js/commit/1bd48ac))
+
+### Maintenance
+
+* Update devDependencies and remove unused `power-assert` and `uglifyify`. ([4cf36da](https://github.com/polygonplanet/encoding.js/commit/4cf36da), [1142dd9](https://github.com/polygonplanet/encoding.js/commit/1142dd9))
+
+### Documentation
+
+* Fix incorrect character encoding in README examples. ([#51](https://github.com/polygonplanet/encoding.js/pull/51))
+* Add the Playground to the demo links. ([770161a](https://github.com/polygonplanet/encoding.js/commit/770161a))
+
 ## [2.2.0](https://github.com/polygonplanet/encoding.js/compare/2.1.0...2.2.0) (2024-06-09)
 
 ### Features
