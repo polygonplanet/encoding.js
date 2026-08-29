@@ -1,12 +1,12 @@
 /*!
- * encoding-japanese v2.2.0 - Convert and detect character encoding in JavaScript
+ * encoding-japanese v2.3.0 - Convert and detect character encoding in JavaScript
  * Copyright (c) 2012 polygonplanet <polygon.planet.aqua@gmail.com>
  * https://github.com/polygonplanet/encoding.js
  * @license MIT
  */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Encoding = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 module.exports={
-  "version": "2.2.0"
+  "version": "2.3.0"
 }
 },{}],2:[function(require,module,exports){
 var util = require('./util');
@@ -149,11 +149,12 @@ function init_JIS_TO_UTF8_TABLE() {
 }
 exports.init_JIS_TO_UTF8_TABLE = init_JIS_TO_UTF8_TABLE;
 
-},{"./encoding-table":5,"./util":12}],3:[function(require,module,exports){
+},{"./encoding-table":5,"./util":13}],3:[function(require,module,exports){
 var config = require('./config');
 var util = require('./util');
 var EncodingDetect = require('./encoding-detect');
 var EncodingTable = require('./encoding-table');
+var sjisExt = require('./sjis-ext');
 
 /**
  * JIS to SJIS
@@ -286,7 +287,7 @@ function SJISToJIS(data) {
   var index = 0;
   var len = data && data.length;
   var i = 0;
-  var b1, b2;
+  var b1, b2, remapped;
 
   var esc = [
     0x1B, 0x28, 0x42,
@@ -312,8 +313,15 @@ function SJISToJIS(data) {
         results[results.length] = esc[5];
       }
 
-      b1 <<= 1;
       b2 = data[++i];
+      if (sjisExt.hasCP932DuplicateCode(b1)) {
+        // Remap CP932 duplicate codes and IBM extended characters
+        remapped = sjisExt.remapCP932DuplicateCode(b1, b2);
+        b1 = remapped >> 8;
+        b2 = remapped & 0xFF;
+      }
+
+      b1 <<= 1;
       if (b2 < 0x9F) {
         if (b1 < 0x13F) {
           b1 -= 0xE1;
@@ -363,7 +371,7 @@ function SJISToEUCJP(data) {
   var results = [];
   var len = data && data.length;
   var i = 0;
-  var b1, b2;
+  var b1, b2, remapped;
 
   for (; i < len; i++) {
     b1 = data[i];
@@ -372,6 +380,13 @@ function SJISToEUCJP(data) {
       results[results.length] = b1;
     } else if (b1 >= 0x81) {
       b2 = data[++i];
+      if (sjisExt.hasCP932DuplicateCode(b1)) {
+        // Remap CP932 duplicate codes and IBM extended characters
+        remapped = sjisExt.remapCP932DuplicateCode(b1, b2);
+        b1 = remapped >> 8;
+        b2 = remapped & 0xFF;
+      }
+
       b1 <<= 1;
       if (b2 < 0x9F) {
         if (b1 < 0x13F) {
@@ -532,7 +547,7 @@ function SJISToUTF8(data) {
   var results = [];
   var i = 0;
   var len = data && data.length;
-  var b, b1, b2, u2, u3, jis, utf8;
+  var b, b1, b2, u2, u3, jis, utf8, remapped;
 
   for (; i < len; i++) {
     b = data[i];
@@ -545,9 +560,15 @@ function SJISToUTF8(data) {
       results[results.length] = u2 & 0xFF;
       results[results.length] = u3 & 0xFF;
     } else if (b >= 0x80) {
-      b1 = b << 1;
       b2 = data[++i];
+      if (sjisExt.hasCP932DuplicateCode(b)) {
+        // Remap CP932 duplicate codes and IBM extended characters
+        remapped = sjisExt.remapCP932DuplicateCode(b, b2);
+        b = remapped >> 8;
+        b2 = remapped & 0xFF;
+      }
 
+      b1 = b << 1;
       if (b2 < 0x9F) {
         if (b1 < 0x13F) {
           b1 -= 0xE1;
@@ -858,6 +879,10 @@ function UTF8ToEUCJP(data, options) {
       }
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
+      // JIS X 0212 chars duplicated into JIS X 0208 unassigned rows: use the JIS X 0212 form.
+      if (jis != null && EncodingTable.UTF8_TO_JISX0212_TABLE[utf8] != null) {
+        jis = null;
+      }
       if (jis == null) {
         jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
         if (jis == null) {
@@ -941,6 +966,10 @@ function UTF8ToJIS(data, options) {
       }
 
       jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
+      // JIS X 0212 chars duplicated into JIS X 0208 unassigned rows: use the JIS X 0212 form.
+      if (jis != null && EncodingTable.UTF8_TO_JISX0212_TABLE[utf8] != null) {
+        jis = null;
+      }
       if (jis == null) {
         jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
         if (jis == null) {
@@ -1832,7 +1861,7 @@ function handleFallback(results, bytes, fallbackOption) {
   }
 }
 
-},{"./config":2,"./encoding-detect":4,"./encoding-table":5,"./util":12}],4:[function(require,module,exports){
+},{"./config":2,"./encoding-detect":4,"./encoding-table":5,"./sjis-ext":10,"./util":13}],4:[function(require,module,exports){
 /**
  * Binary (exe, images and so, etc.)
  *
@@ -1988,32 +2017,39 @@ function isEUCJP(data) {
 exports.isEUCJP = isEUCJP;
 
 /**
- * Shift-JIS (SJIS)
+ * SJIS (Shift_JIS)
+ *
+ * Includes CP932 (Windows-31J) extensions:
+ * - NEC special character area (0x8740 - 0x879C)
+ * - NEC-selected IBM extended character area (0xED40 - 0xEEFC)
+ * - User-defined character area (0xF040 - 0xF9FC)
+ * - IBM extended character area (0xFA40 - 0xFC4B)
  */
 function isSJIS(data) {
   var i = 0;
   var len = data && data.length;
-  var b;
-
-  while (i < len && data[i] > 0x80) {
-    if (data[i++] > 0xFF) {
-      return false;
-    }
-  }
+  var b, lead;
 
   for (; i < len; i++) {
     b = data[i];
+    if (b > 0xFF) {
+      return false;
+    }
+
     if (b <= 0x80 ||
         (0xA1 <= b && b <= 0xDF)) {
       continue;
     }
 
-    if (b === 0xA0 || b > 0xEF || i + 1 >= len) {
+    if (b === 0xA0 || b > 0xFC || i + 1 >= len) {
       return false;
     }
 
+    lead = b;
     b = data[++i];
-    if (b < 0x40 || b === 0x7F || b > 0xFC) {
+    if (b < 0x40 || b > 0xFC || b === 0x7F ||
+        // IBM extended character area ends at 0xFC4B
+        (lead === 0xFC && b > 0x4B)) {
       return false;
     }
   }
@@ -2036,8 +2072,12 @@ function isUTF8(data) {
       return false;
     }
 
-    if (b === 0x09 || b === 0x0A || b === 0x0D ||
-        (b >= 0x20 && b <= 0x7E)) {
+    // Every byte in the ASCII range is valid UTF-8, including the C0 control
+    // characters. Only ESC (0x1B) is excluded here so that ISO-2022-JP data is
+    // not reported as UTF-8 by `isUTF8()`.
+    // In `detect()` this does not widen the result: isBINARY (0x00-0x07, 0xFF)
+    // and isJIS are both tried before UTF8.
+    if (b <= 0x7F && b !== 0x1B) {
       continue;
     }
 
@@ -2342,7 +2382,7 @@ exports.UTF8_TO_JISX0212_TABLE = require('./utf8-to-jisx0212-table');
 exports.JIS_TO_UTF8_TABLE = require('./jis-to-utf8-table');
 exports.JISX0212_TO_UTF8_TABLE = require('./jisx0212-to-utf8-table');
 
-},{"./jis-to-utf8-table":7,"./jisx0212-to-utf8-table":8,"./utf8-to-jis-table":10,"./utf8-to-jisx0212-table":11}],6:[function(require,module,exports){
+},{"./jis-to-utf8-table":7,"./jisx0212-to-utf8-table":8,"./utf8-to-jis-table":11,"./utf8-to-jisx0212-table":12}],6:[function(require,module,exports){
 var config = require('./config');
 var util = require('./util');
 var EncodingDetect = require('./encoding-detect');
@@ -2703,6 +2743,14 @@ var Encoding = {
       } else if (c === 0x30F7) {
         results[results.length] = 0x308F;
         c = 0x309B;
+      // 「ヰ゛」 => 「ゐ」 + 「゛」
+      } else if (c === 0x30F8) {
+        results[results.length] = 0x3090;
+        c = 0x309B;
+      // 「ヱ゛」 => 「ゑ」 + 「゛」
+      } else if (c === 0x30F9) {
+        results[results.length] = 0x3091;
+        c = 0x309B;
       // 「ヲ゛」 => 「を」 + 「゛」
       } else if (c === 0x30FA) {
         results[results.length] = 0x3092;
@@ -2742,9 +2790,13 @@ var Encoding = {
       c = data[i++];
       if (c >= 0x3041 && c <= 0x3096) {
         if ((c === 0x308F || // 「わ」 + 「゛」 => 「ワ゛」
+             c === 0x3090 || // 「ゐ」 + 「゛」 => 「ヰ゛」
+             c === 0x3091 || // 「ゑ」 + 「゛」 => 「ヱ゛」
              c === 0x3092) && // 「を」 + 「゛」 => 「ヲ゛」
             i < len && data[i] === 0x309B) {
-          c = c === 0x308F ? 0x30F7 : 0x30FA;
+          c = c === 0x308F ? 0x30F7 :
+              c === 0x3090 ? 0x30F8 :
+              c === 0x3091 ? 0x30F9 : 0x30FA;
           i++;
         } else {
           c += 0x0060;
@@ -2937,7 +2989,7 @@ var Encoding = {
 
 module.exports = Encoding;
 
-},{"../package.json":1,"./config":2,"./encoding-convert":3,"./encoding-detect":4,"./kana-case-table":9,"./util":12}],7:[function(require,module,exports){
+},{"../package.json":1,"./config":2,"./encoding-convert":3,"./encoding-detect":4,"./kana-case-table":9,"./util":13}],7:[function(require,module,exports){
 /**
  * Encoding conversion table for JIS to UTF-8
  */
@@ -2995,6 +3047,102 @@ exports.ZENKANA_TABLE = [
 ];
 
 },{}],10:[function(require,module,exports){
+/**
+ * Remapping CP932 (Windows-31J) IBM extended characters (0xFA40 - 0xFC4B)
+ *
+ * Remaps IBM extended characters to their corresponding duplicate codes
+ * before conversion. These characters are also assigned in the NEC special
+ * characters (0x8740 - 0x879C), the NEC-selected IBM extended characters
+ * (0xED40 - 0xEEFC), and JIS X 0208.
+ *
+ * The first 28 characters (0xFA40 - 0xFA5B) have individual mappings defined
+ * in CP932_IBM_EXT_SYMBOL_MAP, and the rest are linearly mapped to 0xED40 - 0xEEEC.
+ */
+var CP932_IBM_EXT_SYMBOL_MAP = [
+  // 0xFA40 - 0xFA49 [ⅰ-ⅹ]
+  0xEEEF, 0xEEF0, 0xEEF1, 0xEEF2, 0xEEF3, 0xEEF4, 0xEEF5, 0xEEF6, 0xEEF7, 0xEEF8,
+  // 0xFA4A - 0xFA53 [Ⅰ-Ⅹ]
+  0x8754, 0x8755, 0x8756, 0x8757, 0x8758, 0x8759, 0x875A, 0x875B, 0x875C, 0x875D,
+  // 0xFA54 - 0xFA57 [￢￤＇＂]
+  0x81CA, 0xEEFA, 0xEEFB, 0xEEFC,
+  // 0xFA58 - 0xFA5B [㈱№℡∵]
+  0x878A, 0x8782, 0x8784, 0x81E6
+];
+
+// The number of IBM extended characters (0xFA40 - 0xFC4B)
+var CP932_IBM_EXT_LEN = 388;
+// The number of valid trail bytes per lead byte (0x40 - 0xFC, except 0x7F)
+var CP932_IBM_EXT_TRAIL_BYTES_LEN = 188;
+
+function remapCP932_IBMExt(b1, b2) {
+  var leadOffset = (b1 - 0xFA) * CP932_IBM_EXT_TRAIL_BYTES_LEN;
+  var trailIndex = b2 - (b2 < 0x7F ? 0x40 : 0x41);
+  var ibmExtIndex = leadOffset + trailIndex;
+
+  if (ibmExtIndex < 0 || ibmExtIndex >= CP932_IBM_EXT_LEN) {
+    return (b1 << 8) | b2;
+  }
+
+  if (ibmExtIndex < CP932_IBM_EXT_SYMBOL_MAP.length) {
+    return CP932_IBM_EXT_SYMBOL_MAP[ibmExtIndex];
+  }
+
+  var necSelectedIbmOffset = ibmExtIndex - CP932_IBM_EXT_SYMBOL_MAP.length;
+
+  // Remap to NEC-selected IBM extended characters (0xED40 - 0xEEEC)
+  b1 = 0xED;
+  if (necSelectedIbmOffset >= CP932_IBM_EXT_TRAIL_BYTES_LEN) {
+    necSelectedIbmOffset -= CP932_IBM_EXT_TRAIL_BYTES_LEN;
+    b1++;
+  }
+
+  b2 = necSelectedIbmOffset + 0x40;
+  if (b2 >= 0x7F) {
+    b2++; // Skip invalid trail byte 0x7F
+  }
+  return (b1 << 8) | b2;
+}
+
+/**
+ * Remapping duplicate codes for CP932 NEC special characters to their
+ * standard JIS X 0208 codes.
+ *
+ * This also includes 0xEEF9 in the NEC-selected IBM extended characters.
+ */
+var CP932_NEC_DUPLICATE_MAP = {
+  0x8790: 0x81E0, // ≒ (NEC special characters)
+  0x8791: 0x81DF, // ≡
+  0x8792: 0x81E7, // ∫
+  0x8795: 0x81E3, // √
+  0x8796: 0x81DB, // ⊥
+  0x8797: 0x81DA, // ∠
+  0x879A: 0x81E6, // ∵
+  0x879B: 0x81BF, // ∩
+  0x879C: 0x81BE, // ∪
+  0xEEF9: 0x81CA  // ￢ (NEC-selected IBM extended characters)
+};
+
+function remapCP932DuplicateCode(b1, b2) {
+  if (b2 < 0x40 || b2 > 0xFC || b2 === 0x7F) {
+    return (b1 << 8) | (b2 & 0xFF);
+  }
+
+  if (b1 >= 0xFA) {
+    return remapCP932_IBMExt(b1, b2);
+  }
+
+  var code = (b1 << 8) | b2;
+  var remapped = CP932_NEC_DUPLICATE_MAP[code];
+  return remapped == null ? code : remapped;
+}
+exports.remapCP932DuplicateCode = remapCP932DuplicateCode;
+
+function hasCP932DuplicateCode(b1) {
+  return b1 >= 0xFA || b1 === 0x87 || b1 === 0xEE;
+}
+exports.hasCP932DuplicateCode = hasCP932DuplicateCode;
+
+},{}],11:[function(require,module,exports){
 /* eslint-disable indent,key-spacing */
 /**
  * Encoding conversion table for UTF-8 to JIS
@@ -4489,7 +4637,7 @@ module.exports = {
 0xE28892:0x1215D
 };
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /* eslint-disable indent,key-spacing */
 /**
  * Encoding conversion table for UTF-8 to JIS X 0212:1990 (Hojo-Kanji)
@@ -5715,7 +5863,7 @@ module.exports = {
 0xE3809C:0x2141
 };
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var config = require('./config');
 var fromCharCode = String.fromCharCode;
 var slice = Array.prototype.slice;

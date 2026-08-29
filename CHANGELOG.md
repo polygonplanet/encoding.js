@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased](https://github.com/polygonplanet/encoding.js/compare/2.2.0...HEAD)
+## [2.3.0](https://github.com/polygonplanet/encoding.js/compare/2.2.0...2.3.0) (2026-08-30)
 
 ### Features
 
