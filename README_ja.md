@@ -19,6 +19,7 @@ JavaScript で文字コードの変換や判定をします。
   * [ブラウザ](#ブラウザ)
   * [CDN](#cdn)
 - [対応する文字コード](#対応する文字コード)
+  * [`SJIS` について](#sjis-について)
   * [`UNICODE` について](#unicode-について)
 - [使い方の例](#使い方の例)
 - [Demo](#demo)
@@ -129,13 +130,31 @@ npm パッケージを提供する他の CDN も利用できます。
 |BINARY  |✓    |       |(バイナリー文字列。コードポイントの範囲: `0-255`)|
 |EUCJP   |✓    |✓     |EUC-JP|
 |JIS     |✓    |✓     |ISO-2022-JP|
-|SJIS    |✓    |✓     |Shift_JIS|
+|SJIS    |✓    |✓     |Shift_JIS, Windows-31J (※以下の [`SJIS` について](#sjis-について) 参照) |
 |UTF8    |✓    |✓     |UTF-8|
 |UTF16   |✓    |✓     |UTF-16|
 |UTF16BE |✓    |✓     |UTF-16BE (big-endian)|
 |UTF16LE |✓    |✓     |UTF-16LE (little-endian)|
 |UTF32   |✓    |       |UTF-32|
 |UNICODE |✓    |✓     |(JavaScript の文字列。※以下の [`UNICODE` について](#unicode-について) 参照) |
+
+### `SJIS` について
+
+Shift_JIS と CP932 (Windows-31J、MS932、SJIS-win などとも呼ばれる) は厳密には異なる文字コードです。
+encoding.js では、一般に使われている呼び方に合わせて Shift_JIS 系の文字コードを `SJIS` と定義しています。
+
+`SJIS` は、Shift_JIS を拡張した CP932 の範囲まで扱い、
+JIS X 0201 と JIS X 0208 に加えて、以下の CP932 拡張領域に対応しています。
+
+|領域|コード範囲|[`detect()`](#encodingdetect-data-encodings)|[`convert()`](#encodingconvert-data-to-from)|
+|:---|:---|:----:|:-----:|
+|NEC特殊文字|`0x8740` - `0x879C`|✓|✓|
+|NEC選定IBM拡張文字|`0xED40` - `0xEEFC`|✓|✓|
+|外字 (ユーザー定義領域)|`0xF040` - `0xF9FC`|✓| |
+|IBM拡張文字|`0xFA40` - `0xFC4B`|✓|✓|
+
+外字 (ユーザー定義領域) は `SJIS` として判定されますが、文字の割り当てが標準で定義されていないため変換はできません。
+変換時は「?」 (U+003F) に置き換えられます。
 
 ### `UNICODE` について
 

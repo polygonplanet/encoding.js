@@ -19,6 +19,7 @@ Convert and detect character encoding in JavaScript.
   * [Browser (standalone)](#browser-standalone)
   * [CDN](#cdn)
 - [Supported encodings](#supported-encodings)
+  * [About `SJIS`](#about-sjis)
   * [About `UNICODE`](#about-unicode)
 - [Example usage](#example-usage)
 - [Demo](#demo)
@@ -135,13 +136,31 @@ for example [cdnjs](https://cdnjs.com/libraries/encoding-japanese) or [jsDelivr]
 |BINARY  |✓    |       |(Binary string. Code point range: `0-255`)|
 |EUCJP   |✓    |✓     |EUC-JP|
 |JIS     |✓    |✓     |ISO-2022-JP|
-|SJIS    |✓    |✓     |Shift_JIS|
+|SJIS    |✓    |✓     |Shift_JIS, Windows-31J (*See [About `SJIS`](#about-sjis) below)|
 |UTF8    |✓    |✓     |UTF-8|
 |UTF16   |✓    |✓     |UTF-16|
 |UTF16BE |✓    |✓     |UTF-16BE (big-endian)|
 |UTF16LE |✓    |✓     |UTF-16LE (little-endian)|
 |UTF32   |✓    |       |UTF-32|
 |UNICODE |✓    |✓     |(JavaScript string. *See [About `UNICODE`](#about-unicode) below) |
+
+### About `SJIS`
+
+Strictly speaking, Shift_JIS and CP932 (also known as Windows-31J, MS932, SJIS-win, and other names) are different character encodings.
+Following common usage, encoding.js defines encodings in the Shift_JIS family as `SJIS`.
+
+`SJIS` covers CP932, an extension of Shift_JIS.
+In addition to JIS X 0201 and JIS X 0208, it supports the following CP932 extension areas:
+
+|Area|Code range|[`detect()`](#encodingdetect-data-encodings)|[`convert()`](#encodingconvert-data-to-from)|
+|:---|:---|:----:|:-----:|
+|NEC special characters|`0x8740` - `0x879C`|✓|✓|
+|NEC-selected IBM extended characters|`0xED40` - `0xEEFC`|✓|✓|
+|User-defined area (外字 / Gaiji)|`0xF040` - `0xF9FC`|✓| |
+|IBM extended characters|`0xFA40` - `0xFC4B`|✓|✓|
+
+The user-defined area is detected as `SJIS`, but it cannot be converted because its character assignments are not defined by any standard.
+During conversion, characters in this area are replaced with `?` (U+003F).
 
 ### About `UNICODE`
 
