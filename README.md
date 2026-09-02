@@ -5,14 +5,14 @@ encoding.js
 [![GitHub Actions Build Status](https://github.com/polygonplanet/encoding.js/actions/workflows/ci.yml/badge.svg)](https://github.com/polygonplanet/encoding.js/actions)
 [![GitHub License](https://img.shields.io/github/license/polygonplanet/encoding.js.svg)](https://github.com/polygonplanet/encoding.js/blob/master/LICENSE)
 
-Convert and detect character encoding in JavaScript.
+Convert and detect character encodings in JavaScript.
 
 [**README (日本語)**](README_ja.md)
 
 ## Table of contents
 
 - [Features](#features)
-  * [How to Use Character Encoding in Strings?](#how-to-use-character-encoding-in-strings)
+  * [How to Handle Encoded Data as Strings?](#how-to-handle-encoded-data-as-strings)
 - [Installation](#installation)
   * [npm](#npm)
     + [TypeScript](#typescript)
@@ -23,25 +23,28 @@ Convert and detect character encoding in JavaScript.
   * [About `UNICODE`](#about-unicode)
 - [Example usage](#example-usage)
 - [Demo](#demo)
+  * [Playground](#playground)
+  * [Sample file encoding conversion demo](#sample-file-encoding-conversion-demo)
+  * [User-selected file encoding conversion and detection demo](#user-selected-file-encoding-conversion-and-detection-demo)
 - [API](#api)
-  * [detect : Detects character encoding](#encodingdetect-data-encodings)
-  * [convert : Converts character encoding](#encodingconvert-data-to-from)
-    + [Specify conversion options to the argument `to` as an object](#specify-conversion-options-to-the-argument-to-as-an-object)
+  * [`detect` : Detects character encoding](#encodingdetect-data-encodings)
+  * [`convert` : Converts character encoding](#encodingconvert-data-to-from)
+    + [Specifying conversion options with an object](#specifying-conversion-options-with-an-object)
     + [Specify the return type by the `type` option](#specify-the-return-type-by-the-type-option)
     + [Specify handling for unrepresentable characters](#specify-handling-for-unrepresentable-characters)
     + [Replacing characters with HTML entities when they cannot be represented](#replacing-characters-with-html-entities-when-they-cannot-be-represented)
     + [Ignoring characters when they cannot be represented](#ignoring-characters-when-they-cannot-be-represented)
     + [Throwing an Error when they cannot be represented](#throwing-an-error-when-they-cannot-be-represented)
     + [Specify BOM in UTF-16](#specify-bom-in-utf-16)
-  * [urlEncode : Encodes to percent-encoded string](#encodingurlencode-data)
-  * [urlDecode : Decodes from percent-encoded string](#encodingurldecode-string)
-  * [base64Encode : Encodes to Base64 formatted string](#encodingbase64encode-data)
-  * [base64Decode : Decodes from Base64 formatted string](#encodingbase64decode-string)
-  * [codeToString : Converts character code array to string](#encodingcodetostring-code)
-  * [stringToCode : Converts string to character code array](#encodingstringtocode-string)
+  * [`urlEncode` : Encodes to percent-encoded string](#encodingurlencode-data)
+  * [`urlDecode` : Decodes from percent-encoded string](#encodingurldecode-string)
+  * [`base64Encode` : Encodes to Base64 formatted string](#encodingbase64encode-data)
+  * [`base64Decode` : Decodes from Base64 formatted string](#encodingbase64decode-string)
+  * [`codeToString` : Converts character code array to string](#encodingcodetostring-code)
+  * [`stringToCode` : Converts string to character code array](#encodingstringtocode-string)
   * [Japanese Zenkaku/Hankaku conversion](#japanese-zenkakuhankaku-conversion)
 - [Other examples](#other-examples)
-  * [Example using the `fetch API` and Typed Arrays (Uint8Array)](#example-using-the-fetch-api-and-typed-arrays-uint8array)
+  * [Example using the `Fetch API` and Typed Arrays (Uint8Array)](#example-using-the-fetch-api-and-typed-arrays-uint8array)
   * [Convert encoding for file using the File APIs](#convert-encoding-for-file-using-the-file-apis)
 - [Contributing](#contributing)
 - [License](#license)
@@ -53,22 +56,22 @@ supporting both Japanese character encodings (`Shift_JIS`, `EUC-JP`, `ISO-2022-J
 
 Since JavaScript string values are internally encoded as UTF-16 code units
 ([ref: ECMAScript® 2019 Language Specification - 6.1.4 The String Type](https://www.ecma-international.org/ecma-262/10.0/index.html#sec-ecmascript-language-types-string-type)),
-they cannot directly handle other character encodings as strings. However, encoding.js overcomes this limitation by treating these encodings as arrays instead of strings,
-enabling the conversion between different character sets.
+data in other encodings cannot be handled directly as JavaScript strings.
+encoding.js works around this limitation by representing encoded data as arrays of numeric code values instead of strings, enabling conversion between different character encodings.
+For example, `[130, 160]` represents "あ" in Shift_JIS.
 
-Each character encoding is represented as an array of numbers corresponding to character code values, for example, `[130, 160]` represents "あ" in Shift_JIS.
+These character code arrays can also be passed as typed arrays (such as `Uint8Array`) or as Node.js `Buffer` objects.
 
-The array of character codes used in its methods can also be utilized with TypedArray objects, such as `Uint8Array`, or with `Buffer` in Node.js.
-
-### How to Use Character Encoding in Strings?
+### How to Handle Encoded Data as Strings?
 
 Numeric arrays of character codes can be converted to strings using methods such as [`Encoding.codeToString`](#encodingcodetostring-code).
 However, due to the JavaScript specifications mentioned above, some character encodings may not be handled properly when converted directly to strings.
 
-If you prefer to use strings instead of numeric arrays, you can convert them to percent-encoded strings,
-such as `'%82%A0'`, using [`Encoding.urlEncode`](#encodingurlencode-data) and [`Encoding.urlDecode`](#encodingurldecode-string) for passing to other resources.
-Similarly, [`Encoding.base64Encode`](#encodingbase64encode-data) and [`Encoding.base64Decode`](#encodingbase64decode-string) allow for encoding and decoding to and from base64,
-which can then be passed as strings.
+If you need a string representation, [`Encoding.urlEncode`](#encodingurlencode-data) and
+[`Encoding.urlDecode`](#encodingurldecode-string) can convert numeric arrays to and from
+percent-encoded strings such as `'%82%A0'`.
+Similarly, [`Encoding.base64Encode`](#encodingbase64encode-data) and
+[`Encoding.base64Decode`](#encodingbase64decode-string) can convert numeric arrays to and from Base64 strings.
 
 ## Installation
 
@@ -152,28 +155,32 @@ Following common usage, encoding.js defines encodings in the Shift_JIS family as
 `SJIS` covers CP932, an extension of Shift_JIS.
 In addition to JIS X 0201 and JIS X 0208, it supports the following CP932 extension areas:
 
-|Area|Code range|[`detect()`](#encodingdetect-data-encodings)|[`convert()`](#encodingconvert-data-to-from)|
-|:---|:---|:----:|:-----:|
-|NEC special characters|`0x8740` - `0x879C`|✓|✓|
-|NEC-selected IBM extended characters|`0xED40` - `0xEEFC`|✓|✓|
-|User-defined area (外字 / Gaiji)|`0xF040` - `0xF9FC`|✓| |
-|IBM extended characters|`0xFA40` - `0xFC4B`|✓|✓|
+|Area                                |Code range         |[`detect()`](#encodingdetect-data-encodings)|[`convert()`](#encodingconvert-data-to-from)|
+|:-----------------------------------|:------------------|:----:|:----:|
+|NEC special characters              |`0x8740` - `0x879C`|✓    |✓    |
+|NEC-selected IBM extended characters|`0xED40` - `0xEEFC`|✓    |✓    |
+|User-defined area (外字 / Gaiji)    |`0xF040` - `0xF9FC`|✓    |      |
+|IBM extended characters             |`0xFA40` - `0xFC4B`|✓    |✓    |
 
 The user-defined area is detected as `SJIS`, but it cannot be converted because its character assignments are not defined by any standard.
 During conversion, characters in this area are replaced with `?` (U+003F).
 
 ### About `UNICODE`
 
-In encoding.js, `UNICODE` is defined as the internal character encoding that JavaScript strings (JavaScript string objects) can handle directly.
+In encoding.js, `UNICODE` represents JavaScript strings (e.g., `"hello"` or `"こんにちは"`)
+and is defined as the internal character representation used by JavaScript.
 
 As mentioned in the [Features](#features) section, JavaScript strings are internally encoded using UTF-16 code units.
-This means that other character encodings cannot be directly handled without conversion.
-Therefore, when converting to a character encoding that is properly representable in JavaScript, you should specify `UNICODE`.
+This means other character encodings cannot be directly handled without conversion.
+Therefore, specify `UNICODE` when converting data to a form that can be properly represented as a JavaScript string.
 
-(Note: Even if the HTML file's encoding is UTF-8, you should specify `UNICODE` instead of `UTF8` when processing the encoding in JavaScript.)
+(Note: Even if your HTML file is UTF-8 encoded, you should specify `UNICODE` instead of `UTF8` when handling data as JavaScript strings.)
 
-When using [`Encoding.convert`](#encodingconvert-data-to-from), if you specify a character encoding other than `UNICODE` (such as `UTF8` or `SJIS`), the values in the returned character code array will range from `0-255`.
-However, if you specify `UNICODE`, the values will range from `0-65535`, which corresponds to the range of values returned by `String.prototype.charCodeAt()` (Code Units).
+When using [`Encoding.convert`](#encodingconvert-data-to-from),
+if you specify a character encoding other than `UNICODE` (such as `UTF8` or `SJIS`),
+the values in the returned character code array will range from `0` to `255` (byte array).
+However, if you specify `UNICODE`, the values will range from `0` to `65535`,
+which corresponds to the range of values returned by `String.prototype.charCodeAt()` (UTF-16 code units).
 
 ## Example usage
 
@@ -231,9 +238,18 @@ console.log(Encoding.codeToString(unicodeArray));
 
 ## Demo
 
-* [**Playground** for testing character encoding conversion and detection](https://polygonplanet.github.io/encoding.js/tests/playground.html)
-* [**Test run** for reading sample files and converting character encodings](https://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
-* [**Demo** for converting and detecting character encoding by specifying a file](https://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
+### Playground
+
+Try character encoding conversion and detection directly in your browser.  
+[Open the Playground](https://polygonplanet.github.io/encoding.js/tests/playground.html)
+
+### Sample file encoding conversion demo
+
+[Try converting sample files encoded in Shift_JIS, EUC-JP, and other encodings](https://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+
+### User-selected file encoding conversion and detection demo
+
+[Try converting and detecting the character encoding of a selected file](https://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ----
 
@@ -278,7 +294,7 @@ console.log(`Encoding is ${detectedEncoding}`); // 'Encoding is SJIS'
 ```
 
 Example of using the `encodings` argument to specify the character encoding to be detected.
-This returns a string detected encoding if the specified encoding matches, or `false` otherwise:
+This returns the detected encoding name if the specified encoding matches, or `false` otherwise:
 
 ```javascript
 const sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
@@ -310,7 +326,7 @@ Converts the character encoding of the given data.
 
 #### Parameters
 
-* **data** *(Array\<number\>|TypedArray|Buffer|string)* : The code array or string to convert character encoding.
+* **data** *(Array\<number\>|TypedArray|Buffer|string)* : The code array or string to be converted.
 * **to** *(string|Object)* : The character encoding name of the conversion destination as a string, or conversion options as an object.
 * **\[from\]** *(string|Array\<string\>)* : (Optional) The character encoding name of the conversion source as a string,
   or an array of encoding names. Detects automatically if this argument is omitted or `AUTO` is specified.
@@ -331,7 +347,7 @@ const sjisArray = Encoding.convert(utf8Array, 'SJIS', 'UTF8');
 console.log(sjisArray); // [130, 160] ('あ' in SJIS)
 ```
 
-TypedArray such as `Uint8Array`, and `Buffer` of Node.js can be converted in the same usage:
+Typed arrays, such as `Uint8Array`, and Node.js `Buffer` objects can be passed in the same way:
 
 ```javascript
 const utf8Array = new Uint8Array([227, 129, 130]);
@@ -344,14 +360,14 @@ Converts character encoding by auto-detecting the encoding name of the source:
 // The character encoding is automatically detected when the argument `from` is omitted
 const utf8Array = [227, 129, 130];
 let sjisArray = Encoding.convert(utf8Array, 'SJIS');
-// Or explicitly specify 'AUTO' to auto-detecting
+// You can also explicitly specify 'AUTO' to enable auto-detection
 sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 ```
 
-#### Specify conversion options to the argument `to` as an object
+#### Specifying conversion options with an object
 
-You can pass the second argument `to` as an object for improving readability.
-Also, the following options such as `type`, `fallback`, and `bom` must be specified with an object.
+For readability, the second argument `to` can be passed as an options object.
+Options such as `type`, `fallback`, and `bom` must be specified this way.
 
 ```javascript
 const utf8Array = [227, 129, 130];
@@ -364,7 +380,7 @@ const sjisArray = Encoding.convert(utf8Array, {
 #### Specify the return type by the `type` option
 
 `convert` returns an array by default, but you can change the return type by specifying the `type` option.
-Also, if the argument `data` is passed as a string and the` type` option is not specified, then `type` ='string' is assumed (returns as a string).
+If `data` is a string and `type` is omitted, `type: 'string'` is assumed and the result is returned as a string.
 
 ```javascript
 const sjisArray = [130, 168, 130, 205, 130, 230]; // 'おはよ' array in SJIS
@@ -379,8 +395,8 @@ console.log(unicodeString); // 'おはよ'
 The following `type` options are supported.
 
 * **string** : Return as a string.
-* **arraybuffer** : Return as an ArrayBuffer (Actually returns a `Uint16Array` due to historical reasons).
-* **array** :  Return as an Array. (*default*)
+* **arraybuffer** : Return a `Uint16Array` (the option name is retained for historical reasons).
+* **array** : Return as an Array. (*default*)
 
 `type: 'string'` can be used as a shorthand for converting a code array to a string,
 as performed by [`Encoding.codeToString`](#encodingcodetostring-code).  
@@ -490,7 +506,7 @@ const utf16Array = Encoding.convert(utf8Array, {
 });
 ```
 
-`UTF16` byte order is big-endian by default.
+The default byte order for `UTF16` is big-endian.
 If you want to convert as little-endian, specify the `{ bom: 'LE' }` option.
 
 ```javascript
@@ -601,7 +617,7 @@ Decodes a Base64 encoded string to a numeric character code array.
 
 #### Return value
 
-*(Array\<number\>)* : Returns a Base64 decoded numeric character code array.
+*(Array\<number\>)* : Returns the decoded numeric character code array.
 
 #### Examples
 
@@ -620,7 +636,7 @@ console.log(decodedArray); // [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 
 ### Encoding.codeToString (code)
 
-Converts a numeric character code array to string.
+Converts a numeric character code array to a string.
 
 #### Parameters
 
@@ -671,8 +687,8 @@ console.log(unicodeArray); // [12362, 12399, 12424]
 
 ### Japanese Zenkaku/Hankaku conversion
 
-The following methods convert Japanese full-width (zenkaku) and half-width (hankaku) characters,
-suitable for use with `UNICODE` strings or numeric character code arrays of `UNICODE`.
+The following methods convert Japanese full-width (zenkaku) and half-width (hankaku) characters.
+They accept either `UNICODE` strings or numeric arrays of `UNICODE` code units.
 
 Returns a converted string if the argument `data` is a string.
 Returns a numeric character code array if the argument `data` is a code array.
@@ -683,8 +699,8 @@ Returns a numeric character code array if the argument `data` is a code array.
 - **Encoding.toKatakanaCase (data)** : Converts full-width hiragana to full-width katakana.
 - **Encoding.toHankanaCase (data)** : Converts full-width katakana to half-width katakana.
 - **Encoding.toZenkanaCase (data)** : Converts half-width katakana to full-width katakana.
-- **Encoding.toHankakuSpace (data)** : Converts the em space (U+3000) to the single space (U+0020).
-- **Encoding.toZenkakuSpace (data)** : Converts the single space (U+0020) to the em space (U+3000).
+- **Encoding.toHankakuSpace (data)** : Converts the ideographic space (U+3000) to an ASCII space (U+0020).
+- **Encoding.toZenkakuSpace (data)** : Converts an ASCII space (U+0020) to the ideographic space (U+3000).
 
 #### Parameters
 

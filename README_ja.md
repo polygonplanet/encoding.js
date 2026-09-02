@@ -23,25 +23,28 @@ JavaScript で文字コードの変換や判定をします。
   * [`UNICODE` について](#unicode-について)
 - [使い方の例](#使い方の例)
 - [Demo](#demo)
+  * [Playground](#playground)
+  * [サンプルファイルの文字コードを変換するデモ](#サンプルファイルの文字コードを変換するデモ)
+  * [ファイルを選択して文字コードを変換・判定するデモ](#ファイルを選択して文字コードを変換判定するデモ)
 - [API](#api)
-  * [detect : 文字コードを判定する](#encodingdetect-data-encodings)
-  * [convert : 文字コードを変換する](#encodingconvert-data-to-from)
-    + [引数 `to` にオブジェクトで変換オプションを指定する](#引数-to-にオブジェクトで変換オプションを指定する)
+  * [`detect` : 文字コードを判定する](#encodingdetect-data-encodings)
+  * [`convert` : 文字コードを変換する](#encodingconvert-data-to-from)
+    + [変換オプションをオブジェクトで指定する](#変換オプションをオブジェクトで指定する)
     + [`type` オプションで戻り値の型を指定する](#type-オプションで戻り値の型を指定する)
     + [`fallback` オプションで変換できない文字の扱いを指定する](#fallback-オプションで変換できない文字の扱いを指定する)
     + [変換できない文字を HTML エンティティ (HTML 数値文字参照) に置き換える](#変換できない文字を-html-エンティティ-html-数値文字参照-に置き換える)
     + [変換できない文字を無視する](#変換できない文字を無視する)
     + [変換できない文字が含まれている場合にエラーを発生させる](#変換できない文字が含まれている場合にエラーを発生させる)
     + [UTF-16 に BOM をつける](#utf-16-に-bom-をつける)
-  * [urlEncode : 文字コードの配列をURLエンコードする](#encodingurlencode-data)
-  * [urlDecode : 文字コードの配列にURLデコードする](#encodingurldecode-string)
-  * [base64Encode : 文字コードの配列を Base64 エンコードする](#encodingbase64encode-data)
-  * [base64Decode : 文字コードの配列に Base64 デコードする](#encodingbase64decode-string)
-  * [codeToString : 文字コードの配列を文字列に変換する](#encodingcodetostring-code)
-  * [stringToCode : 文字列を文字コードの配列に変換する](#encodingstringtocode-string)
+  * [`urlEncode` : 文字コードの配列をURLエンコードする](#encodingurlencode-data)
+  * [`urlDecode` : 文字コードの配列にURLデコードする](#encodingurldecode-string)
+  * [`base64Encode` : 文字コードの配列を Base64 エンコードする](#encodingbase64encode-data)
+  * [`base64Decode` : 文字コードの配列に Base64 デコードする](#encodingbase64decode-string)
+  * [`codeToString` : 文字コードの配列を文字列に変換する](#encodingcodetostring-code)
+  * [`stringToCode` : 文字列を文字コードの配列に変換する](#encodingstringtocode-string)
   * [日本語の全角・半角変換](#日本語の全角半角変換)
 - [その他の例](#その他の例)
-  * [`Fetch API` と Typed Arrays (Uint8Array) を使用した例](#fetch-api-と-typed-arrays-uint8array-を使用した例)
+  * [Fetch API と Typed Arrays (Uint8Array) を使用した例](#fetch-api-と-typed-arrays-uint8array-を使用した例)
   * [File API を使用したファイルの文字コード判定・変換例](#file-api-を使用したファイルの文字コード判定変換例)
 - [Contributing](#contributing)
 - [License](#license)
@@ -146,12 +149,12 @@ encoding.js では、一般に使われている呼び方に合わせて Shift_J
 `SJIS` は、Shift_JIS を拡張した CP932 の範囲まで扱い、
 JIS X 0201 と JIS X 0208 に加えて、以下の CP932 拡張領域に対応しています。
 
-|領域|コード範囲|[`detect()`](#encodingdetect-data-encodings)|[`convert()`](#encodingconvert-data-to-from)|
-|:---|:---|:----:|:-----:|
-|NEC特殊文字|`0x8740` - `0x879C`|✓|✓|
-|NEC選定IBM拡張文字|`0xED40` - `0xEEFC`|✓|✓|
-|外字 (ユーザー定義領域)|`0xF040` - `0xF9FC`|✓| |
-|IBM拡張文字|`0xFA40` - `0xFC4B`|✓|✓|
+|領域                 |コード範囲          |[`detect()`](#encodingdetect-data-encodings)|[`convert()`](#encodingconvert-data-to-from)|
+|:--------------------|:------------------|:----:|:----:|
+|NEC特殊文字           |`0x8740` - `0x879C`|✓    |✓    |
+|NEC選定IBM拡張文字    |`0xED40` - `0xEEFC`|✓    |✓    |
+|外字 (ユーザー定義領域)|`0xF040` - `0xF9FC`|✓    |     |
+|IBM拡張文字           |`0xFA40` - `0xFC4B`|✓    |✓    |
 
 外字 (ユーザー定義領域) は `SJIS` として判定されますが、文字の割り当てが標準で定義されていないため変換はできません。
 変換時は「?」 (U+003F) に置き換えられます。
@@ -222,9 +225,18 @@ console.log(Encoding.codeToString(unicodeArray));
 
 ## Demo
 
-* [(Playground) 文字コードの変換や判定を試せるプレイグラウンド](https://polygonplanet.github.io/encoding.js/tests/playground.html)
-* [(Test run) サンプルファイルを読み込み、文字コードを変換するテスト](https://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
-* [(Demo) ファイルを指定して文字コード変換・判定するデモ](https://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
+### Playground
+
+ブラウザ上で文字コードの変換や判定を試せるプレイグラウンドです。
+[Playgroundを開く](https://polygonplanet.github.io/encoding.js/tests/playground.html)
+
+### サンプルファイルの文字コードを変換するデモ
+
+[Shift_JIS や EUC-JP などで書かれたサンプルファイルを読み込んで変換を試すデモ](https://polygonplanet.github.io/encoding.js/tests/encoding-test.html)
+
+### ファイルを選択して文字コードを変換・判定するデモ
+
+[ファイルを選択して文字コードの変換・判定を試すデモ](https://polygonplanet.github.io/encoding.js/tests/detect-file-encoding.html)
 
 ----
 
@@ -339,7 +351,7 @@ let sjisArray = Encoding.convert(utf8Array, 'SJIS');
 sjisArray = Encoding.convert(utf8Array, 'SJIS', 'AUTO');
 ```
 
-#### 引数 `to` にオブジェクトで変換オプションを指定する
+#### 変換オプションをオブジェクトで指定する
 
 第二引数 `to` に変換オプションとしてオブジェクトを渡すことで、わかりやすく記述することができます。
 また、下記の `type`、 `fallback`、 `bom` などのオプションを指定する際は、オブジェクトでの指定が必要になります。
@@ -370,8 +382,8 @@ console.log(unicodeString); // 'おはよ'
 以下の `type` オプションが指定できます。
 
 * **string** : 文字列として返ります。
-* **arraybuffer** : ArrayBuffer として (歴史的な理由で実際には `Uint16Array` が) 返ります。
-* **array** : 配列として返ります。 (デフォルト)
+* **arraybuffer** : `Uint16Array` として返ります (オプション名は歴史的な経緯で `arraybuffer` になっています)。
+* **array** : 配列として返ります (デフォルト)。
 
 `type: 'string'` は、配列から文字列に変換する [`Encoding.codeToString`](#encodingcodetostring-code) のショートハンドとして使用することができます。  
 ※ `UNICODE` への変換以外は `type: 'string'` を指定しても正しく扱えない可能性がありますのでご注意ください
@@ -728,7 +740,7 @@ console.log(Encoding.codeToString(Encoding.toZenkakuSpace(unicodeArray)));
 
 ## その他の例
 
-### `Fetch API` と Typed Arrays (Uint8Array) を使用した例
+### Fetch API と Typed Arrays (Uint8Array) を使用した例
 
 この例では Shift_JIS で書かれたテキストファイルをバイナリデータとして読み込み、
 [Encoding.convert](#encodingconvert-data-to-from) によって `UNICODE` に変換して表示します。
