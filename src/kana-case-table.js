@@ -1,4 +1,4 @@
-/* eslint-disable key-spacing */
+/* eslint-disable @stylistic/key-spacing */
 /**
  * Katakana table
  */
