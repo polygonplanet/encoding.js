@@ -503,7 +503,7 @@ var Encoding = {
     var i = 0;
     var c, code, next;
 
-    for (i = 0; i < len; i++) {
+    for (; i < len; i++) {
       c = data[i];
       // Hankaku katakana
       if (c > 0xFF60 && c < 0xFFA0) {

@@ -1,4 +1,4 @@
-/* eslint-disable indent,key-spacing */
+/* eslint-disable @stylistic/indent,@stylistic/key-spacing */
 /**
  * Encoding conversion table for UTF-8 to JIS X 0212:1990 (Hojo-Kanji)
  */
