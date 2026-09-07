@@ -1,6 +1,7 @@
 /* eslint-disable @stylistic/indent, @stylistic/key-spacing */
 /**
  * Encoding conversion table for UTF-8 to JIS
+ * { UTF-8 : JIS }
  */
 module.exports = {
 0xEFBDA1:0x21,0xEFBDA2:0x22,0xEFBDA3:0x23,0xEFBDA4:0x24,0xEFBDA5:0x25,
@@ -1486,8 +1487,8 @@ module.exports = {
 0xE285B5:0x7C76,0xE285B6:0x7C77,0xE285B7:0x7C78,0xE285B8:0x7C79,0xE285B9:0x7C7A,
 0xEFBFA4:0x7C7C,0xEFBC87:0x7C7D,0xEFBC82:0x7C7E,
 
-//FIXME: mojibake
-0xE288A5:0x2142,
-0xEFBFA2:0x224C,
-0xE28892:0x1215D
+// Remaps Unicode characters that differ between CP932 and JIS X 0208 mappings
+// (encode and decode) See also `utf8-to-jis-alias-table.js`
+0xE288A5:0x2142, // ∥ U+2225 PARALLEL TO        same cell as ‖ U+2016 (0xE28096) -> SJIS 0x8161
+0xEFBFA2:0x224C  // ￢ U+FFE2 FULLWIDTH NOT SIGN same cell as ¬ U+00AC (0xC2AC)   -> SJIS 0x81CA
 };

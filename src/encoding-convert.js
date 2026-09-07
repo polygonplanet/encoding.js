@@ -642,7 +642,8 @@ function UTF8ToSJIS(data, options) {
                (data[++i] & 0xFF);
       }
 
-      jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
+      jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8] ||
+        EncodingTable.UTF8_TO_JIS_ALIAS_TABLE[utf8];
       if (jis == null) {
         if (fallbackOption) {
           handleFallback(results, bytes, fallbackOption);
@@ -653,10 +654,6 @@ function UTF8ToSJIS(data, options) {
         if (jis < 0xFF) {
           results[results.length] = jis + 0x80;
         } else {
-          if (jis > 0x10000) {
-            jis -= 0x10000;
-          }
-
           b1 = jis >> 8;
           b2 = jis & 0xFF;
           if (b1 & 0x01) {
@@ -701,7 +698,7 @@ function UTF8ToEUCJP(data, options) {
   var results = [];
   var i = 0;
   var len = data && data.length;
-  var b, bytes, utf8, jis;
+  var b, bytes, utf8, jis, isJISX0212;
   var fallbackOption = options && options.fallback;
 
   for (; i < len; i++) {
@@ -726,32 +723,28 @@ function UTF8ToEUCJP(data, options) {
                (data[++i] & 0xFF);
       }
 
-      jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
       // JIS X 0212 chars duplicated into JIS X 0208 unassigned rows: use the JIS X 0212 form.
-      if (jis != null && EncodingTable.UTF8_TO_JISX0212_TABLE[utf8] != null) {
-        jis = null;
+      jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
+      isJISX0212 = jis != null;
+
+      if (jis == null) {
+        jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8] ||
+          EncodingTable.UTF8_TO_JIS_ALIAS_TABLE[utf8];
       }
       if (jis == null) {
-        jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
-        if (jis == null) {
-          if (fallbackOption) {
-            handleFallback(results, bytes, fallbackOption);
-          } else {
-            results[results.length] = config.FALLBACK_CHARACTER;
-          }
+        if (fallbackOption) {
+          handleFallback(results, bytes, fallbackOption);
         } else {
-          results[results.length] = 0x8F;
-          results[results.length] = (jis >> 8) - 0x80 & 0xFF;
-          results[results.length] = (jis & 0xFF) - 0x80 & 0xFF;
+          results[results.length] = config.FALLBACK_CHARACTER;
         }
       } else {
-        if (jis > 0x10000) {
-          jis -= 0x10000;
-        }
         if (jis < 0xFF) {
           results[results.length] = 0x8E;
           results[results.length] = jis - 0x80 & 0xFF;
         } else {
+          if (isJISX0212) {
+            results[results.length] = 0x8F;
+          }
           results[results.length] = (jis >> 8) - 0x80 & 0xFF;
           results[results.length] = (jis & 0xFF) - 0x80 & 0xFF;
         }
@@ -773,7 +766,7 @@ function UTF8ToJIS(data, options) {
   var index = 0;
   var len = data && data.length;
   var i = 0;
-  var b, bytes, utf8, jis;
+  var b, bytes, utf8, jis, isJISX0212;
   var fallbackOption = options && options.fallback;
 
   var esc = [
@@ -813,42 +806,29 @@ function UTF8ToJIS(data, options) {
                (data[++i] & 0xFF);
       }
 
-      jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
       // JIS X 0212 chars duplicated into JIS X 0208 unassigned rows: use the JIS X 0212 form.
-      if (jis != null && EncodingTable.UTF8_TO_JISX0212_TABLE[utf8] != null) {
-        jis = null;
-      }
-      if (jis == null) {
-        jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
-        if (jis == null) {
-          if (index !== 0) {
-            index = 0;
-            results[results.length] = esc[0];
-            results[results.length] = esc[1];
-            results[results.length] = esc[2];
-          }
+      jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
+      isJISX0212 = jis != null;
 
-          if (fallbackOption) {
-            handleFallback(results, bytes, fallbackOption);
-          } else {
-            results[results.length] = config.FALLBACK_CHARACTER;
-          }
+      if (jis == null) {
+        jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8] ||
+          EncodingTable.UTF8_TO_JIS_ALIAS_TABLE[utf8];
+      }
+
+      if (jis == null) {
+        if (index !== 0) {
+          index = 0;
+          results[results.length] = esc[0];
+          results[results.length] = esc[1];
+          results[results.length] = esc[2];
+        }
+
+        if (fallbackOption) {
+          handleFallback(results, bytes, fallbackOption);
         } else {
-          // JIS X 0212:1990
-          if (index !== 3) {
-            index = 3;
-            results[results.length] = esc[9];
-            results[results.length] = esc[10];
-            results[results.length] = esc[11];
-            results[results.length] = esc[12];
-          }
-          results[results.length] = jis >> 8 & 0xFF;
-          results[results.length] = jis & 0xFF;
+          results[results.length] = config.FALLBACK_CHARACTER;
         }
       } else {
-        if (jis > 0x10000) {
-          jis -= 0x10000;
-        }
         if (jis < 0xFF) {
           // Halfwidth Katakana
           if (index !== 2) {
@@ -859,7 +839,17 @@ function UTF8ToJIS(data, options) {
           }
           results[results.length] = jis & 0xFF;
         } else {
-          if (index !== 1) {
+          if (isJISX0212) {
+            // JIS X 0212:1990
+            if (index !== 3) {
+              index = 3;
+              results[results.length] = esc[9];
+              results[results.length] = esc[10];
+              results[results.length] = esc[11];
+              results[results.length] = esc[12];
+            }
+          } else if (index !== 1) {
+            // JIS X 0208
             index = 1;
             results[results.length] = esc[3];
             results[results.length] = esc[4];
