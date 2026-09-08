@@ -1200,6 +1200,66 @@ describe('encoding', function() {
         });
       });
     });
+    it('Unicode aliases to SJIS', function() {
+      var aliasMaps = [
+        { input: [0x301C], sjis: [0x81, 0x60], decoded: [0xFF5E] }, // 〜 -> ～
+        { input: [0xFF5E], sjis: [0x81, 0x60], decoded: [0xFF5E] }, // ～ -> ～
+        { input: [0x00A2], sjis: [0x81, 0x91], decoded: [0xFFE0] }, // ¢ -> ￠
+        { input: [0xFFE0], sjis: [0x81, 0x91], decoded: [0xFFE0] }, // ￠ -> ￠
+        { input: [0x00A3], sjis: [0x81, 0x92], decoded: [0xFFE1] }, // £ -> ￡
+        { input: [0xFFE1], sjis: [0x81, 0x92], decoded: [0xFFE1] }, // ￡ -> ￡
+        { input: [0x2212], sjis: [0x81, 0x7C], decoded: [0xFF0D] }, // − -> －
+        { input: [0xFF0D], sjis: [0x81, 0x7C], decoded: [0xFF0D] }  // － -> －
+      ];
+
+      aliasMaps.forEach(function(alias) {
+        var sjis = encoding.convert(alias.input, { to: 'sjis', from: 'unicode' });
+        assert.deepEqual(sjis, alias.sjis);
+
+        var decodedUnicode = encoding.convert(sjis, { to: 'unicode', from: 'sjis' });
+        assert.deepEqual(decodedUnicode, alias.decoded);
+      });
+    });
+
+    it('Unicode aliases to EUC-JP and JIS', function() {
+      var aliasMaps = [
+        { input: [0x301C], eucjp: [0xA1, 0xC1], jis: [0x21, 0x41], decoded: [0xFF5E] }, // 〜 -> ～
+        { input: [0x00A2], eucjp: [0xA1, 0xF1], jis: [0x21, 0x71], decoded: [0xFFE0] }, // ¢ -> ￠
+        { input: [0x00A3], eucjp: [0xA1, 0xF2], jis: [0x21, 0x72], decoded: [0xFFE1] }, // £ -> ￡
+        { input: [0x2212], eucjp: [0xA1, 0xDD], jis: [0x21, 0x5D], decoded: [0xFF0D] }  // − -> －
+      ];
+
+      aliasMaps.forEach(function(alias) {
+        var eucjp = encoding.convert(alias.input, { to: 'euc-jp', from: 'unicode' });
+        assert.deepEqual(eucjp, alias.eucjp);
+
+        var decodedUnicode = encoding.convert(eucjp, { to: 'unicode', from: 'euc-jp' });
+        assert.deepEqual(decodedUnicode, alias.decoded);
+
+        var jis = encoding.convert(alias.input, { to: 'jis', from: 'unicode' });
+        assert.deepEqual(jis, [0x1B, 0x24, 0x42].concat(alias.jis, [0x1B, 0x28, 0x42]));
+      });
+    });
+
+    it('JIS X 0212 undefined code point', function() {
+      var undefinedCodePoint = [0x8F, 0xA1, 0xC1];
+      var decoded = encoding.convert(undefinedCodePoint, {
+        to: 'unicode', from: 'euc-jp', type: 'string'
+      });
+      assert.equal(decoded, '?');
+    });
+
+    it('SJIS invalid trail byte 0x7F', function() {
+      var invalidSjisCode = [0x81, 0x7F];
+      var validSjisCode = [0x81, 0x7E];
+
+      assert.equal(encoding.convert(invalidSjisCode, {
+        to: 'unicode', from: 'sjis', type: 'string'
+      }), '?');
+
+      var unicode = encoding.convert(validSjisCode, { to: 'unicode', from: 'sjis' });
+      assert.deepEqual(unicode, [0xD7]);
+    });
   });
 
   describe('urlEncode/urlDecode', function() {
