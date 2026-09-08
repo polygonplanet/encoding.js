@@ -154,6 +154,17 @@ function SJISToJIS(data) {
       }
       results[results.length] = b1 - 0x80 & 0xFF;
     } else if (b1 >= 0x80) {
+      b2 = data[++i];
+      if (b2 === 0x7F) {
+        if (index !== 0) {
+          index = 0;
+          results[results.length] = esc[0];
+          results[results.length] = esc[1];
+          results[results.length] = esc[2];
+        }
+        results[results.length] = config.FALLBACK_CHARACTER;
+        continue;
+      }
       if (index !== 1) {
         index = 1;
         results[results.length] = esc[3];
@@ -161,7 +172,6 @@ function SJISToJIS(data) {
         results[results.length] = esc[5];
       }
 
-      b2 = data[++i];
       if (sjisExt.hasCP932DuplicateCode(b1)) {
         // Remap CP932 duplicate codes and IBM extended characters
         remapped = sjisExt.remapCP932DuplicateCode(b1, b2);
@@ -228,6 +238,10 @@ function SJISToEUCJP(data) {
       results[results.length] = b1;
     } else if (b1 >= 0x81) {
       b2 = data[++i];
+      if (b2 === 0x7F) {
+        results[results.length] = config.FALLBACK_CHARACTER;
+        continue;
+      }
       if (sjisExt.hasCP932DuplicateCode(b1)) {
         // Remap CP932 duplicate codes and IBM extended characters
         remapped = sjisExt.remapCP932DuplicateCode(b1, b2);
@@ -409,6 +423,10 @@ function SJISToUTF8(data) {
       results[results.length] = u3 & 0xFF;
     } else if (b >= 0x80) {
       b2 = data[++i];
+      if (b2 === 0x7F) {
+        results[results.length] = config.FALLBACK_CHARACTER;
+        continue;
+      }
       if (sjisExt.hasCP932DuplicateCode(b)) {
         // Remap CP932 duplicate codes and IBM extended characters
         remapped = sjisExt.remapCP932DuplicateCode(b, b2);

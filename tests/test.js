@@ -1248,6 +1248,18 @@ describe('encoding', function() {
       });
       assert.equal(decoded, '?');
     });
+
+    it('SJIS invalid trail byte 0x7F', function() {
+      var invalidSjisCode = [0x81, 0x7F];
+      var validSjisCode = [0x81, 0x7E];
+
+      assert.equal(encoding.convert(invalidSjisCode, {
+        to: 'unicode', from: 'sjis', type: 'string'
+      }), '?');
+
+      var unicode = encoding.convert(validSjisCode, { to: 'unicode', from: 'sjis' });
+      assert.deepEqual(unicode, [0xD7]);
+    });
   });
 
   describe('urlEncode/urlDecode', function() {
