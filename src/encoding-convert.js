@@ -923,8 +923,9 @@ function UTF8ToUNICODE(data, options) {
   var i = 0;
   var len = data && data.length;
   var n, c, c2, c3, c4, code;
-  // For internal usage only
-  var ignoreSurrogatePair = options && options.ignoreSurrogatePair;
+  // For internal use only
+  // Returns raw Unicode code points without splitting into surrogate pairs
+  var asCodePoint = options && options.asCodePoint;
 
   while (i < len) {
     c = data[i++];
@@ -960,7 +961,7 @@ function UTF8ToUNICODE(data, options) {
               (c4 & 0x3F);
     }
 
-    if (code <= 0xFFFF || ignoreSurrogatePair) {
+    if (code <= 0xFFFF || asCodePoint) {
       results[results.length] = code;
     } else {
       // Split in surrogate halves
@@ -1675,7 +1676,7 @@ function handleFallback(results, bytes, fallbackOption) {
   switch (fallbackOption) {
     case 'html-entity':
     case 'html-entity-hex':
-      var unicode = UTF8ToUNICODE(bytes, { ignoreSurrogatePair: true })[0];
+      var unicode = UTF8ToUNICODE(bytes, { asCodePoint: true })[0];
       if (unicode) {
         results[results.length] = 0x26; // &
         results[results.length] = 0x23; // #
