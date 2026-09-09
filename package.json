@@ -3,9 +3,11 @@
   "version": "2.3.0",
   "description": "Convert and detect character encoding in JavaScript",
   "main": "src/index.js",
+  "types": "index.d.ts",
   "files": [
     "encoding.js",
     "encoding.min.js",
+    "index.d.ts",
     "src/*"
   ],
   "scripts": {
@@ -13,7 +15,8 @@
     "compile": "browserify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare",
     "minify": "uglifyjs encoding.js -o encoding.min.js --comments -c -m -b ascii_only=true,beautify=false",
     "lint": "eslint .",
-    "test": "npm run build && mocha tests/test",
+    "test": "npm run build && npm run test:types && mocha tests/test",
+    "test:types": "tsc --project tsconfig.types.json",
     "watch": "watchify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare --poll=300 -v"
   },
   "engines": {
@@ -54,12 +57,14 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
+    "@types/node": "^26.5.0",
     "bannerify": "^1.0.1",
     "browserify": "^17.0.1",
     "eslint": "^10.9.1",
     "globals": "^17.12.0",
     "mocha": "^11.8.0",
     "package-json-versionify": "^1.0.4",
+    "typescript": "^7.0.2",
     "uglify-js": "^3.19.3",
     "watchify": "^4.0.0"
   },

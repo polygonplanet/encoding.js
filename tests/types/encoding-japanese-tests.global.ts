@@ -6,5 +6,4 @@ const unicodeString = Encoding.convert(utf8String, {
     from: "UTF8",
     type: "string",
 });
-// $ExpectType string
-unicodeString; // こんにちは
+expectType<string>()(unicodeString); // こんにちは
