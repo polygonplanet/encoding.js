@@ -1,3 +1,8 @@
+// TypeScript declarations originally from DefinitelyTyped
+// Upstream package: @types/encoding-japanese 2.2.1
+// Thanks to the DefinitelyTyped contributors
+// Licensed under the MIT License. See the LICENSE file
+
 export as namespace Encoding;
 
 export type Encoding =
