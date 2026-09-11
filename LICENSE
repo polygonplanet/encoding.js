@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2012 polygonplanet
+Copyright (c) 2012-present polygonplanet
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,27 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+-----
+
+Third-Party Licenses and Credits
+
+TypeScript declarations and type tests are based on the type definitions for
+encoding-japanese from DefinitelyTyped, licensed under the MIT License.
+
+Upstream package: @types/encoding-japanese 2.2.1
+
+The LICENSE distributed with @types/encoding-japanese states:
+
+  Copyright (c) Microsoft Corporation.
+
+The LICENSE in the DefinitelyTyped repository states:
+
+  Copyrights are respective of each contributor listed at the beginning of
+  each definition file.
+
+The contributors credited in the upstream package are:
+  rhysd (https://github.com/rhysd)
+  Piotr Błażejewicz (https://github.com/peterblazejewicz)
+
+The MIT License terms stated above apply equally to these files.
