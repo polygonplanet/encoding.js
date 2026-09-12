@@ -3,7 +3,7 @@ encoding.js
 
 [![NPM Version](https://img.shields.io/npm/v/encoding-japanese.svg)](https://www.npmjs.com/package/encoding-japanese)
 [![GitHub Actions Build Status](https://github.com/polygonplanet/encoding.js/actions/workflows/ci.yml/badge.svg)](https://github.com/polygonplanet/encoding.js/actions)
-[![GitHub License](https://img.shields.io/github/license/polygonplanet/encoding.js.svg)](https://github.com/polygonplanet/encoding.js/blob/master/LICENSE)
+[![License](https://img.shields.io/npm/l/encoding-japanese.svg)](https://github.com/polygonplanet/encoding.js/blob/master/LICENSE)
 
 JavaScript で文字コードの変換や判定をします。
 
@@ -167,7 +167,7 @@ encoding.js では JavaScript で扱える内部文字コード (JavaScript の�
 そのため、[`Encoding.convert`](#encodingconvert-data-to-from) によって JavaScript で扱える文字コード配列に変換するには `UNICODE` を指定する必要があります。
 (※仮にHTMLページが UTF-8 だったとしても JavaScript で扱う場合は `UTF8` ではなく `UNICODE` を指定します)
 
-`Encoding.convert` から返される各文字コード配列の値は `UTF8` や `SJIS` などの `UNICODE` 以外を指定した場合は `0-255` までの整数になりますが、 `UNICODE` を指定した場合 `0-65535` までの整数 (`String.prototype.charCodeAt()` の値の範囲 = Code Unit) になります。
+`Encoding.convert` から返される各文字コード配列の値は `UTF8` や `SJIS` などの `UNICODE` 以外を指定した場合は `0-255` までの整数になりますが、 `UNICODE` を指定した場合 `0-65535` までの整数 (`String.prototype.charCodeAt()` の値の範囲 = UTF-16 code units) になります。
 
 ## 使い方の例
 
@@ -227,7 +227,7 @@ console.log(Encoding.codeToString(unicodeArray));
 
 ### Playground
 
-ブラウザ上で文字コードの変換や判定を試せるプレイグラウンドです。
+ブラウザ上で文字コードの変換や判定を試せるプレイグラウンドです。  
 [Playgroundを開く](https://polygonplanet.github.io/encoding.js/tests/playground.html)
 
 ### サンプルファイルの文字コードを変換するデモ

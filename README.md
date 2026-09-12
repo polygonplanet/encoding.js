@@ -3,7 +3,7 @@ encoding.js
 
 [![NPM Version](https://img.shields.io/npm/v/encoding-japanese.svg)](https://www.npmjs.com/package/encoding-japanese)
 [![GitHub Actions Build Status](https://github.com/polygonplanet/encoding.js/actions/workflows/ci.yml/badge.svg)](https://github.com/polygonplanet/encoding.js/actions)
-[![GitHub License](https://img.shields.io/github/license/polygonplanet/encoding.js.svg)](https://github.com/polygonplanet/encoding.js/blob/master/LICENSE)
+[![License](https://img.shields.io/npm/l/encoding-japanese.svg)](https://github.com/polygonplanet/encoding.js/blob/master/LICENSE)
 
 Convert and detect character encodings in JavaScript.
 
