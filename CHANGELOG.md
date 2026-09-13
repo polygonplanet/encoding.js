@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased](https://github.com/polygonplanet/encoding.js/compare/2.3.0...HEAD)
+
+### Features
+
+* Include TypeScript definitions (`index.d.ts`) migrated from DefinitelyTyped. Installing `@types/encoding-japanese` separately is no longer required. Thanks to DefinitelyTyped contributors! ([#68](https://github.com/polygonplanet/encoding.js/pull/68))
+* Support Unicode characters that differ between CP932 and JIS X 0208 mappings when converting to `SJIS`, `EUCJP` and `JIS` (e.g., `U+301C` (`〜`) is now converted to `0x8160` in `SJIS` and `0xA1C1` in `EUCJP`). ([#67](https://github.com/polygonplanet/encoding.js/pull/67))
+
+### Bug Fixes
+
+* Fix `U+301C` (`〜`) being mapped to JIS X 0212 instead of JIS X 0208 when converting to `EUCJP` and `JIS` (e.g., `0x8FA1C1` instead of `0xA1C1` in `EUCJP`). ([#67](https://github.com/polygonplanet/encoding.js/pull/67))
+* Fix invalid SJIS trail byte `0x7F` being converted as `0x7E` instead of falling back to `?` on conversion from `SJIS`. ([b848595](https://github.com/polygonplanet/encoding.js/commit/b848595))
+
+### CI
+
+* Update GitHub Actions and split linting from tests. ([6142ece](https://github.com/polygonplanet/encoding.js/commit/6142ece))
+
+### Maintenance
+
+* Add type tests adapted from DefinitelyTyped to run with `tsc`, and include them in `npm test`.
+* Upgrade ESLint to v10 and migrate from `.eslintrc.json` to flat config with `@stylistic/eslint-plugin`. ([1e98062](https://github.com/polygonplanet/encoding.js/commit/1e98062))
+
 ## [2.3.0](https://github.com/polygonplanet/encoding.js/compare/2.2.0...2.3.0) (2026-08-30)
 
 ### Features
