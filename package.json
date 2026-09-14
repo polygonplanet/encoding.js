@@ -1,6 +1,6 @@
 {
   "name": "encoding-japanese",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Convert and detect character encodings in JavaScript",
   "main": "src/index.js",
   "types": "index.d.ts",

@@ -1,12 +1,12 @@
 /*!
- * encoding-japanese v2.3.0 - Convert and detect character encoding in JavaScript
+ * encoding-japanese v2.4.0 - Convert and detect character encodings in JavaScript
  * Copyright (c) 2012 polygonplanet <polygon.planet.aqua@gmail.com>
  * https://github.com/polygonplanet/encoding.js
  * @license MIT
  */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Encoding = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 module.exports={
-  "version": "2.3.0"
+  "version": "2.4.0"
 }
 },{}],2:[function(require,module,exports){
 var util = require('./util');
@@ -149,7 +149,7 @@ function init_JIS_TO_UTF8_TABLE() {
 }
 exports.init_JIS_TO_UTF8_TABLE = init_JIS_TO_UTF8_TABLE;
 
-},{"./encoding-table":5,"./util":13}],3:[function(require,module,exports){
+},{"./encoding-table":5,"./util":14}],3:[function(require,module,exports){
 var config = require('./config');
 var util = require('./util');
 var EncodingDetect = require('./encoding-detect');
@@ -306,6 +306,17 @@ function SJISToJIS(data) {
       }
       results[results.length] = b1 - 0x80 & 0xFF;
     } else if (b1 >= 0x80) {
+      b2 = data[++i];
+      if (b2 === 0x7F) {
+        if (index !== 0) {
+          index = 0;
+          results[results.length] = esc[0];
+          results[results.length] = esc[1];
+          results[results.length] = esc[2];
+        }
+        results[results.length] = config.FALLBACK_CHARACTER;
+        continue;
+      }
       if (index !== 1) {
         index = 1;
         results[results.length] = esc[3];
@@ -313,7 +324,6 @@ function SJISToJIS(data) {
         results[results.length] = esc[5];
       }
 
-      b2 = data[++i];
       if (sjisExt.hasCP932DuplicateCode(b1)) {
         // Remap CP932 duplicate codes and IBM extended characters
         remapped = sjisExt.remapCP932DuplicateCode(b1, b2);
@@ -380,6 +390,10 @@ function SJISToEUCJP(data) {
       results[results.length] = b1;
     } else if (b1 >= 0x81) {
       b2 = data[++i];
+      if (b2 === 0x7F) {
+        results[results.length] = config.FALLBACK_CHARACTER;
+        continue;
+      }
       if (sjisExt.hasCP932DuplicateCode(b1)) {
         // Remap CP932 duplicate codes and IBM extended characters
         remapped = sjisExt.remapCP932DuplicateCode(b1, b2);
@@ -561,6 +575,10 @@ function SJISToUTF8(data) {
       results[results.length] = u3 & 0xFF;
     } else if (b >= 0x80) {
       b2 = data[++i];
+      if (b2 === 0x7F) {
+        results[results.length] = config.FALLBACK_CHARACTER;
+        continue;
+      }
       if (sjisExt.hasCP932DuplicateCode(b)) {
         // Remap CP932 duplicate codes and IBM extended characters
         remapped = sjisExt.remapCP932DuplicateCode(b, b2);
@@ -794,7 +812,8 @@ function UTF8ToSJIS(data, options) {
                (data[++i] & 0xFF);
       }
 
-      jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
+      jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8] ||
+        EncodingTable.UTF8_TO_JIS_ALIAS_TABLE[utf8];
       if (jis == null) {
         if (fallbackOption) {
           handleFallback(results, bytes, fallbackOption);
@@ -805,10 +824,6 @@ function UTF8ToSJIS(data, options) {
         if (jis < 0xFF) {
           results[results.length] = jis + 0x80;
         } else {
-          if (jis > 0x10000) {
-            jis -= 0x10000;
-          }
-
           b1 = jis >> 8;
           b2 = jis & 0xFF;
           if (b1 & 0x01) {
@@ -853,7 +868,7 @@ function UTF8ToEUCJP(data, options) {
   var results = [];
   var i = 0;
   var len = data && data.length;
-  var b, bytes, utf8, jis;
+  var b, bytes, utf8, jis, isJISX0212;
   var fallbackOption = options && options.fallback;
 
   for (; i < len; i++) {
@@ -878,32 +893,28 @@ function UTF8ToEUCJP(data, options) {
                (data[++i] & 0xFF);
       }
 
-      jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
       // JIS X 0212 chars duplicated into JIS X 0208 unassigned rows: use the JIS X 0212 form.
-      if (jis != null && EncodingTable.UTF8_TO_JISX0212_TABLE[utf8] != null) {
-        jis = null;
+      jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
+      isJISX0212 = jis != null;
+
+      if (jis == null) {
+        jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8] ||
+          EncodingTable.UTF8_TO_JIS_ALIAS_TABLE[utf8];
       }
       if (jis == null) {
-        jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
-        if (jis == null) {
-          if (fallbackOption) {
-            handleFallback(results, bytes, fallbackOption);
-          } else {
-            results[results.length] = config.FALLBACK_CHARACTER;
-          }
+        if (fallbackOption) {
+          handleFallback(results, bytes, fallbackOption);
         } else {
-          results[results.length] = 0x8F;
-          results[results.length] = (jis >> 8) - 0x80 & 0xFF;
-          results[results.length] = (jis & 0xFF) - 0x80 & 0xFF;
+          results[results.length] = config.FALLBACK_CHARACTER;
         }
       } else {
-        if (jis > 0x10000) {
-          jis -= 0x10000;
-        }
         if (jis < 0xFF) {
           results[results.length] = 0x8E;
           results[results.length] = jis - 0x80 & 0xFF;
         } else {
+          if (isJISX0212) {
+            results[results.length] = 0x8F;
+          }
           results[results.length] = (jis >> 8) - 0x80 & 0xFF;
           results[results.length] = (jis & 0xFF) - 0x80 & 0xFF;
         }
@@ -925,7 +936,7 @@ function UTF8ToJIS(data, options) {
   var index = 0;
   var len = data && data.length;
   var i = 0;
-  var b, bytes, utf8, jis;
+  var b, bytes, utf8, jis, isJISX0212;
   var fallbackOption = options && options.fallback;
 
   var esc = [
@@ -965,42 +976,29 @@ function UTF8ToJIS(data, options) {
                (data[++i] & 0xFF);
       }
 
-      jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8];
       // JIS X 0212 chars duplicated into JIS X 0208 unassigned rows: use the JIS X 0212 form.
-      if (jis != null && EncodingTable.UTF8_TO_JISX0212_TABLE[utf8] != null) {
-        jis = null;
-      }
-      if (jis == null) {
-        jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
-        if (jis == null) {
-          if (index !== 0) {
-            index = 0;
-            results[results.length] = esc[0];
-            results[results.length] = esc[1];
-            results[results.length] = esc[2];
-          }
+      jis = EncodingTable.UTF8_TO_JISX0212_TABLE[utf8];
+      isJISX0212 = jis != null;
 
-          if (fallbackOption) {
-            handleFallback(results, bytes, fallbackOption);
-          } else {
-            results[results.length] = config.FALLBACK_CHARACTER;
-          }
+      if (jis == null) {
+        jis = EncodingTable.UTF8_TO_JIS_TABLE[utf8] ||
+          EncodingTable.UTF8_TO_JIS_ALIAS_TABLE[utf8];
+      }
+
+      if (jis == null) {
+        if (index !== 0) {
+          index = 0;
+          results[results.length] = esc[0];
+          results[results.length] = esc[1];
+          results[results.length] = esc[2];
+        }
+
+        if (fallbackOption) {
+          handleFallback(results, bytes, fallbackOption);
         } else {
-          // JIS X 0212:1990
-          if (index !== 3) {
-            index = 3;
-            results[results.length] = esc[9];
-            results[results.length] = esc[10];
-            results[results.length] = esc[11];
-            results[results.length] = esc[12];
-          }
-          results[results.length] = jis >> 8 & 0xFF;
-          results[results.length] = jis & 0xFF;
+          results[results.length] = config.FALLBACK_CHARACTER;
         }
       } else {
-        if (jis > 0x10000) {
-          jis -= 0x10000;
-        }
         if (jis < 0xFF) {
           // Halfwidth Katakana
           if (index !== 2) {
@@ -1011,7 +1009,17 @@ function UTF8ToJIS(data, options) {
           }
           results[results.length] = jis & 0xFF;
         } else {
-          if (index !== 1) {
+          if (isJISX0212) {
+            // JIS X 0212:1990
+            if (index !== 3) {
+              index = 3;
+              results[results.length] = esc[9];
+              results[results.length] = esc[10];
+              results[results.length] = esc[11];
+              results[results.length] = esc[12];
+            }
+          } else if (index !== 1) {
+            // JIS X 0208
             index = 1;
             results[results.length] = esc[3];
             results[results.length] = esc[4];
@@ -1085,8 +1093,9 @@ function UTF8ToUNICODE(data, options) {
   var i = 0;
   var len = data && data.length;
   var n, c, c2, c3, c4, code;
-  // For internal usage only
-  var ignoreSurrogatePair = options && options.ignoreSurrogatePair;
+  // For internal use only
+  // Returns raw Unicode code points without splitting into surrogate pairs
+  var asCodePoint = options && options.asCodePoint;
 
   while (i < len) {
     c = data[i++];
@@ -1122,7 +1131,7 @@ function UTF8ToUNICODE(data, options) {
               (c4 & 0x3F);
     }
 
-    if (code <= 0xFFFF || ignoreSurrogatePair) {
+    if (code <= 0xFFFF || asCodePoint) {
       results[results.length] = code;
     } else {
       // Split in surrogate halves
@@ -1837,7 +1846,7 @@ function handleFallback(results, bytes, fallbackOption) {
   switch (fallbackOption) {
     case 'html-entity':
     case 'html-entity-hex':
-      var unicode = UTF8ToUNICODE(bytes, { ignoreSurrogatePair: true })[0];
+      var unicode = UTF8ToUNICODE(bytes, { asCodePoint: true })[0];
       if (unicode) {
         results[results.length] = 0x26; // &
         results[results.length] = 0x23; // #
@@ -1861,7 +1870,7 @@ function handleFallback(results, bytes, fallbackOption) {
   }
 }
 
-},{"./config":2,"./encoding-detect":4,"./encoding-table":5,"./sjis-ext":10,"./util":13}],4:[function(require,module,exports){
+},{"./config":2,"./encoding-detect":4,"./encoding-table":5,"./sjis-ext":10,"./util":14}],4:[function(require,module,exports){
 /**
  * Binary (exe, images and so, etc.)
  *
@@ -2378,11 +2387,12 @@ exports.isUNICODE = isUNICODE;
 
 },{}],5:[function(require,module,exports){
 exports.UTF8_TO_JIS_TABLE = require('./utf8-to-jis-table');
+exports.UTF8_TO_JIS_ALIAS_TABLE = require('./utf8-to-jis-alias-table');
 exports.UTF8_TO_JISX0212_TABLE = require('./utf8-to-jisx0212-table');
 exports.JIS_TO_UTF8_TABLE = require('./jis-to-utf8-table');
 exports.JISX0212_TO_UTF8_TABLE = require('./jisx0212-to-utf8-table');
 
-},{"./jis-to-utf8-table":7,"./jisx0212-to-utf8-table":8,"./utf8-to-jis-table":11,"./utf8-to-jisx0212-table":12}],6:[function(require,module,exports){
+},{"./jis-to-utf8-table":7,"./jisx0212-to-utf8-table":8,"./utf8-to-jis-alias-table":11,"./utf8-to-jis-table":12,"./utf8-to-jisx0212-table":13}],6:[function(require,module,exports){
 var config = require('./config');
 var util = require('./util');
 var EncodingDetect = require('./encoding-detect');
@@ -2888,7 +2898,7 @@ var Encoding = {
     var i = 0;
     var c, code, next;
 
-    for (i = 0; i < len; i++) {
+    for (; i < len; i++) {
       c = data[i];
       // Hankaku katakana
       if (c > 0xFF60 && c < 0xFFA0) {
@@ -2989,7 +2999,7 @@ var Encoding = {
 
 module.exports = Encoding;
 
-},{"../package.json":1,"./config":2,"./encoding-convert":3,"./encoding-detect":4,"./kana-case-table":9,"./util":13}],7:[function(require,module,exports){
+},{"../package.json":1,"./config":2,"./encoding-convert":3,"./encoding-detect":4,"./kana-case-table":9,"./util":14}],7:[function(require,module,exports){
 /**
  * Encoding conversion table for JIS to UTF-8
  */
@@ -3004,7 +3014,7 @@ var JISX0212_TO_UTF8_TABLE = null;
 module.exports = JISX0212_TO_UTF8_TABLE;
 
 },{}],9:[function(require,module,exports){
-/* eslint-disable key-spacing */
+/* eslint-disable @stylistic/key-spacing */
 /**
  * Katakana table
  */
@@ -3143,9 +3153,26 @@ function hasCP932DuplicateCode(b1) {
 exports.hasCP932DuplicateCode = hasCP932DuplicateCode;
 
 },{}],11:[function(require,module,exports){
-/* eslint-disable indent,key-spacing */
+/**
+ * Encoding conversion table for UTF-8 to JIS (encode only)
+ *
+ * Accepts Unicode characters that differ between CP932 and JIS X 0208 mappings
+ * (e.g., WAVE DASH vs. FULLWIDTH TILDE).
+ *
+ * { UTF-8 : JIS }
+ */
+module.exports = {
+  0xE28892: 0x215D, // − U+2212 MINUS SIGN same cell as － U+FF0D (0xEFBC8D) -> SJIS 0x817C
+  0xE3809C: 0x2141, // 〜 U+301C WAVE DASH same cell as ～ U+FF5E (0xEFBD9E) -> SJIS 0x8160
+  0xC2A2: 0x2171,   // ¢ U+00A2 CENT SIGN  same cell as ￠ U+FFE0 (0xEFBFA0) -> SJIS 0x8191
+  0xC2A3: 0x2172    // £ U+00A3 POUND SIGN same cell as ￡ U+FFE1 (0xEFBFA1) -> SJIS 0x8192
+};
+
+},{}],12:[function(require,module,exports){
+/* eslint-disable @stylistic/indent, @stylistic/key-spacing */
 /**
  * Encoding conversion table for UTF-8 to JIS
+ * { UTF-8 : JIS }
  */
 module.exports = {
 0xEFBDA1:0x21,0xEFBDA2:0x22,0xEFBDA3:0x23,0xEFBDA4:0x24,0xEFBDA5:0x25,
@@ -4631,16 +4658,21 @@ module.exports = {
 0xE285B5:0x7C76,0xE285B6:0x7C77,0xE285B7:0x7C78,0xE285B8:0x7C79,0xE285B9:0x7C7A,
 0xEFBFA4:0x7C7C,0xEFBC87:0x7C7D,0xEFBC82:0x7C7E,
 
-//FIXME: mojibake
-0xE288A5:0x2142,
-0xEFBFA2:0x224C,
-0xE28892:0x1215D
+// Remaps Unicode characters that differ between CP932 and JIS X 0208 mappings
+// (encode and decode) See also `utf8-to-jis-alias-table.js`
+0xE288A5:0x2142, // ∥ U+2225 PARALLEL TO        same cell as ‖ U+2016 (0xE28096) -> SJIS 0x8161
+0xEFBFA2:0x224C  // ￢ U+FFE2 FULLWIDTH NOT SIGN same cell as ¬ U+00AC (0xC2AC)   -> SJIS 0x81CA
 };
 
-},{}],12:[function(require,module,exports){
-/* eslint-disable indent,key-spacing */
+},{}],13:[function(require,module,exports){
+/* eslint-disable @stylistic/indent,@stylistic/key-spacing */
 /**
  * Encoding conversion table for UTF-8 to JIS X 0212:1990 (Hojo-Kanji)
+ *
+ * Character mappings based on:
+ * https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/JIS0212.TXT
+ * Keys have been converted to UTF-8
+ * { UTF-8 : JIS }
  */
 module.exports = {
 0xCB98:0x222F,0xCB87:0x2230,0xC2B8:0x2231,0xCB99:0x2232,0xCB9D:0x2233,
@@ -5857,13 +5889,10 @@ module.exports = {
 0xE9BDB1:0x6D53,0xE9BDB3:0x6D54,0xE9BDB5:0x6D55,0xE9BDBA:0x6D56,0xE9BDBD:0x6D57,
 0xE9BE8F:0x6D58,0xE9BE90:0x6D59,0xE9BE91:0x6D5A,0xE9BE92:0x6D5B,0xE9BE94:0x6D5C,
 0xE9BE96:0x6D5D,0xE9BE97:0x6D5E,0xE9BE9E:0x6D5F,0xE9BEA1:0x6D60,0xE9BEA2:0x6D61,
-0xE9BEA3:0x6D62,0xE9BEA5:0x6D63,
-
-//FIXME: mojibake
-0xE3809C:0x2141
+0xE9BEA3:0x6D62,0xE9BEA5:0x6D63
 };
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var config = require('./config');
 var fromCharCode = String.fromCharCode;
 var slice = Array.prototype.slice;
