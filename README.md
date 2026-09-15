@@ -97,11 +97,15 @@ const Encoding = require('encoding-japanese');
 
 #### TypeScript
 
-TypeScript type definitions for encoding.js are available at [@types/encoding-japanese](https://www.npmjs.com/package/@types/encoding-japanese) (thanks to [@rhysd](https://github.com/rhysd)).
+As of version 2.4.0, encoding.js includes TypeScript type definitions (`index.d.ts`), so no additional package is required.
+
+After upgrading to v2.4.0 or later, you can remove `@types/encoding-japanese` if installed:
 
 ```bash
-npm install --save-dev @types/encoding-japanese
+npm uninstall @types/encoding-japanese
 ```
+
+The type definitions were originally maintained on DefinitelyTyped (thanks to [@rhysd](https://github.com/rhysd) and [@peterblazejewicz](https://github.com/peterblazejewicz)).
 
 ### Browser (standalone)
 

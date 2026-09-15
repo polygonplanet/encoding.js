@@ -90,11 +90,15 @@ const Encoding = require('encoding-japanese');
 
 #### TypeScript
 
-encoding.js の TypeScript 型定義は [@types/encoding-japanese](https://www.npmjs.com/package/@types/encoding-japanese) から利用できます ([@rhysd](https://github.com/rhysd) さんありがとうございます)。
+encoding.js は 2.4.0 以降のバージョンで TypeScript の型定義 (`index.d.ts`) を同梱しているため、追加のパッケージは不要になりました。
+
+2.4.0 以降に更新した場合、`@types/encoding-japanese` は削除できます:
 
 ```bash
-npm install --save-dev @types/encoding-japanese
+npm uninstall @types/encoding-japanese
 ```
+
+型定義はもともと DefinitelyTyped でメンテナンスされていたものです ([@rhysd](https://github.com/rhysd) さん、[@peterblazejewicz](https://github.com/peterblazejewicz) さん、ありがとうございます)。
 
 ### ブラウザ
 
