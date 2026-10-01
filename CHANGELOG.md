@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file.
 
 ### Maintenance
 
-* Add type tests adapted from DefinitelyTyped to run with `tsc`, and include them in `npm test`.
+* Add type tests adapted from DefinitelyTyped to run with `tsc`, and include them in `npm test`. ([#68](https://github.com/polygonplanet/encoding.js/pull/68))
 * Upgrade ESLint to v10 and migrate from `.eslintrc.json` to flat config with `@stylistic/eslint-plugin`. ([1e98062](https://github.com/polygonplanet/encoding.js/commit/1e98062))
 
 ## [2.3.0](https://github.com/polygonplanet/encoding.js/compare/2.2.0...2.3.0) (2026-08-30)
