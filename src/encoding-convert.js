@@ -511,7 +511,9 @@ function EUCJPToUTF8(data) {
       if (utf8 === void 0) {
         results[results.length] = config.FALLBACK_CHARACTER;
       } else {
-        if (utf8 < 0xFFFF) {
+        if (utf8 < 0x80) {
+          results[results.length] = utf8;
+        } else if (utf8 < 0xFFFF) {
           results[results.length] = utf8 >> 8 & 0xFF;
           results[results.length] = utf8 & 0xFF;
         } else {
@@ -609,7 +611,9 @@ function JISToUTF8(data) {
       if (utf8 === void 0) {
         results[results.length] = config.FALLBACK_CHARACTER;
       } else {
-        if (utf8 < 0xFFFF) {
+        if (utf8 < 0x80) {
+          results[results.length] = utf8;
+        } else if (utf8 < 0xFFFF) {
           results[results.length] = utf8 >> 8 & 0xFF;
           results[results.length] = utf8 & 0xFF;
         } else {
