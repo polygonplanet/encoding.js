@@ -1048,8 +1048,8 @@ describe('encoding', function() {
     });
 
     it('encodes JIS X 0212 with the 3-byte SS3 form, not JIS X 0208 unassigned rows', function() {
-      var jisTable = require('../src/utf8-to-jis-table');
-      var jisx0212Table = require('../src/utf8-to-jisx0212-table');
+      var jisTable = require('./utf8-to-jis-table');
+      var jisx0212Table = require('./utf8-to-jisx0212-table');
       var keyToCode = function(key) {
         var bytes = [];
         var n = parseInt(key, 10);
@@ -1209,7 +1209,11 @@ describe('encoding', function() {
         { input: [0x00A3], sjis: [0x81, 0x92], decoded: [0xFFE1] }, // £ -> ￡
         { input: [0xFFE1], sjis: [0x81, 0x92], decoded: [0xFFE1] }, // ￡ -> ￡
         { input: [0x2212], sjis: [0x81, 0x7C], decoded: [0xFF0D] }, // − -> －
-        { input: [0xFF0D], sjis: [0x81, 0x7C], decoded: [0xFF0D] }  // － -> －
+        { input: [0xFF0D], sjis: [0x81, 0x7C], decoded: [0xFF0D] }, // － -> －
+        { input: [0x2016], sjis: [0x81, 0x61], decoded: [0x2225] }, // ‖ -> ∥
+        { input: [0x2225], sjis: [0x81, 0x61], decoded: [0x2225] }, // ∥ -> ∥
+        { input: [0x00AC], sjis: [0x81, 0xCA], decoded: [0xFFE2] }, // ¬ -> ￢
+        { input: [0xFFE2], sjis: [0x81, 0xCA], decoded: [0xFFE2] }  // ￢ -> ￢
       ];
 
       aliasMaps.forEach(function(alias) {
@@ -1226,7 +1230,9 @@ describe('encoding', function() {
         { input: [0x301C], eucjp: [0xA1, 0xC1], jis: [0x21, 0x41], decoded: [0xFF5E] }, // 〜 -> ～
         { input: [0x00A2], eucjp: [0xA1, 0xF1], jis: [0x21, 0x71], decoded: [0xFFE0] }, // ¢ -> ￠
         { input: [0x00A3], eucjp: [0xA1, 0xF2], jis: [0x21, 0x72], decoded: [0xFFE1] }, // £ -> ￡
-        { input: [0x2212], eucjp: [0xA1, 0xDD], jis: [0x21, 0x5D], decoded: [0xFF0D] }  // − -> －
+        { input: [0x2212], eucjp: [0xA1, 0xDD], jis: [0x21, 0x5D], decoded: [0xFF0D] }, // − -> －
+        { input: [0x2016], eucjp: [0xA1, 0xC2], jis: [0x21, 0x42], decoded: [0x2225] }, // ‖ -> ∥
+        { input: [0x00AC], eucjp: [0xA2, 0xCC], jis: [0x22, 0x4C], decoded: [0xFFE2] }  // ¬ -> ￢
       ];
 
       aliasMaps.forEach(function(alias) {
@@ -1904,6 +1910,88 @@ describe('encoding', function() {
       string = encoding.codeToString(longArray);
       code = encoding.stringToCode(string);
       assert.deepEqual(code, longArray);
+    });
+  });
+
+  describe('conversion table expansion', function() {
+    var EncodingTable = require('../src/encoding-table');
+    var UTF8_TO_JIS_ALIAS_TABLE = require('../src/utf8-to-jis-alias-table');
+
+    // initConversionTables() expands the tables on the first call only
+    it('expands the tables only once', function() {
+      var utf8jisTable = EncodingTable.UTF8_TO_JIS_TABLE;
+      assert.strictEqual(Object.keys(utf8jisTable).length, 0);
+
+      EncodingTable.initConversionTables();
+      assert(Object.keys(utf8jisTable).length > 0);
+
+      var key = Object.keys(utf8jisTable)[0];
+      var originalValue = utf8jisTable[key];
+      var overwrittenValue = -1;
+      utf8jisTable[key] = overwrittenValue;
+
+      try {
+        EncodingTable.initConversionTables();
+        assert.strictEqual(utf8jisTable[key], overwrittenValue);
+      } finally {
+        utf8jisTable[key] = originalValue;
+      }
+    });
+
+    var tables = [
+      {
+        name: 'JIS X 0208',
+        source: require('./utf8-to-jis-table'),
+        utf8ToJis: EncodingTable.UTF8_TO_JIS_TABLE,
+        jisToUtf8: EncodingTable.JIS_TO_UTF8_TABLE,
+        // Lowest JIS value to check in the JIS to UTF-8 table
+        // Half-width kana (JIS 0x21-0x5F) are only in the UTF-8 to JIS table
+        minJisValue: 0x60
+      },
+      {
+        name: 'JIS X 0212',
+        source: require('./utf8-to-jisx0212-table'),
+        utf8ToJis: EncodingTable.UTF8_TO_JISX0212_TABLE,
+        jisToUtf8: EncodingTable.JISX0212_TO_UTF8_TABLE,
+        minJisValue: 0
+      }
+    ];
+
+    tables.forEach(function(table) {
+      it(table.name + ': expanded UTF-8 to JIS table matches the source table', function() {
+        var sourceKeys = Object.keys(table.source);
+        var expandedKeys = Object.keys(table.utf8ToJis);
+        assert(sourceKeys.length > 0);
+        assert(expandedKeys.length > 0);
+
+        var aliased = 0;
+        sourceKeys.forEach(function(key) {
+          var jis = table.utf8ToJis[key];
+          if (jis == null) {
+            jis = UTF8_TO_JIS_ALIAS_TABLE[key];
+            aliased++;
+          }
+          assert.strictEqual(jis, table.source[key], 'UTF-8 key: ' + key);
+        });
+
+        expandedKeys.forEach(function(key) {
+          assert.strictEqual(table.utf8ToJis[key], table.source[key], 'UTF-8 key: ' + key);
+        });
+        assert.strictEqual(expandedKeys.length + aliased, sourceKeys.length);
+      });
+
+      it(table.name + ': expanded JIS to UTF-8 table matches the source table', function() {
+        var expected = {};
+        // For duplicate JIS values, keep the last key in key order
+        Object.keys(table.source).forEach(function(key) {
+          var jis = table.source[key];
+          if (jis >= table.minJisValue) {
+            expected[jis] = key | 0;
+          }
+        });
+        assert(Object.keys(expected).length > 0);
+        assert.deepStrictEqual(table.jisToUtf8, expected);
+      });
     });
   });
 });
