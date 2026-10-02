@@ -1249,6 +1249,17 @@ describe('encoding', function() {
       assert.equal(decoded, '?');
     });
 
+    it('JIS X 0212 code point mapped to ASCII', function() {
+      // JIS X 0212 0x2237 maps to U+007E, a single UTF-8 byte.
+      var eucjp = [0x8F, 0xA2, 0xB7];
+      var jis = [0x1B, 0x24, 0x28, 0x44, 0x22, 0x37, 0x1B, 0x28, 0x42];
+
+      assert.deepEqual(encoding.convert(eucjp, 'UTF8', 'EUCJP'), [0x7E]);
+      assert.deepEqual(encoding.convert(eucjp, 'UNICODE', 'EUCJP'), [0x7E]);
+      assert.deepEqual(encoding.convert(jis, 'UTF8', 'JIS'), [0x7E]);
+      assert.deepEqual(encoding.convert(jis, 'UNICODE', 'JIS'), [0x7E]);
+    });
+
     it('SJIS invalid trail byte 0x7F', function() {
       var invalidSjisCode = [0x81, 0x7F];
       var validSjisCode = [0x81, 0x7E];
