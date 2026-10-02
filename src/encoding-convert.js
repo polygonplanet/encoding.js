@@ -404,7 +404,7 @@ exports.EUCJPToSJIS = EUCJPToSJIS;
  * SJIS To UTF-8
  */
 function SJISToUTF8(data) {
-  config.init_JIS_TO_UTF8_TABLE();
+  EncodingTable.initConversionTables();
 
   var results = [];
   var i = 0;
@@ -485,7 +485,7 @@ exports.SJISToUTF8 = SJISToUTF8;
  * EUC-JP to UTF-8
  */
 function EUCJPToUTF8(data) {
-  config.init_JIS_TO_UTF8_TABLE();
+  EncodingTable.initConversionTables();
 
   var results = [];
   var i = 0;
@@ -551,7 +551,7 @@ exports.EUCJPToUTF8 = EUCJPToUTF8;
  * JIS to UTF-8
  */
 function JISToUTF8(data) {
-  config.init_JIS_TO_UTF8_TABLE();
+  EncodingTable.initConversionTables();
 
   var results = [];
   var index = 0;
@@ -635,6 +635,8 @@ exports.JISToUTF8 = JISToUTF8;
  * UTF-8 to SJIS
  */
 function UTF8ToSJIS(data, options) {
+  EncodingTable.initConversionTables();
+
   var results = [];
   var i = 0;
   var len = data && data.length;
@@ -717,6 +719,8 @@ exports.UTF8ToSJIS = UTF8ToSJIS;
  * UTF-8 to EUC-JP
  */
 function UTF8ToEUCJP(data, options) {
+  EncodingTable.initConversionTables();
+
   var results = [];
   var i = 0;
   var len = data && data.length;
@@ -784,6 +788,8 @@ exports.UTF8ToEUCJP = UTF8ToEUCJP;
  * UTF-8 to JIS
  */
 function UTF8ToJIS(data, options) {
+  EncodingTable.initConversionTables();
+
   var results = [];
   var index = 0;
   var len = data && data.length;
