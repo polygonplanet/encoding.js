@@ -1,5 +1,4 @@
 var util = require('./util');
-var EncodingTable = require('./encoding-table');
 
 // Fallback character when a character can't be represented
 exports.FALLBACK_CHARACTER = 63; // '?'
@@ -107,33 +106,3 @@ exports.EncodingOrders = (function() {
 
   return orders;
 }());
-
-function init_JIS_TO_UTF8_TABLE() {
-  if (EncodingTable.JIS_TO_UTF8_TABLE === null) {
-    EncodingTable.JIS_TO_UTF8_TABLE = {};
-
-    var keys = util.objectKeys(EncodingTable.UTF8_TO_JIS_TABLE);
-    var i = 0;
-    var len = keys.length;
-    var key, value;
-
-    for (; i < len; i++) {
-      key = keys[i];
-      value = EncodingTable.UTF8_TO_JIS_TABLE[key];
-      if (value > 0x5F) {
-        EncodingTable.JIS_TO_UTF8_TABLE[value] = key | 0;
-      }
-    }
-
-    EncodingTable.JISX0212_TO_UTF8_TABLE = {};
-    keys = util.objectKeys(EncodingTable.UTF8_TO_JISX0212_TABLE);
-    len = keys.length;
-
-    for (i = 0; i < len; i++) {
-      key = keys[i];
-      value = EncodingTable.UTF8_TO_JISX0212_TABLE[key];
-      EncodingTable.JISX0212_TO_UTF8_TABLE[value] = key | 0;
-    }
-  }
-}
-exports.init_JIS_TO_UTF8_TABLE = init_JIS_TO_UTF8_TABLE;
