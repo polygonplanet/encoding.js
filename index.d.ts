@@ -18,6 +18,7 @@ export type Encoding =
     | "SJIS"
     | "UNICODE"
     | "AUTO";
+
 type IntArrayType =
     | readonly number[]
     | Uint8Array
@@ -26,6 +27,13 @@ type IntArrayType =
     | Int8Array
     | Int16Array
     | Int32Array;
+
+type FallbackType =
+    | 'html-entity'
+    | 'html-entity-hex'
+    | 'error'
+    | 'ignore';
+
 type EncodingDetection = Encoding | false;
 
 export type ConvertOptions =
@@ -38,7 +46,7 @@ export interface ConvertStringOptions {
     to: Encoding;
     from?: Encoding | undefined;
     type: "string";
-    fallback?: "html-entity" | "html-entity-hex" | "ignore" | "error";
+    fallback?: FallbackType;
     bom?: boolean | string | undefined;
 }
 
@@ -46,7 +54,7 @@ export interface ConvertArrayBufferOptions {
     to: Encoding;
     from?: Encoding | undefined;
     type: "arraybuffer";
-    fallback?: "html-entity" | "html-entity-hex" | "ignore" | "error";
+    fallback?: FallbackType;
     bom?: boolean | string | undefined;
 }
 
@@ -54,14 +62,14 @@ export interface ConvertArrayOptions {
     to: Encoding;
     from?: Encoding | undefined;
     type: "array";
-    fallback?: "html-entity" | "html-entity-hex" | "ignore" | "error";
+    fallback?: FallbackType;
     bom?: boolean | string | undefined;
 }
 
 export interface ConvertUnknownOptions {
     to: Encoding;
     from?: Encoding | undefined;
-    fallback?: "html-entity" | "html-entity-hex" | "ignore" | "error";
+    fallback?: FallbackType;
     bom?: boolean | string | undefined;
 }
 
