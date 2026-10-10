@@ -2,6 +2,9 @@
 /**
  * Encoding conversion table for UTF-8 to JIS
  * { UTF-8 : JIS }
+ *
+ * This source table will be compressed by tests/gen-compressed-table.js into
+ * src/utf8-to-jis-table.js
  */
 module.exports = {
 0xEFBDA1:0x21,0xEFBDA2:0x22,0xEFBDA3:0x23,0xEFBDA4:0x24,0xEFBDA5:0x25,

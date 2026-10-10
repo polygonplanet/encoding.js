@@ -6,6 +6,9 @@
  * https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/JIS0212.TXT
  * Keys have been converted to UTF-8
  * { UTF-8 : JIS }
+ *
+ * This source table will be compressed by tests/gen-compressed-table.js into
+ * src/utf8-to-jisx0212-table.js
  */
 module.exports = {
 0xCB98:0x222F,0xCB87:0x2230,0xC2B8:0x2231,0xCB99:0x2232,0xCB9D:0x2233,
