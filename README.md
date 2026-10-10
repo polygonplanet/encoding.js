@@ -59,8 +59,9 @@ Since JavaScript string values are internally encoded as UTF-16 code units
 data in other encodings cannot be handled directly as JavaScript strings.
 encoding.js works around this limitation by representing encoded data as arrays of numeric code values instead of strings, enabling conversion between different character encodings.
 For example, `[130, 160]` represents "あ" in Shift_JIS.
+When passing these character code arrays to encoding.js methods, you can use regular arrays as well as typed arrays (such as `Uint8Array`) or Node.js `Buffer` objects.
 
-These character code arrays can also be passed as typed arrays (such as `Uint8Array`) or as Node.js `Buffer` objects.
+The source code of encoding.js itself is written using only ASCII characters, except for comments. This makes it easy to work with when embedded in other code or used in environments with limited character support.
 
 ### How to Handle Encoded Data as Strings?
 

@@ -56,8 +56,9 @@ encoding.js は、文字コードの変換や判定をする JavaScript ライ�
 
 JavaScript の文字列は内部で UTF-16 コードユニットとして符号化されるため、文字列のままでは他の文字コードを正しく扱えませんが ([参照: ECMAScript® 2019 Language Specification - 6.1.4 The String Type](https://www.ecma-international.org/ecma-262/10.0/index.html#sec-ecmascript-language-types-string-type))、encoding.js では文字列ではなく配列として扱い変換を実現しています。  
 各文字コードは、例えば `[130, 160]` (Shift_JIS の「あ」) などの文字コード値を持つ数値の配列として扱います。
+この文字コードの配列を encoding.js の各メソッドに渡す場合は、通常の配列のほか `Uint8Array` などの TypedArray や Node.js の `Buffer` も使えます。
 
-また、encoding.js の各メソッドに渡す文字コードの配列は、`Uint8Array` などの TypedArray や Node.js の `Buffer` でも使えます。
+また、encoding.js 自体のソースコードはコメントを除き ASCII 文字のみで書かれています。そのため、埋め込み先や文字表現の制限がある環境でも扱いやすくなっています。
 
 ### 各文字コードを文字列で扱うには？
 
