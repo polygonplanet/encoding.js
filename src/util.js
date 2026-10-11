@@ -1,8 +1,8 @@
 var config = require('./config');
 var fromCharCode = String.fromCharCode;
-var slice = Array.prototype.slice;
-var toString = Object.prototype.toString;
-var hasOwnProperty = Object.prototype.hasOwnProperty;
+var ObjectProto = Object.prototype;
+var toString = ObjectProto.toString;
+var hasOwnProperty = ObjectProto.hasOwnProperty;
 var nativeIsArray = Array.isArray;
 var nativeObjectKeys = Object.keys;
 
@@ -42,7 +42,6 @@ function objectKeys(object) {
 }
 exports.objectKeys = objectKeys;
 
-
 function createBuffer(bits, size) {
   if (config.HAS_TYPED) {
     switch (bits) {
@@ -54,6 +53,17 @@ function createBuffer(bits, size) {
 }
 exports.createBuffer = createBuffer;
 
+function truncateBuffer(buffer, size) {
+  if (buffer.subarray) {
+    return buffer.subarray(0, size);
+  }
+  if (size < buffer.length) {
+    // Set length directly for performance instead of using slice()
+    buffer.length = size;
+  }
+  return buffer;
+}
+exports.truncateBuffer = truncateBuffer;
 
 function stringToBuffer(string) {
   var length = string.length;
@@ -158,10 +168,9 @@ function stringToCode(string) {
 }
 exports.stringToCode = stringToCode;
 
-
 function codeToBuffer(code) {
   if (config.HAS_TYPED) {
-    // Unicode code point (charCodeAt range) values have a range of 0-0xFFFF, so use Uint16Array
+    // use Uint16Array because charCodeAt values (UTF-16 code units) fit in 0-0xFFFF
     return new Uint16Array(code);
   }
 
@@ -180,13 +189,18 @@ function codeToBuffer(code) {
 }
 exports.codeToBuffer = codeToBuffer;
 
-
 function bufferToCode(buffer) {
   if (isArray(buffer)) {
     return buffer;
   }
 
-  return slice.call(buffer);
+  // copy manually because Array#slice is extremely slow for typed arrays
+  var len = buffer.length;
+  var code = new Array(len);
+  for (var i = 0; i < len; i++) {
+    code[i] = buffer[i];
+  }
+  return code;
 }
 exports.bufferToCode = bufferToCode;
 
