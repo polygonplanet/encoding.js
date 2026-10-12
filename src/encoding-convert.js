@@ -8,11 +8,12 @@ var sjisExt = require('./sjis-ext');
  * JIS to SJIS
  */
 function JISToSJIS(data) {
-  var results = [];
   var index = 0;
   var i = 0;
   var len = data && data.length;
   var b1, b2;
+  var results = createBuffer(8, len);
+  var n = 0;
 
   for (; i < len; i++) {
     // escape sequence
@@ -32,7 +33,7 @@ function JISToSJIS(data) {
 
       i += 3;
       if (data[i] === void 0) {
-        return results;
+        return util.truncateBuffer(results, n);
       }
     }
 
@@ -60,19 +61,19 @@ function JISToSJIS(data) {
         }
         b2 += 0x7E;
       }
-      results[results.length] = b1 & 0xFF;
-      results[results.length] = b2 & 0xFF;
+      results[n++] = b1 & 0xFF;
+      results[n++] = b2 & 0xFF;
     } else if (index === 2) {
-      results[results.length] = data[i] + 0x80 & 0xFF;
+      results[n++] = data[i] + 0x80 & 0xFF;
     } else if (index === 3) {
       // Shift_JIS cannot convert JIS X 0212:1990.
-      results[results.length] = config.FALLBACK_CHARACTER;
+      results[n++] = config.FALLBACK_CHARACTER;
     } else {
-      results[results.length] = data[i] & 0xFF;
+      results[n++] = data[i] & 0xFF;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.JISToSJIS = JISToSJIS;
 
@@ -80,13 +81,13 @@ exports.JISToSJIS = JISToSJIS;
  * JIS to EUCJP
  */
 function JISToEUCJP(data) {
-  var results = [];
   var index = 0;
   var len = data && data.length;
   var i = 0;
+  var results = createBuffer(8, len * 2);
+  var n = 0;
 
   for (; i < len; i++) {
-
     // escape sequence
     while (data[i] === 0x1B) {
       if ((data[i + 1] === 0x24 && data[i + 2] === 0x42) ||
@@ -104,26 +105,26 @@ function JISToEUCJP(data) {
 
       i += 3;
       if (data[i] === void 0) {
-        return results;
+        return util.truncateBuffer(results, n);
       }
     }
 
     if (index === 1) {
-      results[results.length] = data[i] + 0x80 & 0xFF;
-      results[results.length] = data[++i] + 0x80 & 0xFF;
+      results[n++] = data[i] + 0x80 & 0xFF;
+      results[n++] = data[++i] + 0x80 & 0xFF;
     } else if (index === 2) {
-      results[results.length] = 0x8E;
-      results[results.length] = data[i] + 0x80 & 0xFF;
+      results[n++] = 0x8E;
+      results[n++] = data[i] + 0x80 & 0xFF;
     } else if (index === 3) {
-      results[results.length] = 0x8F;
-      results[results.length] = data[i] + 0x80 & 0xFF;
-      results[results.length] = data[++i] + 0x80 & 0xFF;
+      results[n++] = 0x8F;
+      results[n++] = data[i] + 0x80 & 0xFF;
+      results[n++] = data[++i] + 0x80 & 0xFF;
     } else {
-      results[results.length] = data[i] & 0xFF;
+      results[n++] = data[i] & 0xFF;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.JISToEUCJP = JISToEUCJP;
 
@@ -131,11 +132,12 @@ exports.JISToEUCJP = JISToEUCJP;
  * SJIS to JIS
  */
 function SJISToJIS(data) {
-  var results = [];
   var index = 0;
   var len = data && data.length;
   var i = 0;
   var b1, b2, remapped;
+  var results = createBuffer(8, len * 4 + 4);
+  var n = 0;
 
   var esc = [
     0x1B, 0x28, 0x42,
@@ -148,28 +150,28 @@ function SJISToJIS(data) {
     if (b1 >= 0xA1 && b1 <= 0xDF) {
       if (index !== 2) {
         index = 2;
-        results[results.length] = esc[6];
-        results[results.length] = esc[7];
-        results[results.length] = esc[8];
+        results[n++] = esc[6];
+        results[n++] = esc[7];
+        results[n++] = esc[8];
       }
-      results[results.length] = b1 - 0x80 & 0xFF;
+      results[n++] = b1 - 0x80 & 0xFF;
     } else if (b1 >= 0x80) {
       b2 = data[++i];
       if (b2 === 0x7F) {
         if (index !== 0) {
           index = 0;
-          results[results.length] = esc[0];
-          results[results.length] = esc[1];
-          results[results.length] = esc[2];
+          results[n++] = esc[0];
+          results[n++] = esc[1];
+          results[n++] = esc[2];
         }
-        results[results.length] = config.FALLBACK_CHARACTER;
+        results[n++] = config.FALLBACK_CHARACTER;
         continue;
       }
       if (index !== 1) {
         index = 1;
-        results[results.length] = esc[3];
-        results[results.length] = esc[4];
-        results[results.length] = esc[5];
+        results[n++] = esc[3];
+        results[n++] = esc[4];
+        results[n++] = esc[5];
       }
 
       if (sjisExt.hasCP932DuplicateCode(b1)) {
@@ -199,26 +201,26 @@ function SJISToJIS(data) {
         }
         b2 -= 0x7E;
       }
-      results[results.length] = b1 & 0xFF;
-      results[results.length] = b2 & 0xFF;
+      results[n++] = b1 & 0xFF;
+      results[n++] = b2 & 0xFF;
     } else {
       if (index !== 0) {
         index = 0;
-        results[results.length] = esc[0];
-        results[results.length] = esc[1];
-        results[results.length] = esc[2];
+        results[n++] = esc[0];
+        results[n++] = esc[1];
+        results[n++] = esc[2];
       }
-      results[results.length] = b1 & 0xFF;
+      results[n++] = b1 & 0xFF;
     }
   }
 
   if (index !== 0) {
-    results[results.length] = esc[0];
-    results[results.length] = esc[1];
-    results[results.length] = esc[2];
+    results[n++] = esc[0];
+    results[n++] = esc[1];
+    results[n++] = esc[2];
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.SJISToJIS = SJISToJIS;
 
@@ -226,20 +228,21 @@ exports.SJISToJIS = SJISToJIS;
  * SJIS to EUCJP
  */
 function SJISToEUCJP(data) {
-  var results = [];
   var len = data && data.length;
   var i = 0;
   var b1, b2, remapped;
+  var results = createBuffer(8, len * 2);
+  var n = 0;
 
   for (; i < len; i++) {
     b1 = data[i];
     if (b1 >= 0xA1 && b1 <= 0xDF) {
-      results[results.length] = 0x8E;
-      results[results.length] = b1;
+      results[n++] = 0x8E;
+      results[n++] = b1;
     } else if (b1 >= 0x81) {
       b2 = data[++i];
       if (b2 === 0x7F) {
-        results[results.length] = config.FALLBACK_CHARACTER;
+        results[n++] = config.FALLBACK_CHARACTER;
         continue;
       }
       if (sjisExt.hasCP932DuplicateCode(b1)) {
@@ -270,14 +273,14 @@ function SJISToEUCJP(data) {
         }
         b2 += 0x02;
       }
-      results[results.length] = b1 & 0xFF;
-      results[results.length] = b2 & 0xFF;
+      results[n++] = b1 & 0xFF;
+      results[n++] = b2 & 0xFF;
     } else {
-      results[results.length] = b1 & 0xFF;
+      results[n++] = b1 & 0xFF;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.SJISToEUCJP = SJISToEUCJP;
 
@@ -285,11 +288,12 @@ exports.SJISToEUCJP = SJISToEUCJP;
  * EUCJP to JIS
  */
 function EUCJPToJIS(data) {
-  var results = [];
   var index = 0;
   var len = data && data.length;
   var i = 0;
   var b;
+  var results = createBuffer(8, len * 4 + 5);
+  var n = 0;
 
   // escape sequence
   var esc = [
@@ -304,48 +308,48 @@ function EUCJPToJIS(data) {
     if (b === 0x8E) {
       if (index !== 2) {
         index = 2;
-        results[results.length] = esc[6];
-        results[results.length] = esc[7];
-        results[results.length] = esc[8];
+        results[n++] = esc[6];
+        results[n++] = esc[7];
+        results[n++] = esc[8];
       }
-      results[results.length] = data[++i] - 0x80 & 0xFF;
+      results[n++] = data[++i] - 0x80 & 0xFF;
     } else if (b === 0x8F) {
       if (index !== 3) {
         index = 3;
-        results[results.length] = esc[9];
-        results[results.length] = esc[10];
-        results[results.length] = esc[11];
-        results[results.length] = esc[12];
+        results[n++] = esc[9];
+        results[n++] = esc[10];
+        results[n++] = esc[11];
+        results[n++] = esc[12];
       }
-      results[results.length] = data[++i] - 0x80 & 0xFF;
-      results[results.length] = data[++i] - 0x80 & 0xFF;
+      results[n++] = data[++i] - 0x80 & 0xFF;
+      results[n++] = data[++i] - 0x80 & 0xFF;
     } else if (b > 0x8E) {
       if (index !== 1) {
         index = 1;
-        results[results.length] = esc[3];
-        results[results.length] = esc[4];
-        results[results.length] = esc[5];
+        results[n++] = esc[3];
+        results[n++] = esc[4];
+        results[n++] = esc[5];
       }
-      results[results.length] = b - 0x80 & 0xFF;
-      results[results.length] = data[++i] - 0x80 & 0xFF;
+      results[n++] = b - 0x80 & 0xFF;
+      results[n++] = data[++i] - 0x80 & 0xFF;
     } else {
       if (index !== 0) {
         index = 0;
-        results[results.length] = esc[0];
-        results[results.length] = esc[1];
-        results[results.length] = esc[2];
+        results[n++] = esc[0];
+        results[n++] = esc[1];
+        results[n++] = esc[2];
       }
-      results[results.length] = b & 0xFF;
+      results[n++] = b & 0xFF;
     }
   }
 
   if (index !== 0) {
-    results[results.length] = esc[0];
-    results[results.length] = esc[1];
-    results[results.length] = esc[2];
+    results[n++] = esc[0];
+    results[n++] = esc[1];
+    results[n++] = esc[2];
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.EUCJPToJIS = EUCJPToJIS;
 
@@ -353,15 +357,16 @@ exports.EUCJPToJIS = EUCJPToJIS;
  * EUCJP to SJIS
  */
 function EUCJPToSJIS(data) {
-  var results = [];
   var len = data && data.length;
   var i = 0;
   var b1, b2;
+  var results = createBuffer(8, len + 1);
+  var n = 0;
 
   for (; i < len; i++) {
     b1 = data[i];
     if (b1 === 0x8F) {
-      results[results.length] = config.FALLBACK_CHARACTER;
+      results[n++] = config.FALLBACK_CHARACTER;
       i += 2;
     } else if (b1 > 0x8E) {
       b2 = data[++i];
@@ -387,16 +392,16 @@ function EUCJPToSJIS(data) {
         }
         b2 -= 0x02;
       }
-      results[results.length] = b1 & 0xFF;
-      results[results.length] = b2 & 0xFF;
+      results[n++] = b1 & 0xFF;
+      results[n++] = b2 & 0xFF;
     } else if (b1 === 0x8E) {
-      results[results.length] = data[++i] & 0xFF;
+      results[n++] = data[++i] & 0xFF;
     } else {
-      results[results.length] = b1 & 0xFF;
+      results[n++] = b1 & 0xFF;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.EUCJPToSJIS = EUCJPToSJIS;
 
@@ -406,10 +411,11 @@ exports.EUCJPToSJIS = EUCJPToSJIS;
 function SJISToUTF8(data) {
   EncodingTable.initConversionTables();
 
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var b, b1, b2, u2, u3, jis, utf8, remapped;
+  var results = createBuffer(8, len * 3);
+  var n = 0;
 
   for (; i < len; i++) {
     b = data[i];
@@ -418,13 +424,13 @@ function SJISToUTF8(data) {
       u2 = 0xBC | ((b2 >> 6) & 0x03);
       u3 = 0x80 | (b2 & 0x3F);
 
-      results[results.length] = 0xEF;
-      results[results.length] = u2 & 0xFF;
-      results[results.length] = u3 & 0xFF;
+      results[n++] = 0xEF;
+      results[n++] = u2 & 0xFF;
+      results[n++] = u3 & 0xFF;
     } else if (b >= 0x80) {
       b2 = data[++i];
       if (b2 === 0x7F) {
-        results[results.length] = config.FALLBACK_CHARACTER;
+        results[n++] = config.FALLBACK_CHARACTER;
         continue;
       }
       if (sjisExt.hasCP932DuplicateCode(b)) {
@@ -460,24 +466,24 @@ function SJISToUTF8(data) {
       jis = (b1 << 8) + b2;
 
       utf8 = EncodingTable.JIS_TO_UTF8_TABLE[jis];
-      if (utf8 === void 0) {
-        results[results.length] = config.FALLBACK_CHARACTER;
+      if (!utf8) {
+        results[n++] = config.FALLBACK_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
-          results[results.length] = utf8 >> 8 & 0xFF;
-          results[results.length] = utf8 & 0xFF;
+          results[n++] = utf8 >> 8 & 0xFF;
+          results[n++] = utf8 & 0xFF;
         } else {
-          results[results.length] = utf8 >> 16 & 0xFF;
-          results[results.length] = utf8 >> 8 & 0xFF;
-          results[results.length] = utf8 & 0xFF;
+          results[n++] = utf8 >> 16 & 0xFF;
+          results[n++] = utf8 >> 8 & 0xFF;
+          results[n++] = utf8 & 0xFF;
         }
       }
     } else {
-      results[results.length] = data[i] & 0xFF;
+      results[n++] = data[i] & 0xFF;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.SJISToUTF8 = SJISToUTF8;
 
@@ -487,10 +493,11 @@ exports.SJISToUTF8 = SJISToUTF8;
 function EUCJPToUTF8(data) {
   EncodingTable.initConversionTables();
 
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var b, b2, u2, u3, j2, j3, jis, utf8;
+  var results = createBuffer(8, len * 3);
+  var n = 0;
 
   for (; i < len; i++) {
     b = data[i];
@@ -499,51 +506,51 @@ function EUCJPToUTF8(data) {
       u2 = 0xBC | ((b2 >> 6) & 0x03);
       u3 = 0x80 | (b2 & 0x3F);
 
-      results[results.length] = 0xEF;
-      results[results.length] = u2 & 0xFF;
-      results[results.length] = u3 & 0xFF;
+      results[n++] = 0xEF;
+      results[n++] = u2 & 0xFF;
+      results[n++] = u3 & 0xFF;
     } else if (b === 0x8F) {
       j2 = data[++i] - 0x80;
       j3 = data[++i] - 0x80;
       jis = (j2 << 8) + j3;
 
       utf8 = EncodingTable.JISX0212_TO_UTF8_TABLE[jis];
-      if (utf8 === void 0) {
-        results[results.length] = config.FALLBACK_CHARACTER;
+      if (!utf8) {
+        results[n++] = config.FALLBACK_CHARACTER;
       } else {
         if (utf8 < 0x80) {
-          results[results.length] = utf8;
+          results[n++] = utf8;
         } else if (utf8 < 0xFFFF) {
-          results[results.length] = utf8 >> 8 & 0xFF;
-          results[results.length] = utf8 & 0xFF;
+          results[n++] = utf8 >> 8 & 0xFF;
+          results[n++] = utf8 & 0xFF;
         } else {
-          results[results.length] = utf8 >> 16 & 0xFF;
-          results[results.length] = utf8 >>  8 & 0xFF;
-          results[results.length] = utf8 & 0xFF;
+          results[n++] = utf8 >> 16 & 0xFF;
+          results[n++] = utf8 >>  8 & 0xFF;
+          results[n++] = utf8 & 0xFF;
         }
       }
     } else if (b >= 0x80) {
       jis = ((b - 0x80) << 8) + (data[++i] - 0x80);
 
       utf8 = EncodingTable.JIS_TO_UTF8_TABLE[jis];
-      if (utf8 === void 0) {
-        results[results.length] = config.FALLBACK_CHARACTER;
+      if (!utf8) {
+        results[n++] = config.FALLBACK_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
-          results[results.length] = utf8 >> 8 & 0xFF;
-          results[results.length] = utf8 & 0xFF;
+          results[n++] = utf8 >> 8 & 0xFF;
+          results[n++] = utf8 & 0xFF;
         } else {
-          results[results.length] = utf8 >> 16 & 0xFF;
-          results[results.length] = utf8 >>  8 & 0xFF;
-          results[results.length] = utf8 & 0xFF;
+          results[n++] = utf8 >> 16 & 0xFF;
+          results[n++] = utf8 >>  8 & 0xFF;
+          results[n++] = utf8 & 0xFF;
         }
       }
     } else {
-      results[results.length] = data[i] & 0xFF;
+      results[n++] = data[i] & 0xFF;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.EUCJPToUTF8 = EUCJPToUTF8;
 
@@ -553,11 +560,12 @@ exports.EUCJPToUTF8 = EUCJPToUTF8;
 function JISToUTF8(data) {
   EncodingTable.initConversionTables();
 
-  var results = [];
   var index = 0;
   var i = 0;
   var len = data && data.length;
   var b2, u2, u3, jis, utf8;
+  var results = createBuffer(8, len * 3);
+  var n = 0;
 
   for (; i < len; i++) {
     while (data[i] === 0x1B) {
@@ -576,7 +584,7 @@ function JISToUTF8(data) {
 
       i += 3;
       if (data[i] === void 0) {
-        return results;
+        return util.truncateBuffer(results, n);
       }
     }
 
@@ -584,16 +592,16 @@ function JISToUTF8(data) {
       jis = (data[i] << 8) + data[++i];
 
       utf8 = EncodingTable.JIS_TO_UTF8_TABLE[jis];
-      if (utf8 === void 0) {
-        results[results.length] = config.FALLBACK_CHARACTER;
+      if (!utf8) {
+        results[n++] = config.FALLBACK_CHARACTER;
       } else {
         if (utf8 < 0xFFFF) {
-          results[results.length] = utf8 >> 8 & 0xFF;
-          results[results.length] = utf8 & 0xFF;
+          results[n++] = utf8 >> 8 & 0xFF;
+          results[n++] = utf8 & 0xFF;
         } else {
-          results[results.length] = utf8 >> 16 & 0xFF;
-          results[results.length] = utf8 >>  8 & 0xFF;
-          results[results.length] = utf8 & 0xFF;
+          results[n++] = utf8 >> 16 & 0xFF;
+          results[n++] = utf8 >>  8 & 0xFF;
+          results[n++] = utf8 & 0xFF;
         }
       }
     } else if (index === 2) {
@@ -601,33 +609,33 @@ function JISToUTF8(data) {
       u2 = 0xBC | ((b2 >> 6) & 0x03);
       u3 = 0x80 | (b2 & 0x3F);
 
-      results[results.length] = 0xEF;
-      results[results.length] = u2 & 0xFF;
-      results[results.length] = u3 & 0xFF;
+      results[n++] = 0xEF;
+      results[n++] = u2 & 0xFF;
+      results[n++] = u3 & 0xFF;
     } else if (index === 3) {
       jis = (data[i] << 8) + data[++i];
 
       utf8 = EncodingTable.JISX0212_TO_UTF8_TABLE[jis];
-      if (utf8 === void 0) {
-        results[results.length] = config.FALLBACK_CHARACTER;
+      if (!utf8) {
+        results[n++] = config.FALLBACK_CHARACTER;
       } else {
         if (utf8 < 0x80) {
-          results[results.length] = utf8;
+          results[n++] = utf8;
         } else if (utf8 < 0xFFFF) {
-          results[results.length] = utf8 >> 8 & 0xFF;
-          results[results.length] = utf8 & 0xFF;
+          results[n++] = utf8 >> 8 & 0xFF;
+          results[n++] = utf8 & 0xFF;
         } else {
-          results[results.length] = utf8 >> 16 & 0xFF;
-          results[results.length] = utf8 >>  8 & 0xFF;
-          results[results.length] = utf8 & 0xFF;
+          results[n++] = utf8 >> 16 & 0xFF;
+          results[n++] = utf8 >>  8 & 0xFF;
+          results[n++] = utf8 & 0xFF;
         }
       }
     } else {
-      results[results.length] = data[i] & 0xFF;
+      results[n++] = data[i] & 0xFF;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.JISToUTF8 = JISToUTF8;
 
@@ -637,11 +645,12 @@ exports.JISToUTF8 = JISToUTF8;
 function UTF8ToSJIS(data, options) {
   EncodingTable.initConversionTables();
 
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var b, b1, b2, bytes, utf8, jis;
   var fallbackOption = options && options.fallback;
+  var results = createBuffer(8, len, fallbackOption);
+  var n = 0;
 
   for (; i < len; i++) {
     b = data[i];
@@ -670,13 +679,13 @@ function UTF8ToSJIS(data, options) {
         EncodingTable.UTF8_TO_JIS_ALIAS_TABLE[utf8];
       if (jis == null) {
         if (fallbackOption) {
-          handleFallback(results, bytes, fallbackOption);
+          n = handleFallback(results, n, bytes, fallbackOption);
         } else {
-          results[results.length] = config.FALLBACK_CHARACTER;
+          results[n++] = config.FALLBACK_CHARACTER;
         }
       } else {
         if (jis < 0xFF) {
-          results[results.length] = jis + 0x80;
+          results[n++] = jis + 0x80;
         } else {
           b1 = jis >> 8;
           b2 = jis & 0xFF;
@@ -702,16 +711,16 @@ function UTF8ToSJIS(data, options) {
             }
             b2 += 0x7E;
           }
-          results[results.length] = b1 & 0xFF;
-          results[results.length] = b2 & 0xFF;
+          results[n++] = b1 & 0xFF;
+          results[n++] = b2 & 0xFF;
         }
       }
     } else {
-      results[results.length] = data[i] & 0xFF;
+      results[n++] = data[i] & 0xFF;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UTF8ToSJIS = UTF8ToSJIS;
 
@@ -721,11 +730,12 @@ exports.UTF8ToSJIS = UTF8ToSJIS;
 function UTF8ToEUCJP(data, options) {
   EncodingTable.initConversionTables();
 
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var b, bytes, utf8, jis, isJISX0212;
   var fallbackOption = options && options.fallback;
+  var results = createBuffer(8, len * 2, fallbackOption);
+  var n = 0;
 
   for (; i < len; i++) {
     b = data[i];
@@ -759,28 +769,28 @@ function UTF8ToEUCJP(data, options) {
       }
       if (jis == null) {
         if (fallbackOption) {
-          handleFallback(results, bytes, fallbackOption);
+          n = handleFallback(results, n, bytes, fallbackOption);
         } else {
-          results[results.length] = config.FALLBACK_CHARACTER;
+          results[n++] = config.FALLBACK_CHARACTER;
         }
       } else {
         if (jis < 0xFF) {
-          results[results.length] = 0x8E;
-          results[results.length] = jis - 0x80 & 0xFF;
+          results[n++] = 0x8E;
+          results[n++] = jis - 0x80 & 0xFF;
         } else {
           if (isJISX0212) {
-            results[results.length] = 0x8F;
+            results[n++] = 0x8F;
           }
-          results[results.length] = (jis >> 8) - 0x80 & 0xFF;
-          results[results.length] = (jis & 0xFF) - 0x80 & 0xFF;
+          results[n++] = (jis >> 8) - 0x80 & 0xFF;
+          results[n++] = (jis & 0xFF) - 0x80 & 0xFF;
         }
       }
     } else {
-      results[results.length] = data[i] & 0xFF;
+      results[n++] = data[i] & 0xFF;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UTF8ToEUCJP = UTF8ToEUCJP;
 
@@ -790,12 +800,13 @@ exports.UTF8ToEUCJP = UTF8ToEUCJP;
 function UTF8ToJIS(data, options) {
   EncodingTable.initConversionTables();
 
-  var results = [];
   var index = 0;
   var len = data && data.length;
   var i = 0;
   var b, bytes, utf8, jis, isJISX0212;
   var fallbackOption = options && options.fallback;
+  var results = createBuffer(8, len * 4 + 3, fallbackOption);
+  var n = 0;
 
   var esc = [
     0x1B, 0x28, 0x42,
@@ -809,11 +820,11 @@ function UTF8ToJIS(data, options) {
     if (b < 0x80) {
       if (index !== 0) {
         index = 0;
-        results[results.length] = esc[0];
-        results[results.length] = esc[1];
-        results[results.length] = esc[2];
+        results[n++] = esc[0];
+        results[n++] = esc[1];
+        results[n++] = esc[2];
       }
-      results[results.length] = b & 0xFF;
+      results[n++] = b & 0xFF;
     } else {
       if (b <= 0xDF) {
         // 2 bytes
@@ -846,57 +857,57 @@ function UTF8ToJIS(data, options) {
       if (jis == null) {
         if (index !== 0) {
           index = 0;
-          results[results.length] = esc[0];
-          results[results.length] = esc[1];
-          results[results.length] = esc[2];
+          results[n++] = esc[0];
+          results[n++] = esc[1];
+          results[n++] = esc[2];
         }
 
         if (fallbackOption) {
-          handleFallback(results, bytes, fallbackOption);
+          n = handleFallback(results, n, bytes, fallbackOption);
         } else {
-          results[results.length] = config.FALLBACK_CHARACTER;
+          results[n++] = config.FALLBACK_CHARACTER;
         }
       } else {
         if (jis < 0xFF) {
           // Halfwidth Katakana
           if (index !== 2) {
             index = 2;
-            results[results.length] = esc[6];
-            results[results.length] = esc[7];
-            results[results.length] = esc[8];
+            results[n++] = esc[6];
+            results[n++] = esc[7];
+            results[n++] = esc[8];
           }
-          results[results.length] = jis & 0xFF;
+          results[n++] = jis & 0xFF;
         } else {
           if (isJISX0212) {
             // JIS X 0212:1990
             if (index !== 3) {
               index = 3;
-              results[results.length] = esc[9];
-              results[results.length] = esc[10];
-              results[results.length] = esc[11];
-              results[results.length] = esc[12];
+              results[n++] = esc[9];
+              results[n++] = esc[10];
+              results[n++] = esc[11];
+              results[n++] = esc[12];
             }
           } else if (index !== 1) {
             // JIS X 0208
             index = 1;
-            results[results.length] = esc[3];
-            results[results.length] = esc[4];
-            results[results.length] = esc[5];
+            results[n++] = esc[3];
+            results[n++] = esc[4];
+            results[n++] = esc[5];
           }
-          results[results.length] = jis >> 8 & 0xFF;
-          results[results.length] = jis & 0xFF;
+          results[n++] = jis >> 8 & 0xFF;
+          results[n++] = jis & 0xFF;
         }
       }
     }
   }
 
   if (index !== 0) {
-    results[results.length] = esc[0];
-    results[results.length] = esc[1];
-    results[results.length] = esc[2];
+    results[n++] = esc[0];
+    results[n++] = esc[1];
+    results[n++] = esc[2];
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UTF8ToJIS = UTF8ToJIS;
 
@@ -904,10 +915,11 @@ exports.UTF8ToJIS = UTF8ToJIS;
  * UTF-16 (JavaScript Unicode array) to UTF-8
  */
 function UNICODEToUTF8(data) {
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var c, second;
+  var results = createBuffer(8, len * 4);
+  var n = 0;
 
   for (; i < len; i++) {
     c = data[i];
@@ -923,23 +935,25 @@ function UNICODEToUTF8(data) {
     }
 
     if (c < 0x80) {
-      results[results.length] = c;
+      results[n++] = c;
     } else if (c < 0x800) {
-      results[results.length] = 0xC0 | ((c >> 6) & 0x1F);
-      results[results.length] = 0x80 | (c & 0x3F);
+      results[n++] = 0xC0 | (c >> 6);
+      results[n++] = 0x80 | (c & 0x3F);
     } else if (c < 0x10000) {
-      results[results.length] = 0xE0 | ((c >> 12) & 0xF);
-      results[results.length] = 0x80 | ((c >> 6) & 0x3F);
-      results[results.length] = 0x80 | (c & 0x3F);
-    } else if (c < 0x200000) {
-      results[results.length] = 0xF0 | ((c >> 18) & 0xF);
-      results[results.length] = 0x80 | ((c >> 12) & 0x3F);
-      results[results.length] = 0x80 | ((c >> 6) & 0x3F);
-      results[results.length] = 0x80 | (c & 0x3F);
+      results[n++] = 0xE0 | (c >> 12);
+      results[n++] = 0x80 | ((c >> 6) & 0x3F);
+      results[n++] = 0x80 | (c & 0x3F);
+    } else if (c < 0x110000) {
+      results[n++] = 0xF0 | (c >> 18);
+      results[n++] = 0x80 | ((c >> 12) & 0x3F);
+      results[n++] = 0x80 | ((c >> 6) & 0x3F);
+      results[n++] = 0x80 | (c & 0x3F);
+    } else {
+      results[n++] = config.FALLBACK_CHARACTER;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UNICODEToUTF8 = UNICODEToUTF8;
 
@@ -947,26 +961,27 @@ exports.UNICODEToUTF8 = UNICODEToUTF8;
  * UTF-8 to UTF-16 (JavaScript Unicode array)
  */
 function UTF8ToUNICODE(data, options) {
-  var results = [];
   var i = 0;
   var len = data && data.length;
-  var n, c, c2, c3, c4, code;
+  var nibble, c, c2, c3, c4, code;
   // For internal use only
   // Returns raw Unicode code points without splitting into surrogate pairs
   var asCodePoint = options && options.asCodePoint;
+  var results = asCodePoint ? [] : createBuffer(16, len * 2);
+  var n = 0;
 
   while (i < len) {
     c = data[i++];
-    n = c >> 4;
-    if (n >= 0 && n <= 7) {
+    nibble = c >> 4;
+    if (nibble >= 0 && nibble <= 7) {
       // 0xxx xxxx
       code = c;
-    } else if (n === 12 || n === 13) {
+    } else if (nibble === 12 || nibble === 13) {
       // 110x xxxx
       // 10xx xxxx
       c2 = data[i++];
       code = ((c & 0x1F) << 6) | (c2 & 0x3F);
-    } else if (n === 14) {
+    } else if (nibble === 14) {
       // 1110 xxxx
       // 10xx xxxx
       // 10xx xxxx
@@ -975,7 +990,7 @@ function UTF8ToUNICODE(data, options) {
       code = ((c & 0x0F) << 12) |
              ((c2 & 0x3F) << 6) |
               (c3 & 0x3F);
-    } else if (n === 15) {
+    } else if (nibble === 15) {
       // 1111 0xxx
       // 10xx xxxx
       // 10xx xxxx
@@ -987,19 +1002,22 @@ function UTF8ToUNICODE(data, options) {
              ((c2 & 0x3F) << 12) |
              ((c3 & 0x3F) << 6)  |
               (c4 & 0x3F);
+    } else {
+      // 10xx xxxx: Ignore a continuation byte without a lead byte
+      continue;
     }
 
     if (code <= 0xFFFF || asCodePoint) {
-      results[results.length] = code;
+      results[n++] = code;
     } else {
       // Split in surrogate halves
       code -= 0x10000;
-      results[results.length] = (code >> 10) + 0xD800; // High surrogate
-      results[results.length] = (code % 0x400) + 0xDC00; // Low surrogate
+      results[n++] = (code >> 10) + 0xD800; // High surrogate
+      results[n++] = (code % 0x400) + 0xDC00; // Low surrogate
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UTF8ToUNICODE = UTF8ToUNICODE;
 
@@ -1037,12 +1055,14 @@ function UNICODEToUTF16(data, options) {
       utf16 = UNICODEToUTF16LE(data);
     }
 
-    results = [];
-    results[0] = bom[0];
-    results[1] = bom[1];
+    var len = utf16.length;
+    var n = 0;
+    results = createBuffer(8, len + 2);
+    results[n++] = bom[0];
+    results[n++] = bom[1];
 
-    for (var i = 0, len = utf16.length; i < len; i++) {
-      results[results.length] = utf16[i];
+    for (var i = 0; i < len; i++) {
+      results[n++] = utf16[i];
     }
   } else {
     // Should be interpreted as being big-endian when text has no BOM
@@ -1060,23 +1080,24 @@ exports.UNICODEToUTF16 = UNICODEToUTF16;
  * UTF-16, an encoding of ISO 10646
  */
 function UNICODEToUTF16BE(data) {
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var c;
+  var results = createBuffer(8, len * 2);
+  var n = 0;
 
   while (i < len) {
     c = data[i++];
     if (c <= 0xFF) {
-      results[results.length] = 0;
-      results[results.length] = c;
+      results[n++] = 0;
+      results[n++] = c;
     } else if (c <= 0xFFFF) {
-      results[results.length] = c >> 8 & 0xFF;
-      results[results.length] = c & 0xFF;
+      results[n++] = c >> 8 & 0xFF;
+      results[n++] = c & 0xFF;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UNICODEToUTF16BE = UNICODEToUTF16BE;
 
@@ -1087,23 +1108,24 @@ exports.UNICODEToUTF16BE = UNICODEToUTF16BE;
  * UTF-16, an encoding of ISO 10646
  */
 function UNICODEToUTF16LE(data) {
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var c;
+  var results = createBuffer(8, len * 2);
+  var n = 0;
 
   while (i < len) {
     c = data[i++];
     if (c <= 0xFF) {
-      results[results.length] = c;
-      results[results.length] = 0;
+      results[n++] = c;
+      results[n++] = 0;
     } else if (c <= 0xFFFF) {
-      results[results.length] = c & 0xFF;
-      results[results.length] = c >> 8 & 0xFF;
+      results[n++] = c & 0xFF;
+      results[n++] = c >> 8 & 0xFF;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UNICODEToUTF16LE = UNICODEToUTF16LE;
 
@@ -1114,10 +1136,11 @@ exports.UNICODEToUTF16LE = UNICODEToUTF16LE;
  * UTF-16, an encoding of ISO 10646
  */
 function UTF16BEToUNICODE(data) {
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var c1, c2;
+  var results = createBuffer(16, len);
+  var n = 0;
 
   if (len >= 2 &&
       ((data[0] === 0xFE && data[1] === 0xFF) ||
@@ -1130,13 +1153,13 @@ function UTF16BEToUNICODE(data) {
     c1 = data[i++];
     c2 = data[i++];
     if (c1 === 0) {
-      results[results.length] = c2;
+      results[n++] = c2;
     } else {
-      results[results.length] = ((c1 & 0xFF) << 8) | (c2 & 0xFF);
+      results[n++] = ((c1 & 0xFF) << 8) | (c2 & 0xFF);
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UTF16BEToUNICODE = UTF16BEToUNICODE;
 
@@ -1147,10 +1170,11 @@ exports.UTF16BEToUNICODE = UTF16BEToUNICODE;
  * UTF-16, an encoding of ISO 10646
  */
 function UTF16LEToUNICODE(data) {
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var c1, c2;
+  var results = createBuffer(16, len);
+  var n = 0;
 
   if (len >= 2 &&
       ((data[0] === 0xFE && data[1] === 0xFF) ||
@@ -1163,13 +1187,13 @@ function UTF16LEToUNICODE(data) {
     c1 = data[i++];
     c2 = data[i++];
     if (c2 === 0) {
-      results[results.length] = c1;
+      results[n++] = c1;
     } else {
-      results[results.length] = ((c2 & 0xFF) << 8) | (c1 & 0xFF);
+      results[n++] = ((c2 & 0xFF) << 8) | (c1 & 0xFF);
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UTF16LEToUNICODE = UTF16LEToUNICODE;
 
@@ -1180,12 +1204,13 @@ exports.UTF16LEToUNICODE = UTF16LEToUNICODE;
  * UTF-16, an encoding of ISO 10646
  */
 function UTF16ToUNICODE(data) {
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var isLE = false;
   var first = true;
   var c1, c2;
+  var results = createBuffer(16, len);
+  var n = 0;
 
   while (i < len) {
     c1 = data[i++];
@@ -1207,20 +1232,20 @@ function UTF16ToUNICODE(data) {
 
     if (isLE) {
       if (c2 === 0) {
-        results[results.length] = c1;
+        results[n++] = c1;
       } else {
-        results[results.length] = ((c2 & 0xFF) << 8) | (c1 & 0xFF);
+        results[n++] = ((c2 & 0xFF) << 8) | (c1 & 0xFF);
       }
     } else {
       if (c1 === 0) {
-        results[results.length] = c2;
+        results[n++] = c2;
       } else {
-        results[results.length] = ((c1 & 0xFF) << 8) | (c2 & 0xFF);
+        results[n++] = ((c1 & 0xFF) << 8) | (c2 & 0xFF);
       }
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UTF16ToUNICODE = UTF16ToUNICODE;
 
@@ -1228,12 +1253,13 @@ exports.UTF16ToUNICODE = UTF16ToUNICODE;
  * UTF-16 to UTF-16BE
  */
 function UTF16ToUTF16BE(data) {
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var isLE = false;
   var first = true;
   var c1, c2;
+  var results = createBuffer(8, len);
+  var n = 0;
 
   while (i < len) {
     c1 = data[i++];
@@ -1254,15 +1280,15 @@ function UTF16ToUTF16BE(data) {
     }
 
     if (isLE) {
-      results[results.length] = c2;
-      results[results.length] = c1;
+      results[n++] = c2;
+      results[n++] = c1;
     } else {
-      results[results.length] = c1;
-      results[results.length] = c2;
+      results[n++] = c1;
+      results[n++] = c2;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UTF16ToUTF16BE = UTF16ToUTF16BE;
 
@@ -1289,9 +1315,10 @@ function UTF16BEToUTF16(data, options) {
     }
   }
 
-  var results = [];
   var len = data && data.length;
   var i = 0;
+  var results = createBuffer(8, len + 2);
+  var n = 0;
 
   if (len >= 2 &&
       ((data[0] === 0xFE && data[1] === 0xFF) ||
@@ -1301,8 +1328,8 @@ function UTF16BEToUTF16(data, options) {
   }
 
   if (bom) {
-    results[0] = bom[0];
-    results[1] = bom[1];
+    results[n++] = bom[0];
+    results[n++] = bom[1];
   }
 
   var c1, c2;
@@ -1311,15 +1338,15 @@ function UTF16BEToUTF16(data, options) {
     c2 = data[i++];
 
     if (isLE) {
-      results[results.length] = c2;
-      results[results.length] = c1;
+      results[n++] = c2;
+      results[n++] = c1;
     } else {
-      results[results.length] = c1;
-      results[results.length] = c2;
+      results[n++] = c1;
+      results[n++] = c2;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UTF16BEToUTF16 = UTF16BEToUTF16;
 
@@ -1327,12 +1354,14 @@ exports.UTF16BEToUTF16 = UTF16BEToUTF16;
  * UTF-16 to UTF-16LE
  */
 function UTF16ToUTF16LE(data) {
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var isLE = false;
   var first = true;
   var c1, c2;
+
+  var results = createBuffer(8, len);
+  var n = 0;
 
   while (i < len) {
     c1 = data[i++];
@@ -1353,15 +1382,15 @@ function UTF16ToUTF16LE(data) {
     }
 
     if (isLE) {
-      results[results.length] = c1;
-      results[results.length] = c2;
+      results[n++] = c1;
+      results[n++] = c2;
     } else {
-      results[results.length] = c2;
-      results[results.length] = c1;
+      results[n++] = c2;
+      results[n++] = c1;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UTF16ToUTF16LE = UTF16ToUTF16LE;
 
@@ -1388,9 +1417,10 @@ function UTF16LEToUTF16(data, options) {
     }
   }
 
-  var results = [];
   var len = data && data.length;
   var i = 0;
+  var results = createBuffer(8, len + 2);
+  var n = 0;
 
   if (len >= 2 &&
       ((data[0] === 0xFE && data[1] === 0xFF) ||
@@ -1400,8 +1430,8 @@ function UTF16LEToUTF16(data, options) {
   }
 
   if (bom) {
-    results[0] = bom[0];
-    results[1] = bom[1];
+    results[n++] = bom[0];
+    results[n++] = bom[1];
   }
 
   var c1, c2;
@@ -1410,15 +1440,15 @@ function UTF16LEToUTF16(data, options) {
     c2 = data[i++];
 
     if (isLE) {
-      results[results.length] = c1;
-      results[results.length] = c2;
+      results[n++] = c1;
+      results[n++] = c2;
     } else {
-      results[results.length] = c2;
-      results[results.length] = c1;
+      results[n++] = c2;
+      results[n++] = c1;
     }
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UTF16LEToUTF16 = UTF16LEToUTF16;
 
@@ -1426,10 +1456,11 @@ exports.UTF16LEToUTF16 = UTF16LEToUTF16;
  * UTF-16BE to UTF-16LE
  */
 function UTF16BEToUTF16LE(data) {
-  var results = [];
   var i = 0;
   var len = data && data.length;
   var c1, c2;
+  var results = createBuffer(8, len);
+  var n = 0;
 
   if (len >= 2 &&
       ((data[0] === 0xFE && data[1] === 0xFF) ||
@@ -1441,11 +1472,11 @@ function UTF16BEToUTF16LE(data) {
   while (i < len) {
     c1 = data[i++];
     c2 = data[i++];
-    results[results.length] = c2;
-    results[results.length] = c1;
+    results[n++] = c2;
+    results[n++] = c1;
   }
 
-  return results;
+  return util.truncateBuffer(results, n);
 }
 exports.UTF16BEToUTF16LE = UTF16BEToUTF16LE;
 
@@ -1697,28 +1728,39 @@ function UTF16LEToSJIS(data, options) {
 }
 exports.UTF16LEToSJIS = UTF16LEToSJIS;
 
+function canUseCreateBuffer(fallbackOption) {
+  return !fallbackOption || fallbackOption === 'ignore' || fallbackOption === 'error';
+}
+
+function createBuffer(bits, size, fallbackOption) {
+  if (!canUseCreateBuffer(fallbackOption)) {
+    return [];
+  }
+  return util.createBuffer(bits, size);
+}
+
 /**
  * Fallback handler when a character can't be represented
  */
-function handleFallback(results, bytes, fallbackOption) {
+function handleFallback(results, n, bytes, fallbackOption) {
   switch (fallbackOption) {
     case 'html-entity':
     case 'html-entity-hex':
       var unicode = UTF8ToUNICODE(bytes, { asCodePoint: true })[0];
       if (unicode) {
-        results[results.length] = 0x26; // &
-        results[results.length] = 0x23; // #
+        results[n++] = 0x26; // &
+        results[n++] = 0x23; // #
 
         var radix = fallbackOption.slice(-3) === 'hex' ? 16 : 10;
         if (radix === 16) {
-          results[results.length] = 0x78; // x
+          results[n++] = 0x78; // x
         }
 
         var entity = unicode.toString(radix);
         for (var i = 0, len = entity.length; i < len; i++) {
-          results[results.length] = entity.charCodeAt(i);
+          results[n++] = entity.charCodeAt(i);
         }
-        results[results.length] = 0x3B; // ;
+        results[n++] = 0x3B; // ;
       }
       break;
     case 'error':
@@ -1726,4 +1768,5 @@ function handleFallback(results, bytes, fallbackOption) {
     case 'ignore':
       break;
   }
+  return n;
 }

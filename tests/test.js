@@ -293,6 +293,22 @@ describe('encoding', function() {
       assert(encoding.detect(unicode, 'unicode'));
     });
 
+    it('UTF-8 continuation byte without a lead byte', function() {
+      var strayAtStartUtf8 = [0x80, 0x41];
+      var strayAfterBmpUtf8 = [0xE3, 0x81, 0x82, 0x80];
+      var strayAfterSurrogatePairUtf8 = [0xF0, 0x9F, 0x8D, 0xA3, 0x80];
+      var options = { to: 'unicode', from: 'utf8' };
+
+      assert.deepEqual(encoding.convert(strayAtStartUtf8, options), [0x41]);
+      assert.deepEqual(encoding.convert(strayAfterBmpUtf8, options), [0x3042]);
+      assert.deepEqual(encoding.convert(strayAfterSurrogatePairUtf8, options), [0xD83C, 0xDF63]);
+    });
+
+    it('Code points above U+10FFFF to UTF-8', function() {
+      var utf8 = encoding.convert([0x10FFFF, 0x110000], { to: 'utf8', from: 'unicode' });
+      assert.deepEqual(utf8, [0xF4, 0x8F, 0xBF, 0xBF, 0x3F]);
+    });
+
     it('Surrogate pairs', function() {
       assert(tests.surrogatePairs.length >= 2);
       var utf8 = encoding.convert(tests.surrogatePairs, 'utf-8', 'unicode');
