@@ -937,17 +937,19 @@ function UNICODEToUTF8(data) {
     if (c < 0x80) {
       results[n++] = c;
     } else if (c < 0x800) {
-      results[n++] = 0xC0 | ((c >> 6) & 0x1F);
+      results[n++] = 0xC0 | (c >> 6);
       results[n++] = 0x80 | (c & 0x3F);
     } else if (c < 0x10000) {
-      results[n++] = 0xE0 | ((c >> 12) & 0xF);
+      results[n++] = 0xE0 | (c >> 12);
       results[n++] = 0x80 | ((c >> 6) & 0x3F);
       results[n++] = 0x80 | (c & 0x3F);
-    } else if (c < 0x200000) {
-      results[n++] = 0xF0 | ((c >> 18) & 0xF);
+    } else if (c < 0x110000) {
+      results[n++] = 0xF0 | (c >> 18);
       results[n++] = 0x80 | ((c >> 12) & 0x3F);
       results[n++] = 0x80 | ((c >> 6) & 0x3F);
       results[n++] = 0x80 | (c & 0x3F);
+    } else {
+      results[n++] = config.FALLBACK_CHARACTER;
     }
   }
 
@@ -1000,6 +1002,9 @@ function UTF8ToUNICODE(data, options) {
              ((c2 & 0x3F) << 12) |
              ((c3 & 0x3F) << 6)  |
               (c4 & 0x3F);
+    } else {
+      // 10xx xxxx: Ignore a continuation byte without a lead byte
+      continue;
     }
 
     if (code <= 0xFFFF || asCodePoint) {
