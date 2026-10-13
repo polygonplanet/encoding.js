@@ -2,28 +2,29 @@
 import Encoding = require('../..');
 
 // Convert character encoding to Shift_JIS from UTF-8.
-const utf8Array_1 = new Uint8Array([1, 2, 3]);
-const utf8Array_2 = [1, 2, 3];
-const utf8Array_3 = Buffer.from([1, 2, 3]);
-const utf8Array_4 = new Uint16Array([1, 2, 3]);
-const utf8Array_5 = new Uint32Array([1, 2, 3]);
-const utf8Array_6 = new Int16Array([1, 2, 3]);
-const utf8Array_7 = new Int32Array([1, 2, 3]);
-const utf8Array_8 = new Int8Array([1, 2, 3]);
-const utf8Array_9: readonly number[] = [1, 2, 3];
-expectType<number[]>()(Encoding.convert(utf8Array_1, 'SJIS', 'UTF8'));
-expectType<number[]>()(Encoding.convert(utf8Array_2, 'UTF16', 'UTF8'));
-expectType<number[]>()(Encoding.convert(utf8Array_3, 'UTF16LE', 'UTF8'));
-expectType<number[]>()(Encoding.convert(utf8Array_4, 'UTF16BE', 'UTF8'));
-expectType<number[]>()(Encoding.convert(utf8Array_5, 'BINARY', 'UTF8'));
-expectType<number[]>()(Encoding.convert(utf8Array_6, 'UTF32', 'UTF8'));
-expectType<number[]>()(Encoding.convert(utf8Array_7, 'AUTO', 'UTF8'));
-expectType<number[]>()(Encoding.convert(utf8Array_8, 'ASCII', 'UTF8'));
-expectType<number[]>()(Encoding.convert(utf8Array_9, 'JIS', 'UTF8'));
+const uint8Array = new Uint8Array([1, 2, 3]);
+const array = [1, 2, 3];
+const buffer = Buffer.from([1, 2, 3]);
+const uint16Array = new Uint16Array([1, 2, 3]);
+const uint32Array = new Uint32Array([1, 2, 3]);
+const int16Array = new Int16Array([1, 2, 3]);
+const int32Array = new Int32Array([1, 2, 3]);
+const int8Array = new Int8Array([1, 2, 3]);
+const readonlyArray: readonly number[] = [1, 2, 3];
+
+expectType<number[]>()(Encoding.convert(uint8Array, 'SJIS', 'UTF8'));
+expectType<number[]>()(Encoding.convert(array, 'UTF16', 'UTF8'));
+expectType<number[]>()(Encoding.convert(buffer, 'UTF16LE', 'UTF8'));
+expectType<number[]>()(Encoding.convert(uint16Array, 'UTF16BE', 'UTF8'));
+expectType<number[]>()(Encoding.convert(uint32Array, 'BINARY', 'UTF8'));
+expectType<number[]>()(Encoding.convert(int16Array, 'UTF32', 'UTF8'));
+expectType<number[]>()(Encoding.convert(int32Array, 'AUTO', 'UTF8'));
+expectType<number[]>()(Encoding.convert(int8Array, 'ASCII', 'UTF8'));
+expectType<number[]>()(Encoding.convert(readonlyArray, 'JIS', 'UTF8'));
 expectType<string>()(Encoding.convert('string value', 'UTF16', 'UTF8'));
 
 // Convert character encoding by automatic detection (AUTO detect).
-const utf8Array = utf8Array_1;
+const utf8Array = new Uint8Array([0xE3, 0x81, 0x82]); // 'あ' in UTF-8
 const sjisArray1 = Encoding.convert(utf8Array, 'SJIS');
 expectType<number[]>()(sjisArray1);
 // or
