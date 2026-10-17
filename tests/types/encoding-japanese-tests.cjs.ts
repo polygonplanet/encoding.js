@@ -23,6 +23,7 @@ expectType<number[]>()(Encoding.convert(int8Array, 'ASCII', 'UTF8'));
 expectType<number[]>()(Encoding.convert(readonlyArray, 'JIS', 'UTF8'));
 expectType<string>()(Encoding.convert('string value', 'UTF16', 'UTF8'));
 
+// ----- Example codes from README -----
 // Convert character encoding by automatic detection (AUTO detect).
 const utf8Array = new Uint8Array([0xE3, 0x81, 0x82]); // 'あ' in UTF-8
 const sjisArray1 = Encoding.convert(utf8Array, 'SJIS');
@@ -39,63 +40,63 @@ if (detected === 'UTF8') {
   // Encoding is UTF-8'
 }
 
+// ----- convert / detect -----
 const sjisArray3 = Encoding.convert(utf8Array, {
-  to: 'SJIS', // to_encoding
-  from: 'UTF8' // from_encoding
+  to: 'SJIS',
+  from: 'UTF8'
 });
 expectType<number[]>()(sjisArray3);
 
-const sjisArray4 = Encoding.convert('🐙', {
-  to: 'SJIS', // to_encoding
-  from: 'UTF8', // from_encoding
+const fallbackHtmlEntity = Encoding.convert('🐙', {
+  to: 'SJIS',
+  from: 'UNICODE',
   type: 'string',
   fallback: 'html-entity'
 });
-expectType<string>()(sjisArray4);
+expectType<string>()(fallbackHtmlEntity);
 // fallback: '&#128025;'
 
-const sjisArray5 = Encoding.convert('🐙', {
-  to: 'SJIS', // to_encoding
-  from: 'UTF8', // from_encoding
+const fallbackIgnore = Encoding.convert('🐙', {
+  to: 'SJIS',
+  from: 'UNICODE',
   type: 'string',
   fallback: 'ignore'
 });
-expectType<string>()(sjisArray5);
+expectType<string>()(fallbackIgnore);
 // fallback: ''
 
-const sjisArray6 = Encoding.convert('🐙', {
-  to: 'SJIS', // to_encoding
-  from: 'UTF8', // from_encoding
+const fallbackError = Encoding.convert('🐙', {
+  to: 'SJIS',
+  from: 'UNICODE',
   type: 'string',
   fallback: 'error'
 });
-expectType<string>()(sjisArray6);
+expectType<string>()(fallbackError);
 // throws error: `Character cannot be represented`
 
-const utf8String = 'ã\u0081\u0093ã\u0082\u0093ã\u0081«ã\u0081¡ã\u0081¯';
-const unicodeString = Encoding.convert(utf8String, {
+const unicodeString = Encoding.convert(sjisArray1, {
   to: 'UNICODE',
-  from: 'UTF8',
+  from: 'SJIS',
   type: 'string' // Specify 'string' type. (Return as string)
 });
 expectType<string>()(unicodeString);
 
-const unicodeString2 = Encoding.convert(utf8String, {
-  to: 'UNICODE',
-  from: 'UTF8' // Unspecified type. Inferred from 1st argument
+const sjisString = Encoding.convert('こんにちは', {
+  to: 'SJIS',
+  from: 'UNICODE' // Unspecified type. Inferred from 1st argument
 });
-expectType<string>()(unicodeString2);
+expectType<string>()(sjisString);
 
 const utf16Array = Encoding.convert(utf8Array, {
-  to: 'UTF16', // to_encoding
-  from: 'UTF8', // from_encoding
+  to: 'UTF16',
+  from: 'UTF8',
   bom: true // With BOM
 });
 expectType<number[]>()(utf16Array);
 
 const utf16leArray = Encoding.convert(utf8Array, {
-  to: 'UTF16', // to_encoding
-  from: 'UTF8', // from_encoding
+  to: 'UTF16',
+  from: 'UTF8',
   bom: 'LE' // With BOM (little-endian)
 });
 expectType<number[]>()(utf16leArray);
@@ -107,16 +108,16 @@ const utf16beArray = Encoding.convert(utf8Array, {
 expectType<number[]>()(utf16beArray);
 
 const utf16Array2 = Encoding.convert(utf8Array, {
-  to: 'UTF16', // to_encoding
-  from: 'UTF8', // from_encoding
+  to: 'UTF16',
+  from: 'UTF8',
   type: 'array',
   bom: true // With BOM
 });
 expectType<number[]>()(utf16Array2);
 
 const utf16Array3 = Encoding.convert(utf8Array, {
-  to: 'UTF16', // to_encoding
-  from: 'UTF8', // from_encoding
+  to: 'UTF16',
+  from: 'UTF8',
   type: 'arraybuffer',
   bom: true // With BOM
 });
@@ -124,7 +125,7 @@ expectType<Uint16Array>()(utf16Array3);
 
 const utf16Array4 = Encoding.convert(utf8Array, {
   to: 'UTF16', // to_encoding
-  from: 'UTF8', // from_encoding
+  from: 'UTF8',
   type: 'string',
   bom: true // With BOM
 });
@@ -144,6 +145,7 @@ if (isSJIS) {
   // Encoding is SJIS'
 }
 
+// ----- urlEncode / urlDecode -----
 const sjisArray7 = [
   130, 177, 130, 241, 130, 201, 130, 191, 130, 205, 129, 65, 130, 217, 130, 176, 129, 153, 130, 210, 130, 230
 ];
@@ -159,6 +161,7 @@ expectType<number[]>()(decoded);
 //    65, 130, 217, 130, 176, 129, 153, 130, 210, 130, 230
 // ]
 
+// ----- base64Encode / base64Decode -----
 const sjisArray8 = [130, 177, 130, 241, 130, 201, 130, 191, 130, 205];
 const encoded2 = Encoding.base64Encode(sjisArray8);
 expectType<string>()(encoded2);
@@ -168,9 +171,11 @@ const decoded2 = Encoding.base64Decode(encoded2);
 expectType<number[]>()(decoded2);
 // decoded2: [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
 
+// ----- Others -----
 expectType<string>()(Encoding.version);
 expectType<string[]>()(Encoding.orders);
 
+// ----- Japanese Zenkaku/Hankaku conversion -----
 expectType<number[]>()(Encoding.toZenkakuCase([1, 2, 3]));
 expectType<string>()(Encoding.toZenkakuCase('abcdef'));
 expectType<number[]>()(Encoding.toHankakuCase([1, 2, 3]));
