@@ -1927,6 +1927,20 @@ describe('encoding', function() {
       code = encoding.stringToCode(string);
       assert.deepEqual(code, longArray);
     });
+
+    it('Should not disable APPLY_BUFFER_SIZE_OK after a long array', function() {
+      var config = require('../src/config');
+      config.APPLY_BUFFER_SIZE_OK = null;
+
+      var longArray = new Array(config.APPLY_BUFFER_SIZE * 4);
+      for (var i = 0; i < longArray.length; i++) {
+        longArray[i] = 0x61;
+      }
+
+      var string = encoding.codeToString(longArray);
+      assert.equal(string.length, longArray.length);
+      assert.notStrictEqual(config.APPLY_BUFFER_SIZE_OK, false);
+    });
   });
 
   describe('conversion table expansion', function() {

@@ -6,25 +6,21 @@ var hasOwnProperty = ObjectProto.hasOwnProperty;
 var nativeIsArray = Array.isArray;
 var nativeObjectKeys = Object.keys;
 
-
 function isObject(x) {
   var type = typeof x;
   return type === 'function' || type === 'object' && !!x;
 }
 exports.isObject = isObject;
 
-
 function isArray(x) {
   return nativeIsArray ? nativeIsArray(x) : toString.call(x) === '[object Array]';
 }
 exports.isArray = isArray;
 
-
 function isString(x) {
   return typeof x === 'string' || toString.call(x) === '[object String]';
 }
 exports.isString = isString;
-
 
 function objectKeys(object) {
   if (nativeObjectKeys) {
@@ -81,20 +77,19 @@ exports.stringToBuffer = stringToBuffer;
 function codeToString_fast(code) {
   if (config.CAN_CHARCODE_APPLY && config.CAN_CHARCODE_APPLY_TYPED) {
     var len = code && code.length;
-    if (len < config.APPLY_BUFFER_SIZE && config.APPLY_BUFFER_SIZE_OK) {
-      return fromCharCode.apply(null, code);
+    if (!len) {
+      return '';
     }
 
-    if (config.APPLY_BUFFER_SIZE_OK === null) {
+    if (len <= config.APPLY_BUFFER_SIZE && config.APPLY_BUFFER_SIZE_OK !== false) {
       try {
-        var s = fromCharCode.apply(null, code);
-        if (len > config.APPLY_BUFFER_SIZE) {
-          config.APPLY_BUFFER_SIZE_OK = true;
-        }
-        return s;
+        return fromCharCode.apply(null, code);
       } catch (e) {
         // Ignore the RangeError "arguments too large"
-        config.APPLY_BUFFER_SIZE_OK = false;
+        if (config.APPLY_BUFFER_SIZE_OK === null) {
+          config.APPLY_BUFFER_SIZE_OK = false;
+        }
+        return codeToString_slow(code);
       }
     }
   }
@@ -103,35 +98,33 @@ function codeToString_fast(code) {
 }
 exports.codeToString_fast = codeToString_fast;
 
-
 function codeToString_chunked(code) {
   var string = '';
   var length = code && code.length;
+  var size = config.APPLY_BUFFER_SIZE;
+  var hasSubarray = length > 0 && !!code.subarray;
   var i = 0;
   var sub;
 
   while (i < length) {
-    if (code.subarray) {
-      sub = code.subarray(i, i + config.APPLY_BUFFER_SIZE);
+    if (hasSubarray) {
+      sub = code.subarray(i, i + size);
     } else {
-      sub = code.slice(i, i + config.APPLY_BUFFER_SIZE);
+      sub = code.slice(i, i + size);
     }
-    i += config.APPLY_BUFFER_SIZE;
+    i += size;
 
-    if (config.APPLY_BUFFER_SIZE_OK) {
-      string += fromCharCode.apply(null, sub);
-      continue;
-    }
-
-    if (config.APPLY_BUFFER_SIZE_OK === null) {
+    if (config.APPLY_BUFFER_SIZE_OK !== false) {
       try {
         string += fromCharCode.apply(null, sub);
-        if (sub.length > config.APPLY_BUFFER_SIZE) {
+        if (config.APPLY_BUFFER_SIZE_OK === null && sub.length === size) {
           config.APPLY_BUFFER_SIZE_OK = true;
         }
         continue;
       } catch (e) {
-        config.APPLY_BUFFER_SIZE_OK = false;
+        if (config.APPLY_BUFFER_SIZE_OK === null) {
+          config.APPLY_BUFFER_SIZE_OK = false;
+        }
       }
     }
 
@@ -141,7 +134,6 @@ function codeToString_chunked(code) {
   return string;
 }
 exports.codeToString_chunked = codeToString_chunked;
-
 
 function codeToString_slow(code) {
   var string = '';
@@ -155,10 +147,9 @@ function codeToString_slow(code) {
 }
 exports.codeToString_slow = codeToString_slow;
 
-
 function stringToCode(string) {
-  var code = [];
-  var len = string && string.length;
+  var len = (string && string.length) || 0;
+  var code = new Array(len);
 
   for (var i = 0; i < len; i++) {
     code[i] = string.charCodeAt(i);
