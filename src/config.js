@@ -1,4 +1,4 @@
-var util = require('./util');
+var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 // Fallback character when a character can't be represented
 exports.FALLBACK_CHARACTER = 63; // '?'
@@ -77,7 +77,12 @@ exports.EncodingAliases = EncodingAliases;
 exports.EncodingOrders = (function() {
   var aliases = EncodingAliases;
 
-  var names = util.objectKeys(EncodingNames);
+  var names = [];
+  for (var key in EncodingNames) {
+    if (hasOwnProperty.call(EncodingNames, key)) {
+      names[names.length] = key;
+    }
+  }
   var orders = [];
   var name, encoding, j, l;
 
