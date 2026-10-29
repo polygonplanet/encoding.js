@@ -6,6 +6,7 @@ var KanaCaseTable = require('./kana-case-table');
 var version = require('../package.json').version;
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
+var HEX_CHARS = util.stringToCode('0123456789ABCDEF');
 
 var Encoding = {
   version: version,
@@ -149,8 +150,8 @@ var Encoding = {
       data = util.stringToBuffer(data);
     }
 
-    var alpha = util.stringToCode('0123456789ABCDEF');
     var results = [];
+    var n = 0;
     var i = 0;
     var len = data && data.length;
     var b;
@@ -173,15 +174,15 @@ var Encoding = {
           b === 0x2D /*-*/ || b === 0x2E /*.*/ ||
           b === 0x5F /*_*/ || b === 0x7E /*~*/
       ) {
-        results[results.length] = b;
+        results[n++] = b;
       } else {
-        results[results.length] = 0x25; /*%*/
+        results[n++] = 0x25; /*%*/
         if (b < 0x10) {
-          results[results.length] = 0x30; /*0*/
-          results[results.length] = alpha[b];
+          results[n++] = 0x30; /*0*/
+          results[n++] = HEX_CHARS[b];
         } else {
-          results[results.length] = alpha[b >> 4 & 0xF];
-          results[results.length] = alpha[b & 0xF];
+          results[n++] = HEX_CHARS[b >> 4 & 0xF];
+          results[n++] = HEX_CHARS[b & 0xF];
         }
       }
     }
@@ -197,21 +198,22 @@ var Encoding = {
    * @return {Array.<number>} The decoded array
    */
   urlDecode: function(string) {
-    var results = [];
     var i = 0;
-    var len = string && string.length;
+    var len = (string && string.length) || 0;
+    var results = new Array(len);
+    var n = 0;
     var c;
 
     while (i < len) {
       c = string.charCodeAt(i++);
       if (c === 0x25 /*%*/) {
-        results[results.length] = parseInt(
-          string.charAt(i++) + string.charAt(i++), 16);
+        results[n++] = parseInt(string.charAt(i++) + string.charAt(i++), 16);
       } else {
-        results[results.length] = c;
+        results[n++] = c;
       }
     }
 
+    results.length = n;
     return results;
   },
 
@@ -274,8 +276,9 @@ var Encoding = {
       data = util.stringToBuffer(data);
     }
 
-    var results = [];
-    var len = data && data.length;
+    var len = (data && data.length) || 0;
+    var results = new Array(len);
+    var n = 0;
     var i = 0;
     var c;
 
@@ -284,7 +287,7 @@ var Encoding = {
       if (c >= 0xFF01 && c <= 0xFF5E) {
         c -= 0xFEE0;
       }
-      results[results.length] = c;
+      results[n++] = c;
     }
 
     return asString ? util.codeToString_fast(results) : results;
@@ -310,8 +313,9 @@ var Encoding = {
       data = util.stringToBuffer(data);
     }
 
-    var results = [];
-    var len = data && data.length;
+    var len = (data && data.length) || 0;
+    var results = new Array(len);
+    var n = 0;
     var i = 0;
     var c;
 
@@ -320,7 +324,7 @@ var Encoding = {
       if (c >= 0x21 && c <= 0x7E) {
         c += 0xFEE0;
       }
-      results[results.length] = c;
+      results[n++] = c;
     }
 
     return asString ? util.codeToString_fast(results) : results;
@@ -345,8 +349,9 @@ var Encoding = {
       data = util.stringToBuffer(data);
     }
 
-    var results = [];
-    var len = data && data.length;
+    var len = (data && data.length) || 0;
+    var results = new Array(len);
+    var n = 0;
     var i = 0;
     var c;
 
@@ -356,22 +361,22 @@ var Encoding = {
         c -= 0x0060;
       // 「ワ゛」 => 「わ」 + 「゛」
       } else if (c === 0x30F7) {
-        results[results.length] = 0x308F;
+        results[n++] = 0x308F;
         c = 0x309B;
       // 「ヰ゛」 => 「ゐ」 + 「゛」
       } else if (c === 0x30F8) {
-        results[results.length] = 0x3090;
+        results[n++] = 0x3090;
         c = 0x309B;
       // 「ヱ゛」 => 「ゑ」 + 「゛」
       } else if (c === 0x30F9) {
-        results[results.length] = 0x3091;
+        results[n++] = 0x3091;
         c = 0x309B;
       // 「ヲ゛」 => 「を」 + 「゛」
       } else if (c === 0x30FA) {
-        results[results.length] = 0x3092;
+        results[n++] = 0x3092;
         c = 0x309B;
       }
-      results[results.length] = c;
+      results[n++] = c;
     }
 
     return asString ? util.codeToString_fast(results) : results;
@@ -396,8 +401,9 @@ var Encoding = {
       data = util.stringToBuffer(data);
     }
 
-    var results = [];
-    var len = data && data.length;
+    var len = (data && data.length) || 0;
+    var results = new Array(len);
+    var n = 0;
     var i = 0;
     var c;
 
@@ -417,9 +423,10 @@ var Encoding = {
           c += 0x0060;
         }
       }
-      results[results.length] = c;
+      results[n++] = c;
     }
 
+    results.length = n;
     return asString ? util.codeToString_fast(results) : results;
   },
 
@@ -442,8 +449,9 @@ var Encoding = {
       data = util.stringToBuffer(data);
     }
 
-    var results = [];
-    var len = data && data.length;
+    var len = (data && data.length) || 0;
+    var results = new Array(len);
+    var n = 0;
     var i = 0;
     var c, d, t;
 
@@ -452,27 +460,27 @@ var Encoding = {
 
       if (c >= 0x3001 && c <= 0x30FC) {
         t = KanaCaseTable.HANKANA_TABLE[c];
-        if (t !== void 0) {
-          results[results.length] = t;
+        if (t != null) {
+          results[n++] = t;
           continue;
         }
       }
 
       // 「ヴ」, 「ワ」+「゛」, 「ヲ」+「゛」
       if (c === 0x30F4 || c === 0x30F7 || c === 0x30FA) {
-        results[results.length] = KanaCaseTable.HANKANA_SONANTS[c];
-        results[results.length] = 0xFF9E;
+        results[n++] = KanaCaseTable.HANKANA_SONANTS[c];
+        results[n++] = 0xFF9E;
         // 「カ」 - 「ド」
       } else if (c >= 0x30AB && c <= 0x30C9) {
-        results[results.length] = KanaCaseTable.HANKANA_TABLE[c - 1];
-        results[results.length] = 0xFF9E;
+        results[n++] = KanaCaseTable.HANKANA_TABLE[c - 1];
+        results[n++] = 0xFF9E;
         // 「ハ」 - 「ポ」
       } else if (c >= 0x30CF && c <= 0x30DD) {
         d = c % 3;
-        results[results.length] = KanaCaseTable.HANKANA_TABLE[c - d];
-        results[results.length] = KanaCaseTable.HANKANA_MARKS[d - 1];
+        results[n++] = KanaCaseTable.HANKANA_TABLE[c - d];
+        results[n++] = KanaCaseTable.HANKANA_MARKS[d - 1];
       } else {
-        results[results.length] = c;
+        results[n++] = c;
       }
     }
 
@@ -498,8 +506,9 @@ var Encoding = {
       data = util.stringToBuffer(data);
     }
 
-    var results = [];
-    var len = data && data.length;
+    var len = (data && data.length) || 0;
+    var results = new Array(len);
+    var n = 0;
     var i = 0;
     var c, code, next;
 
@@ -537,9 +546,10 @@ var Encoding = {
         }
         c = code;
       }
-      results[results.length] = c;
+      results[n++] = c;
     }
 
+    results.length = n;
     return asString ? util.codeToString_fast(results) : results;
   },
 
@@ -556,8 +566,9 @@ var Encoding = {
       return data.replace(/\u3000/g, ' ');
     }
 
-    var results = [];
-    var len = data && data.length;
+    var len = (data && data.length) || 0;
+    var results = new Array(len);
+    var n = 0;
     var i = 0;
     var c;
 
@@ -566,7 +577,7 @@ var Encoding = {
       if (c === 0x3000) {
         c = 0x20;
       }
-      results[results.length] = c;
+      results[n++] = c;
     }
 
     return results;
@@ -585,8 +596,9 @@ var Encoding = {
       return data.replace(/\u0020/g, '\u3000');
     }
 
-    var results = [];
-    var len = data && data.length;
+    var len = (data && data.length) || 0;
+    var results = new Array(len);
+    var n = 0;
     var i = 0;
     var c;
 
@@ -595,7 +607,7 @@ var Encoding = {
       if (c === 0x20) {
         c = 0x3000;
       }
-      results[results.length] = c;
+      results[n++] = c;
     }
 
     return results;

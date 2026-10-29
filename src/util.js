@@ -169,8 +169,8 @@ function codeToBuffer(code) {
     return code;
   }
 
-  var length = code && code.length;
-  var buffer = [];
+  var length = (code && code.length) || 0;
+  var buffer = new Array(length);
 
   for (var i = 0; i < length; i++) {
     buffer[i] = code[i];
@@ -261,39 +261,39 @@ var base64DecodeChars = [
 
 var base64EncodePadding = '='.charCodeAt(0);
 
-
 function base64encode(data) {
-  var out, i, len;
+  var out, i, j, len;
   var c1, c2, c3;
 
-  len = data && data.length;
+  len = (data && data.length) || 0;
   i = 0;
-  out = [];
+  j = 0;
+  out = createBuffer(8, Math.ceil(len / 3) * 4);
 
   while (i < len) {
     c1 = data[i++];
     if (i == len) {
-      out[out.length] = base64EncodeChars[c1 >> 2];
-      out[out.length] = base64EncodeChars[(c1 & 0x3) << 4];
-      out[out.length] = base64EncodePadding;
-      out[out.length] = base64EncodePadding;
+      out[j++] = base64EncodeChars[c1 >> 2];
+      out[j++] = base64EncodeChars[(c1 & 0x3) << 4];
+      out[j++] = base64EncodePadding;
+      out[j] = base64EncodePadding;
       break;
     }
 
     c2 = data[i++];
     if (i == len) {
-      out[out.length] = base64EncodeChars[c1 >> 2];
-      out[out.length] = base64EncodeChars[((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4)];
-      out[out.length] = base64EncodeChars[(c2 & 0xF) << 2];
-      out[out.length] = base64EncodePadding;
+      out[j++] = base64EncodeChars[c1 >> 2];
+      out[j++] = base64EncodeChars[((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4)];
+      out[j++] = base64EncodeChars[(c2 & 0xF) << 2];
+      out[j] = base64EncodePadding;
       break;
     }
 
     c3 = data[i++];
-    out[out.length] = base64EncodeChars[c1 >> 2];
-    out[out.length] = base64EncodeChars[((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4)];
-    out[out.length] = base64EncodeChars[((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6)];
-    out[out.length] = base64EncodeChars[c3 & 0x3F];
+    out[j++] = base64EncodeChars[c1 >> 2];
+    out[j++] = base64EncodeChars[((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4)];
+    out[j++] = base64EncodeChars[((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6)];
+    out[j++] = base64EncodeChars[c3 & 0x3F];
   }
 
   return codeToString_fast(out);
