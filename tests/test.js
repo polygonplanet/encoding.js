@@ -1929,6 +1929,7 @@ describe('encoding', function() {
     });
 
     it('Should not disable APPLY_BUFFER_SIZE_OK after a long array', function() {
+      var srcEncoding = require('../src/index');
       var config = require('../src/config');
       config.APPLY_BUFFER_SIZE_OK = null;
 
@@ -1937,7 +1938,7 @@ describe('encoding', function() {
         longArray[i] = 0x61;
       }
 
-      var string = encoding.codeToString(longArray);
+      var string = srcEncoding.codeToString(longArray);
       assert.equal(string.length, longArray.length);
       assert.notStrictEqual(config.APPLY_BUFFER_SIZE_OK, false);
     });
