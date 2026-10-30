@@ -388,7 +388,7 @@ console.log(unicodeString); // 'おはよ'
 
 * **string** : 文字列として返ります。
 * **arraybuffer** : `Uint16Array` として返ります (オプション名は歴史的な経緯で `arraybuffer` になっています)。
-* **array** : 配列として返ります (デフォルト)。
+* **array** : 配列として返ります (デフォルト)。入力の配列とは別の新しい配列が返ります。
 
 `type: 'string'` は、配列から文字列に変換する [`Encoding.codeToString`](#encodingcodetostring-code) のショートハンドとして使用することができます。  
 ※ `UNICODE` への変換以外は `type: 'string'` を指定しても正しく扱えない可能性がありますのでご注意ください

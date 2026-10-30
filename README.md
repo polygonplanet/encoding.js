@@ -401,7 +401,7 @@ The following `type` options are supported.
 
 * **string** : Return as a string.
 * **arraybuffer** : Return a `Uint16Array` (the option name is retained for historical reasons).
-* **array** : Return as an Array. (*default*)
+* **array** : Return as a new Array. (*default*)
 
 `type: 'string'` can be used as a shorthand for converting a code array to a string,
 as performed by [`Encoding.codeToString`](#encodingcodetostring-code).  

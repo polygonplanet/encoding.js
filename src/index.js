@@ -126,7 +126,7 @@ var Encoding = {
       result = EncodingConvert[method](data, options);
     } else {
       // Returns the raw data if the method is undefined
-      result = data;
+      result = util.isArray(data) ? data.slice() : data;
     }
 
     switch (('' + type).toLowerCase()) {
