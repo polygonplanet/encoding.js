@@ -300,6 +300,9 @@ function base64encode(data) {
 }
 exports.base64encode = base64encode;
 
+function base64DecodeChar(c) {
+  return c < 128 ? base64DecodeChars[c] : -1;
+}
 
 function base64decode(str) {
   var c1, c2, c3, c4;
@@ -312,7 +315,7 @@ function base64decode(str) {
   while (i < len) {
     /* c1 */
     do {
-      c1 = base64DecodeChars[str.charCodeAt(i++) & 0xFF];
+      c1 = base64DecodeChar(str.charCodeAt(i++));
     } while (i < len && c1 == -1);
 
     if (c1 == -1) {
@@ -321,7 +324,7 @@ function base64decode(str) {
 
     /* c2 */
     do {
-      c2 = base64DecodeChars[str.charCodeAt(i++) & 0xFF];
+      c2 = base64DecodeChar(str.charCodeAt(i++));
     } while (i < len && c2 == -1);
 
     if (c2 == -1) {
@@ -332,11 +335,11 @@ function base64decode(str) {
 
     /* c3 */
     do {
-      c3 = str.charCodeAt(i++) & 0xFF;
+      c3 = str.charCodeAt(i++);
       if (c3 == 61) {
         return out;
       }
-      c3 = base64DecodeChars[c3];
+      c3 = base64DecodeChar(c3);
     } while (i < len && c3 == -1);
 
     if (c3 == -1) {
@@ -347,11 +350,11 @@ function base64decode(str) {
 
     /* c4 */
     do {
-      c4 = str.charCodeAt(i++) & 0xFF;
+      c4 = str.charCodeAt(i++);
       if (c4 == 61) {
         return out;
       }
-      c4 = base64DecodeChars[c4];
+      c4 = base64DecodeChar(c4);
     } while (i < len && c4 == -1);
 
     if (c4 == -1) {
