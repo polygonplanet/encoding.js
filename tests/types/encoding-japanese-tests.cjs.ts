@@ -145,6 +145,26 @@ if (isSJIS) {
   // Encoding is SJIS'
 }
 
+// Encoding names are accepted case-insensitively and as aliases
+expectType<number[]>()(Encoding.convert(array, 'sjis', 'utf8'));
+expectType<number[]>()(Encoding.convert(array, 'unicode', 'utf-8'));
+expectType<number[]>()(Encoding.convert(array, 'Shift_JIS', 'auto'));
+expectType<string>()(Encoding.convert('abc', 'eucjp'));
+expectType<string>()(Encoding.convert('abc', 'cp932'));
+expectType<string>()(Encoding.convert('abc', 'MS932'));
+
+expectType<string>()(Encoding.convert(array, { to: 'sjis', from: 'utf-8', type: 'string' }));
+expectType<Uint16Array>()(Encoding.convert(array, { to: 'utf16', from: 'auto', type: 'arraybuffer' }));
+expectType<number[]>()(Encoding.convert(array, { to: 'shift_jis', from: 'utf8', type: 'array' }));
+expectType<number[]>()(Encoding.convert(array, { to: 'jis' }));
+expectType<string>()(Encoding.convert('abc', { to: 'iso-2022-jp' }));
+
+expectType<Encoding.Encoding | false>()(Encoding.detect(array, 'sjis'));
+expectType<Encoding.Encoding | false>()(Encoding.detect(array, ['sjis', 'utf8', 'Shift_JIS']));
+
+const encodingName: Encoding.EncodingName = 'sjis';
+expectType<number[]>()(Encoding.convert(array, encodingName));
+
 // ----- urlEncode / urlDecode -----
 const sjisArray7 = [
   130, 177, 130, 241, 130, 201, 130, 191, 130, 205, 129, 65, 130, 217, 130, 176, 129, 153, 130, 210, 130, 230
@@ -153,6 +173,9 @@ const sjisArray7 = [
 const encoded = Encoding.urlEncode(sjisArray7);
 expectType<string>()(encoded);
 // encoded: '%82%B1%82%F1%82%C9%82%BF%82%CD%81A%82%D9%82%B0%81%99%82%D2%82%E6'
+
+expectType<string>()(Encoding.urlEncode(uint8Array));
+expectType<string>()(Encoding.urlEncode('abc'));
 
 const decoded = Encoding.urlDecode(encoded);
 expectType<number[]>()(decoded);
@@ -167,6 +190,9 @@ const encoded2 = Encoding.base64Encode(sjisArray8);
 expectType<string>()(encoded2);
 // encoded2: 'grGC8YLJgr+CzQ=='
 
+expectType<string>()(Encoding.base64Encode(uint8Array));
+expectType<string>()(Encoding.base64Encode('abc'));
+
 const decoded2 = Encoding.base64Decode(encoded2);
 expectType<number[]>()(decoded2);
 // decoded2: [130, 177, 130, 241, 130, 201, 130, 191, 130, 205]
@@ -176,15 +202,31 @@ expectType<string>()(Encoding.version);
 expectType<string[]>()(Encoding.orders);
 
 // ----- Japanese Zenkaku/Hankaku conversion -----
+const uint16UnicodeArray = new Uint16Array([0x3042, 0x3044]);
+const readonlyUnicodeArray: readonly number[] = [0x3042, 0x3044];
+
 expectType<number[]>()(Encoding.toZenkakuCase([1, 2, 3]));
+expectType<number[]>()(Encoding.toZenkakuCase(uint16UnicodeArray));
 expectType<string>()(Encoding.toZenkakuCase('abcdef'));
 expectType<number[]>()(Encoding.toHankakuCase([1, 2, 3]));
+expectType<number[]>()(Encoding.toHankakuCase(uint16UnicodeArray));
+expectType<number[]>()(Encoding.toHankakuCase(readonlyUnicodeArray));
 expectType<string>()(Encoding.toHankakuCase('ＡＢＣＤＥＦ'));
+expectType<number[]>()(Encoding.toHiraganaCase([1, 2, 3]));
+expectType<number[]>()(Encoding.toHiraganaCase(uint16UnicodeArray));
+expectType<string>()(Encoding.toHiraganaCase('アイウエオ'));
+expectType<number[]>()(Encoding.toKatakanaCase([1, 2, 3]));
+expectType<number[]>()(Encoding.toKatakanaCase(uint16UnicodeArray));
+expectType<string>()(Encoding.toKatakanaCase('あいうえお'));
 expectType<number[]>()(Encoding.toZenkanaCase([1, 2, 3]));
+expectType<number[]>()(Encoding.toZenkanaCase(uint16UnicodeArray));
 expectType<string>()(Encoding.toZenkanaCase('ｱｲｳｴｵ'));
 expectType<number[]>()(Encoding.toHankanaCase([1, 2, 3]));
+expectType<number[]>()(Encoding.toHankanaCase(uint16UnicodeArray));
 expectType<string>()(Encoding.toHankanaCase('アイウエオ'));
 expectType<number[]>()(Encoding.toZenkakuSpace([1, 2, 3]));
+expectType<number[]>()(Encoding.toZenkakuSpace(uint16UnicodeArray));
 expectType<string>()(Encoding.toZenkakuSpace('     '));
 expectType<number[]>()(Encoding.toHankakuSpace([1, 2, 3]));
+expectType<number[]>()(Encoding.toHankakuSpace(uint16UnicodeArray));
 expectType<string>()(Encoding.toHankakuSpace('\u{3000}'));
