@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased](https://github.com/polygonplanet/encoding.js/compare/2.4.0...HEAD)
+
+### Features
+
+* Improve TypeScript types: add `EncodingName` to support case-insensitive encoding names and aliases, allow strings in `urlEncode()` and `base64Encode()`, and accept typed arrays in the Zenkaku/Hankaku conversion functions. ([d769950](https://github.com/polygonplanet/encoding.js/commit/d769950))
+
+### Bug Fixes
+
+* Fix JIS X 0212 `0x2237` being decoded with an extra NUL byte (expected `[0x7E]`, but got `[0x00, 0x7E]`) on conversion from `EUCJP` and `JIS`. ([#69](https://github.com/polygonplanet/encoding.js/pull/69)) Thanks [@youdie006](https://github.com/youdie006)
+* Ignore stray continuation bytes when converting from `UTF8`, preventing the previous character from being repeated (e.g., `[0xE3, 0x81, 0x82, 0x80]` now decodes to `あ` instead of `ああ`). ([#71](https://github.com/polygonplanet/encoding.js/pull/71))
+* Use the fallback character for values above `U+10FFFF` when converting from `UNICODE` to `UTF8`. ([#71](https://github.com/polygonplanet/encoding.js/pull/71))
+* Fix `codeToString()` and string output possibly throwing a `RangeError` when called on a deep call stack. It now falls back to a simple loop. ([055ede8](https://github.com/polygonplanet/encoding.js/commit/055ede8))
+* Fix `base64Decode()` to ignore non-ASCII characters. ([61e7dc2](https://github.com/polygonplanet/encoding.js/commit/61e7dc2))
+* Fix `convert()` to return a new array even when no conversion is needed (e.g., `SJIS` to `SJIS`, or to `BINARY`). ([86f2a7e](https://github.com/polygonplanet/encoding.js/commit/86f2a7e))
+
+### Performance
+
+* Reduce the bundle size by compressing conversion tables into a compact text format (`encoding.min.js`: 229 KB -> 88 KB, 76 KB -> 39 KB gzipped). Conversion results and APIs are unchanged. ([#70](https://github.com/polygonplanet/encoding.js/pull/70))
+* Improve conversion performance by prioritizing typed arrays. `convert()` is about 1.5-3.5x faster for most encoding pairs, and peak memory during conversion is reduced by about 25-60%. ([#71](https://github.com/polygonplanet/encoding.js/pull/71))
+* Improve `codeToString()` and string output performance by keeping the fast conversion path available after processing large arrays. ([055ede8](https://github.com/polygonplanet/encoding.js/commit/055ede8))
+* Improve the performance of `stringToCode()`, `base64Encode()`, `urlDecode()` and the Zenkaku/Hankaku conversion functions by preallocating result arrays (up to about 3x faster for large input). ([055ede8](https://github.com/polygonplanet/encoding.js/commit/055ede8), [cf887c6](https://github.com/polygonplanet/encoding.js/commit/cf887c6))
+
 ## [2.4.0](https://github.com/polygonplanet/encoding.js/compare/2.3.0...2.4.0) (2026-09-14)
 
 ### Features
