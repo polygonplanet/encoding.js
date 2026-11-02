@@ -24,6 +24,11 @@ All notable changes to this project will be documented in this file.
 * Improve `codeToString()` and string output performance by keeping the fast conversion path available after processing large arrays. ([055ede8](https://github.com/polygonplanet/encoding.js/commit/055ede8))
 * Improve the performance of `stringToCode()`, `base64Encode()`, `urlDecode()` and the Zenkaku/Hankaku conversion functions by preallocating result arrays (up to about 3x faster for large input). ([055ede8](https://github.com/polygonplanet/encoding.js/commit/055ede8), [cf887c6](https://github.com/polygonplanet/encoding.js/commit/cf887c6))
 
+### Maintenance
+
+* Update minify options to keep `encoding.min.js` ES5-compatible. ([9a8d3b2](https://github.com/polygonplanet/encoding.js/commit/9a8d3b2))
+* Update devDependencies. ([9357cc1](https://github.com/polygonplanet/encoding.js/commit/9357cc1), [f0c942e](https://github.com/polygonplanet/encoding.js/commit/f0c942e))
+
 ## [2.4.0](https://github.com/polygonplanet/encoding.js/compare/2.3.0...2.4.0) (2026-09-14)
 
 ### Features
