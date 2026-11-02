@@ -13,7 +13,7 @@
   "scripts": {
     "build": "npm run compile && npm run minify",
     "compile": "browserify src/index.js -o encoding.js -s Encoding -p [ bannerify --file src/banner.js ] --no-bundle-external --bare",
-    "minify": "uglifyjs encoding.js -o encoding.min.js --comments -c -m -b ascii_only=true,beautify=false",
+    "minify": "uglifyjs encoding.js -o encoding.min.js --comments -c -m -b ascii_only=true,beautify=false --no-module --ie",
     "lint": "eslint .",
     "test": "npm run build && npm run test:types && mocha tests/test",
     "test:types": "tsc --project tsconfig.types.json",
